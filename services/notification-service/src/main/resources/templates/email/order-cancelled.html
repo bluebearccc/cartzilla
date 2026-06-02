@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Đơn hàng đã hủy</title></head>
+<body>
+  <h2>Đơn hàng của bạn đã bị hủy</h2>
+  <p>Đơn hàng <strong th:text="${orderId}">#ORDER</strong> đã bị hủy.</p>
+  <p>Lý do: <span th:text="${reason}">-</span></p>
+  <p>Mọi khoản giữ chỗ (nếu có) đã được hoàn lại.</p>
+</body>
+</html>
