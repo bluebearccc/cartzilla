@@ -65,31 +65,44 @@ public abstract class BaseEntity {
        │ 1
        │ N
        ▼
-┌─────────────────────────────┐         ┌─────────────────────────────┐
-│       refresh_tokens        │         │          vouchers           │ 1
-├─────────────────────────────┤         ├─────────────────────────────┤──┐
-│ id          UUID  PK        │         │ id          UUID  PK        │  │
-│ user_id     UUID  FK        │         │ code        VARCHAR(50) UK  │  │
-│ token       TEXT  UK        │         │ discount_type VARCHAR(20)   │  │
-│ expires_at  TIMESTAMP       │         │ discount_value DECIMAL(10,2)│  │
-│ + BaseEntity columns        │         │ min_order_amount DECIMAL    │  │
-└─────────────────────────────┘         │ min_account_age_days INT    │  │
-                                        │ max_uses    INTEGER         │  │
-                                        │ used_count  INTEGER         │  │
-                                        │ is_active   BOOLEAN         │  │
-                                        │ expires_at  TIMESTAMP       │  │
-                                        │ + BaseEntity columns        │  │
-                                        └─────────────────────────────┘  │
-                                                    N ▼ ◄─────────────────┘
-                                        ┌─────────────────────────────┐
-                                        │       voucher_usages        │
-                                        ├─────────────────────────────┤
-                                        │ id          UUID  PK        │
-                                        │ voucher_id  UUID  FK        │
-                                        │ user_id     UUID  (ref)     │
-                                        │ order_id    UUID  (ref)     │
-                                        │ + BaseEntity columns        │
-                                        └─────────────────────────────┘
+┌─────────────────────────────┐         ┌──────────────────────────────┐
+│       refresh_tokens        │         │           vouchers           │ 1
+├─────────────────────────────┤         ├──────────────────────────────┤──┐
+│ id          UUID  PK        │         │ id           UUID  PK        │  │
+│ user_id     UUID  FK        │         │ code         VARCHAR(50) UK* │  │
+│ token       TEXT  UK        │         │ discount_type VARCHAR(20)    │  │
+│ expires_at  TIMESTAMP       │         │ discount_value DECIMAL(10,2) │  │
+│ + BaseEntity columns        │         │ max_discount_amount DECIMAL  │  │
+└─────────────────────────────┘         │ min_order_amount DECIMAL     │  │
+                                        │ min_account_age_days INT     │  │
+                                        │ per_user_limit INTEGER       │  │
+                                        │ audience_type VARCHAR(30)    │  │
+                                        │ first_order_only BOOLEAN     │  │
+                                        │ min_completed_orders INT     │  │
+                                        │ min_total_spent DECIMAL      │  │
+                                        │ max_uses     INTEGER         │  │
+                                        │ used_count   INTEGER         │  │
+                                        │ is_active    BOOLEAN         │  │
+                                        │ starts_at    TIMESTAMP       │  │
+                                        │ expires_at   TIMESTAMP       │  │
+                                        │ + BaseEntity columns         │  │
+                                        └──────────────────────────────┘  │
+                                                  │ 1          │ 1        │
+                                                  │ N          │ N        │
+                                                  ▼            ▼          │
+                                        ┌────────────────────┐ ┌─────────────────────┐
+                                        │   voucher_usages   │ │ voucher_allowed_users│
+                                        ├────────────────────┤ ├─────────────────────┤
+                                        │ id UUID PK         │ │ id UUID PK          │
+                                        │ voucher_id UUID FK │ │ voucher_id UUID FK  │
+                                        │ user_id UUID (ref) │ │ user_id UUID (ref)  │
+                                        │ order_id UUID(ref) │ │ + BaseEntity cols   │
+                                        │ + BaseEntity cols  │ └─────────────────────┘
+                                        └────────────────────┘
+
+* `vouchers.code` unique không phân biệt hoa thường qua `uq_vouchers_code_upper = unique(upper(code))`.
+* `voucher_usages` unique (`voucher_id`, `order_id`) để redeem idempotent theo order.
+* `voucher_allowed_users` chỉ dùng cho `audience_type = SPECIFIC_USERS`, unique (`voucher_id`, `user_id`).
 ```
 
 OAuth bổ sung:
@@ -112,7 +125,7 @@ Enums: `oauth_accounts.provider = GOOGLE|FACEBOOK`.
 
 ### Domain mapping (DDD)
 - **Aggregate root:** `UserAggregate` (chứa `User` + `List<Address>`)
-- **Entity:** `User`, `Address`, `RefreshToken`, `OAuthAccount`, `Voucher`, `VoucherUsage`
+- **Entity:** `User`, `Address`, `RefreshToken`, `OAuthAccount`, `Voucher`, `VoucherUsage`, `VoucherAllowedUser`
 - **VO:** `Email`, `Role` (enum: CUSTOMER, STAFF, ADMIN), `OAuthProvider` (GOOGLE, FACEBOOK), `AccountTenure` (số ngày kể từ `users.created_at`)
 - **Port:** `UserRepository`, `OAuthAccountRepository`, `VoucherRepository` (domain) → adapter ở `infrastructure`
 
@@ -180,28 +193,59 @@ CREATE TABLE oauth_accounts (
 
 CREATE TABLE vouchers (
     id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code                 VARCHAR(50) NOT NULL UNIQUE,
+    code                 VARCHAR(50) NOT NULL,        -- mã voucher admin nhập; app normalize uppercase, DB unique theo upper(code)
     discount_type        VARCHAR(20) NOT NULL,        -- PERCENTAGE|FIXED_AMOUNT
-    discount_value       DECIMAL(10,2) NOT NULL,
-    min_order_amount     DECIMAL(12,2) NOT NULL DEFAULT 0,
-    min_account_age_days INTEGER NOT NULL DEFAULT 0 CHECK (min_account_age_days >= 0),  -- số ngày tài khoản phải tồn tại trước khi áp voucher; 0 = không giới hạn
-    max_uses             INTEGER NOT NULL DEFAULT 1,
-    used_count           INTEGER NOT NULL DEFAULT 0,
-    is_active            BOOLEAN NOT NULL DEFAULT true,
-    expires_at           TIMESTAMP,
+    discount_value       DECIMAL(10,2) NOT NULL,      -- % nếu PERCENTAGE, số tiền VND nếu FIXED_AMOUNT
+    max_discount_amount  DECIMAL(12,2),               -- trần tiền giảm; bắt buộc > 0 với PERCENTAGE để tránh giảm quá lớn
+    min_order_amount     DECIMAL(12,2) NOT NULL DEFAULT 0, -- subtotal tối thiểu để được áp voucher
+    min_account_age_days INTEGER NOT NULL DEFAULT 0 CHECK (min_account_age_days >= 0), -- tuổi tài khoản tối thiểu; 0 = không giới hạn
+    per_user_limit       INTEGER NOT NULL DEFAULT 1,  -- số lần tối đa một user được redeem voucher này
+    audience_type        VARCHAR(30) NOT NULL DEFAULT 'ALL_USERS', -- ALL_USERS|NEW_CUSTOMER|LOYAL_CUSTOMER|SPECIFIC_USERS
+    first_order_only     BOOLEAN NOT NULL DEFAULT false, -- true nếu chỉ cho user chưa có đơn hoàn tất
+    min_completed_orders INTEGER NOT NULL DEFAULT 0,  -- số đơn hoàn tất tối thiểu cho loyalty voucher
+    min_total_spent      DECIMAL(12,2) NOT NULL DEFAULT 0, -- tổng chi tiêu tối thiểu cho loyalty voucher
+    max_uses             INTEGER NOT NULL DEFAULT 1,  -- tổng số lượt redeem toàn hệ thống
+    used_count           INTEGER NOT NULL DEFAULT 0,  -- số lượt đã redeem thành công; tăng atomically khi commit voucher
+    is_active            BOOLEAN NOT NULL DEFAULT true, -- admin bật/tắt voucher
+    starts_at            TIMESTAMP,                   -- thời điểm bắt đầu hiệu lực; NULL = hiệu lực ngay
+    expires_at           TIMESTAMP,                   -- thời điểm hết hạn; NULL = không hết hạn
     created_at           TIMESTAMP NOT NULL DEFAULT NOW(), updated_at TIMESTAMP,
     created_by           VARCHAR(255), updated_by VARCHAR(255),
-    is_deleted           BOOLEAN NOT NULL DEFAULT false, deleted_at TIMESTAMP
+    is_deleted           BOOLEAN NOT NULL DEFAULT false, deleted_at TIMESTAMP,
+    CHECK (discount_type IN ('PERCENTAGE', 'FIXED_AMOUNT')),
+    CHECK (
+        (discount_type = 'PERCENTAGE' AND discount_value > 0 AND discount_value <= 100 AND max_discount_amount IS NOT NULL AND max_discount_amount > 0)
+        OR (discount_type = 'FIXED_AMOUNT' AND discount_value > 0)
+    ),
+    CHECK (min_order_amount >= 0),
+    CHECK (per_user_limit >= 1),
+    CHECK (min_completed_orders >= 0),
+    CHECK (min_total_spent >= 0),
+    CHECK (max_uses >= 1),
+    CHECK (used_count >= 0 AND used_count <= max_uses),
+    CHECK (audience_type IN ('ALL_USERS', 'NEW_CUSTOMER', 'LOYAL_CUSTOMER', 'SPECIFIC_USERS')),
+    CHECK (expires_at IS NULL OR starts_at IS NULL OR expires_at > starts_at)
 );
 
 CREATE TABLE voucher_usages (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    voucher_id  UUID NOT NULL REFERENCES vouchers(id),
-    user_id     UUID NOT NULL,    -- ref only (cross-service, no FK)
-    order_id    UUID NOT NULL,    -- ref only
+    voucher_id  UUID NOT NULL REFERENCES vouchers(id), -- voucher được redeem
+    user_id     UUID NOT NULL,    -- ref users.id; không FK cross-service
+    order_id    UUID NOT NULL,    -- ref orders.id; không FK cross-service
     created_at  TIMESTAMP NOT NULL DEFAULT NOW(), updated_at TIMESTAMP,
     created_by  VARCHAR(255), updated_by VARCHAR(255),
-    is_deleted  BOOLEAN NOT NULL DEFAULT false, deleted_at TIMESTAMP
+    is_deleted  BOOLEAN NOT NULL DEFAULT false, deleted_at TIMESTAMP,
+    UNIQUE (voucher_id, order_id) -- idempotent redeem: retry cùng order không tăng used_count lần hai
+);
+
+CREATE TABLE voucher_allowed_users (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    voucher_id  UUID NOT NULL REFERENCES vouchers(id), -- chỉ dùng khi vouchers.audience_type = SPECIFIC_USERS
+    user_id     UUID NOT NULL,    -- ref users.id; user được phép dùng voucher này
+    created_at  TIMESTAMP NOT NULL DEFAULT NOW(), updated_at TIMESTAMP,
+    created_by  VARCHAR(255), updated_by VARCHAR(255),
+    is_deleted  BOOLEAN NOT NULL DEFAULT false, deleted_at TIMESTAMP,
+    UNIQUE (voucher_id, user_id) -- tránh duplicate cùng user trong whitelist voucher
 );
 
 CREATE INDEX idx_users_email        ON users(email);
@@ -209,8 +253,10 @@ CREATE INDEX idx_addresses_user     ON addresses(user_id);
 CREATE INDEX idx_refresh_tokens_tok ON refresh_tokens(token);
 CREATE INDEX idx_oauth_user         ON oauth_accounts(user_id);
 CREATE INDEX idx_oauth_provider     ON oauth_accounts(provider, provider_user_id);
-CREATE INDEX idx_vouchers_code      ON vouchers(code);
+CREATE UNIQUE INDEX uq_vouchers_code_upper ON vouchers(upper(code));
 CREATE INDEX idx_voucher_usages_v   ON voucher_usages(voucher_id);
+CREATE INDEX idx_voucher_usages_user ON voucher_usages(voucher_id, user_id);
+CREATE INDEX idx_voucher_allowed_users_v ON voucher_allowed_users(voucher_id);
 ```
 
 **Flyway `V2__vouchers_min_account_age_days.sql`** (nếu đã deploy V1):
@@ -224,6 +270,63 @@ COMMENT ON COLUMN vouchers.min_account_age_days IS
     'Số ngày tối thiểu kể từ users.created_at; user chỉ áp voucher khi accountAgeDays >= giá trị này. 0 = không giới hạn.';
 ```
 
+**Flyway `V3__voucher_business_rules.sql`** (nếu đã deploy V1/V2):
+
+```sql
+ALTER TABLE vouchers
+    ADD COLUMN IF NOT EXISTS max_discount_amount DECIMAL(12,2), -- trần tiền giảm; bắt buộc với PERCENTAGE
+    ADD COLUMN IF NOT EXISTS per_user_limit INTEGER NOT NULL DEFAULT 1, -- số lần tối đa một user được redeem
+    ADD COLUMN IF NOT EXISTS audience_type VARCHAR(30) NOT NULL DEFAULT 'ALL_USERS', -- nhóm user được dùng voucher
+    ADD COLUMN IF NOT EXISTS first_order_only BOOLEAN NOT NULL DEFAULT false, -- chỉ cho user chưa có đơn hoàn tất
+    ADD COLUMN IF NOT EXISTS min_completed_orders INTEGER NOT NULL DEFAULT 0, -- điều kiện loyalty theo số đơn
+    ADD COLUMN IF NOT EXISTS min_total_spent DECIMAL(12,2) NOT NULL DEFAULT 0, -- điều kiện loyalty theo tổng chi tiêu
+    ADD COLUMN IF NOT EXISTS starts_at TIMESTAMP; -- thời điểm bắt đầu hiệu lực
+
+-- Backfill tạm cho percentage voucher cũ trước khi thêm constraint; admin nên rà lại giá trị theo campaign.
+UPDATE vouchers
+SET max_discount_amount = 999999999
+WHERE discount_type = 'PERCENTAGE' AND max_discount_amount IS NULL;
+
+ALTER TABLE vouchers
+    DROP CONSTRAINT IF EXISTS vouchers_code_key;
+
+ALTER TABLE vouchers
+    ADD CONSTRAINT chk_vouchers_discount_type CHECK (discount_type IN ('PERCENTAGE', 'FIXED_AMOUNT')),
+    ADD CONSTRAINT chk_vouchers_discount_value CHECK (
+        (discount_type = 'PERCENTAGE' AND discount_value > 0 AND discount_value <= 100 AND max_discount_amount IS NOT NULL AND max_discount_amount > 0)
+        OR (discount_type = 'FIXED_AMOUNT' AND discount_value > 0)
+    ),
+    ADD CONSTRAINT chk_vouchers_limits CHECK (
+        min_order_amount >= 0
+        AND min_account_age_days >= 0
+        AND per_user_limit >= 1
+        AND min_completed_orders >= 0
+        AND min_total_spent >= 0
+        AND max_uses >= 1
+        AND used_count >= 0
+        AND used_count <= max_uses
+    ),
+    ADD CONSTRAINT chk_vouchers_audience_type CHECK (audience_type IN ('ALL_USERS', 'NEW_CUSTOMER', 'LOYAL_CUSTOMER', 'SPECIFIC_USERS')),
+    ADD CONSTRAINT chk_vouchers_time_window CHECK (expires_at IS NULL OR starts_at IS NULL OR expires_at > starts_at);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_vouchers_code_upper ON vouchers(upper(code));
+
+ALTER TABLE voucher_usages
+    ADD CONSTRAINT uq_voucher_usage_order UNIQUE (voucher_id, order_id);
+
+CREATE INDEX IF NOT EXISTS idx_voucher_usages_user ON voucher_usages(voucher_id, user_id);
+
+CREATE TABLE IF NOT EXISTS voucher_allowed_users (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    voucher_id  UUID NOT NULL REFERENCES vouchers(id), -- chỉ dùng khi vouchers.audience_type = SPECIFIC_USERS
+    user_id     UUID NOT NULL, -- ref users.id; user được whitelist
+    created_at  TIMESTAMP NOT NULL DEFAULT NOW(), updated_at TIMESTAMP,
+    created_by  VARCHAR(255), updated_by VARCHAR(255),
+    is_deleted  BOOLEAN NOT NULL DEFAULT false, deleted_at TIMESTAMP,
+    UNIQUE (voucher_id, user_id) -- tránh duplicate whitelist
+);
+```
+
 **Logic áp dụng (application layer):**
 
 ```java
@@ -234,6 +337,12 @@ long accountAgeDays = ChronoUnit.DAYS.between(
 if (accountAgeDays < voucher.getMinAccountAgeDays()) {
     throw new VoucherNotEligibleException("VA-06", voucher.getMinAccountAgeDays(), accountAgeDays);
 }
+
+// Validate/preview không tăng usedCount.
+// Redeem/commit phải dùng conditional update để chống oversell:
+// UPDATE vouchers
+// SET used_count = used_count + 1
+// WHERE id = :voucherId AND used_count < max_uses;
 ```
 
 ---
@@ -718,7 +827,8 @@ CREATE INDEX idx_email_logs_status ON email_logs(status, created_at DESC);
 | categories | Áo, Quần, Phụ kiện (+ sub-category) |
 | vendors | Basic Collection, Local Supplier, Fashion Brand |
 | products | ~10 sản phẩm, mỗi cái 2–4 variant có stock |
-| vouchers | `SUMMER10` (10%, `min_account_age_days=0`), `FREESHIP` (fixed, `min_account_age_days=0`), `LOYAL30` (10%, `min_account_age_days=30` — chỉ user đăng ký ≥ 30 ngày) |
+| vouchers | `SUMMER10` (10%, `max_discount_amount=150000`, `audience_type=ALL_USERS`), `WELCOME50K` (fixed, `first_order_only=true`, `audience_type=NEW_CUSTOMER`), `LOYAL30` (10%, `max_discount_amount=300000`, `min_account_age_days=30`, `audience_type=LOYAL_CUSTOMER`) |
+| voucher_allowed_users | 1–2 dòng mẫu cho voucher `SPECIFIC_USERS` nếu cần test audience riêng |
 | notifications | 2–3 thông báo order mẫu cho CUSTOMER |
 | email_logs | 2–3 email order/reset-password mẫu |
 
