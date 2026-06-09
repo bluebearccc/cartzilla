@@ -339,7 +339,9 @@ spring:
 
 ```
 order-service ──(POST lb://USER-SERVICE/api/vouchers/validate)──► user-service
-                  (validate voucher khi checkout)
+                  (preview voucher khi checkout, chưa tăng usedCount)
+order-service ──(POST lb://USER-SERVICE/api/vouchers/redeem)────► user-service
+                  (commit voucher sau checkout/payment thành công)
 gateway       ──(validate JWT)──► dùng common-security (JwtTokenProvider)
 ```
 Gọi qua `WebClient`/`RestClient` với `@LoadBalanced` (đã có `HttpClientConfig.java` trong job-service làm mẫu).
@@ -443,10 +445,10 @@ SE1911-JV_MSS301/
     │       ├── application/
     │       │   ├── command/  AuthCommand · VoucherCommand
     │       │   └── usecase/  RegisterUserUseCase · LoginUseCase ·
-    │       │                 RefreshTokenUseCase · ValidateVoucherUseCase
+    │       │                 RefreshTokenUseCase · ValidateVoucherUseCase · RedeemVoucherUseCase
     │       ├── domain/
     │       │   ├── aggregate/UserAggregate.java
-    │       │   ├── entity/  User · Address · RefreshToken · Voucher · VoucherUsage
+    │       │   ├── entity/  User · Address · RefreshToken · Voucher · VoucherUsage · VoucherAllowedUser
     │       │   ├── vo/  Email · Role
     │       │   ├── repository/  UserRepository · VoucherRepository
     │       │   └── exception/DuplicateEmailException.java
@@ -570,7 +572,7 @@ Config `RabbitConfig` (exchange/queue/binding + `Jackson2JsonMessageConverter`) 
 public VoucherResult validate(String code, UUID userId, BigDecimal amount) { ... }
 
 public VoucherResult voucherFallback(String code, UUID userId, BigDecimal amount, Throwable t) {
-    return VoucherResult.skipped();   // bỏ qua giảm giá, vẫn cho checkout
+    return VoucherResult.validationUnavailable(); // nếu user nhập voucher thì checkout trả lỗi validate voucher
 }
 ```
 ```yaml
@@ -617,7 +619,8 @@ Prometheus scrape `/actuator/prometheus` từng service · Grafana import dashbo
 
 | # | Luồng | Kiểu | Producer | Consumer | Payload |
 |---|---|---|---|---|---|
-| 1 | Validate voucher | REST | order-service | user-service | `{code,userId,amount}` → `{valid,discount}` |
+| 1 | Validate voucher preview | REST | order-service | user-service | `{code,userId,amount}` → `{valid,discount,voucherId,normalizedCode,reasonCode}` |
+| 1b | Redeem voucher commit | REST | order-service | user-service | `{voucherId,code,userId,orderId,amount}` → `{redeemed,discount,usageId}` |
 | 2 | Reserve stock | MQ | order-service | product-service | `StockReserveEvent{orderId,items[]}` |
 | 3 | Stock result | MQ | product-service | order-service | `StockReservedEvent{orderId,success,failedSku}` |
 | 4 | Process payment | MQ | order-service | payment-service | `PaymentProcessEvent{orderId,amount,method}` |

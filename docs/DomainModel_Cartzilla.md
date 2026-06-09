@@ -10,7 +10,7 @@
 
 | Service | Database | Aggregate Roots | Entities | Value Objects |
 |---------|----------|-----------------|----------|---------------|
-| user-service | cartzilla_user_db | `UserAggregate`, `VoucherAggregate` | User, Address, RefreshToken, OAuthAccount, Voucher, VoucherUsage | Email, Phone, Role, PasswordHash, OAuthProvider, DiscountType, Money |
+| user-service | cartzilla_user_db | `UserAggregate`, `VoucherAggregate` | User, Address, RefreshToken, OAuthAccount, Voucher, VoucherUsage, VoucherAllowedUser | Email, Phone, Role, PasswordHash, OAuthProvider, DiscountType, VoucherAudienceType, Money |
 | product-service | cartzilla_product_db | `ProductAggregate`, `CategoryAggregate`, `VendorAggregate` | Product, Category, Vendor, ProductVariant, ProductImage | Money, Slug, Sku, VendorType, ColorHex |
 | order-service | cartzilla_order_db | `CartAggregate`, `OrderAggregate`, `OrderSagaAggregate` | CartItem, Order, OrderItem, OrderStatusLog, SagaState | ShippingAddress, OrderStatus, PaymentMethod, PaymentStatus, Money |
 | payment-service | cartzilla_pay_db | `PaymentAggregate` | Payment, PaymentTransaction | PaymentMethod, PaymentStatus, TransactionType, Money, Currency |
@@ -52,7 +52,7 @@
 
 #### `VoucherAggregate`
 
-**Thành phần:** `Voucher` (root) + `List<VoucherUsage>`
+**Thành phần:** `Voucher` (root) + `List<VoucherUsage>` + `List<VoucherAllowedUser>`
 
 | ID | Invariant / Rule |
 |----|------------------|
@@ -62,6 +62,9 @@
 | **VA-04** | Mỗi cặp `(voucherId, orderId)` chỉ ghi **một** `VoucherUsage` (idempotent redeem). |
 | **VA-05** | `VoucherUsage.userId` và `orderId` là reference-only; order-service là source of truth cho order tồn tại. |
 | **VA-06** | **Tuổi tài khoản:** `accountAgeDays = số ngày lịch (UTC) từ users.createdAt đến now`. User chỉ áp voucher khi `accountAgeDays >= minAccountAgeDays`. `minAccountAgeDays = 0` → không giới hạn. |
+| **VA-07** | Validate voucher chỉ trả discount preview; không tạo `VoucherUsage` và không tăng `usedCount`. |
+| **VA-08** | Redeem voucher chỉ xảy ra khi checkout/payment thành công; với VNPay chỉ redeem sau payment success. |
+| **VA-09** | User phải thuộc `audienceType` của voucher và không vượt `perUserLimit`. |
 
 ---
 
@@ -121,11 +124,18 @@
 | Thuộc tính | Ràng buộc |
 |------------|-----------|
 | minAccountAgeDays | INTEGER ≥ 0, default 0 — số ngày tài khoản phải tồn tại trước khi áp voucher |
+| startsAt | Optional — thời điểm bắt đầu hiệu lực |
+| maxDiscountAmount | Optional với `FIXED_AMOUNT`, bắt buộc với `PERCENTAGE` — trần số tiền giảm |
+| perUserLimit | INTEGER ≥ 1, default 1 — số lần tối đa một user được redeem cùng voucher |
+| audienceType | `ALL_USERS` \| `NEW_CUSTOMER` \| `LOYAL_CUSTOMER` \| `SPECIFIC_USERS` |
+| firstOrderOnly | BOOLEAN default false — chỉ áp cho user chưa có đơn hoàn tất |
+| minCompletedOrders | INTEGER ≥ 0, default 0 |
+| minTotalSpent | DECIMAL(12,2) ≥ 0, default 0 |
 
 | ID | Rule |
 |----|------|
 | **V-01** | `discountType` ∈ {`PERCENTAGE`, `FIXED_AMOUNT`}. |
-| **V-02** | Nếu `PERCENTAGE`: `0 < discountValue ≤ 100`. |
+| **V-02** | Nếu `PERCENTAGE`: `0 < discountValue ≤ 100` và `maxDiscountAmount > 0`. |
 | **V-03** | Nếu `FIXED_AMOUNT`: `discountValue > 0`. |
 | **V-04** | `minOrderAmount` ≥ 0; voucher chỉ áp dụng khi order subtotal ≥ `minOrderAmount`. |
 | **V-05** | `maxUses` ≥ 1; `usedCount` ≥ 0, khởi tạo 0. |
@@ -133,6 +143,11 @@
 | **V-07** | Không sửa `code` sau khi đã có `VoucherUsage`. |
 | **V-08** | `minAccountAgeDays` ≥ 0, default `0`. Admin set khi tạo voucher (vd. voucher loyalty: 30 ngày). |
 | **V-09** | Validate eligibility: load `user.createdAt` → tính `accountAgeDays`; reject nếu `accountAgeDays < minAccountAgeDays` (HTTP 422, message kiểu *"Voucher requires account age of at least N days"*). |
+| **V-10** | `startsAt` nếu có thì voucher chỉ hợp lệ khi `startsAt <= now`; `expiresAt` nếu có thì `expiresAt > now`. |
+| **V-11** | `perUserLimit >= 1`; số `VoucherUsage` thành công của cùng `(voucherId,userId)` không được vượt giới hạn này. |
+| **V-12** | `audienceType = NEW_CUSTOMER` yêu cầu `firstOrderOnly = true` hoặc user có `completedOrderCount = 0`. |
+| **V-13** | `audienceType = LOYAL_CUSTOMER` yêu cầu user đạt `minAccountAgeDays`, `minCompletedOrders` hoặc `minTotalSpent` theo cấu hình. |
+| **V-14** | `audienceType = SPECIFIC_USERS` yêu cầu user nằm trong danh sách `VoucherAllowedUser`. |
 
 #### `VoucherUsage`
 
@@ -141,6 +156,14 @@
 | **VU-01** | `voucherId` FK → voucher phải thỏa **VA-03** tại thời điểm ghi. |
 | **VU-02** | `userId`, `orderId` NOT NULL (reference-only, không FK cross-DB). |
 | **VU-03** | Ghi nhận bất biến sau khi tạo — không sửa/xóa (audit trail). |
+| **VU-04** | UNIQUE (`voucherId`, `orderId`) để đảm bảo redeem idempotent theo order. |
+
+#### `VoucherAllowedUser`
+
+| ID | Rule |
+|----|------|
+| **VAU-01** | Chỉ dùng khi `Voucher.audienceType = SPECIFIC_USERS`. |
+| **VAU-02** | UNIQUE (`voucherId`, `userId`) — một user chỉ xuất hiện một lần trong danh sách được phép. |
 
 ---
 
@@ -154,6 +177,7 @@
 | **PasswordHash** | Bcrypt; never expose plain text; nullable cho OAuth-only. |
 | **OAuthProvider** | Enum: `GOOGLE`, `FACEBOOK`. |
 | **DiscountType** | Enum: `PERCENTAGE`, `FIXED_AMOUNT`. |
+| **VoucherAudienceType** | Enum: `ALL_USERS`, `NEW_CUSTOMER`, `LOYAL_CUSTOMER`, `SPECIFIC_USERS`. |
 | **Money** | `amount ≥ 0`, scale 2, currency `VND`. |
 | **AccountTenure** | Số ngày integer ≥ 0; `daysBetween(user.createdAt, now)` theo ngày lịch UTC. |
 
@@ -529,12 +553,13 @@ sequenceDiagram
     participant N as NotificationAggregate
 
     C->>O: checkout (items >= 1, shipping snapshot)
-    O->>V: validate & redeem voucher (optional)
+    O->>V: validate voucher preview (optional, no usage count)
     O->>S: start saga RESERVE_STOCK
     S->>P: reserve/decrement stock
     S->>Pay: PROCESS_PAYMENT
     Pay-->>O: payment result event
     O->>O: PENDING → CONFIRMED, confirmedAt = now
+    O->>V: redeem voucher after checkout/payment success
     S->>N: NOTIFY (in-app + email)
     S->>S: DONE
 ```
@@ -543,7 +568,7 @@ sequenceDiagram
 |----|-------------------|
 | **X-01** | Checkout thất bại nếu bất kỳ cart item nào `stock` insufficient (product-service). |
 | **X-02** | Order `totalAmount` phải khớp Payment `amount` (tolerance 0 — cùng currency VND). |
-| **X-03** | Voucher redeem (**VA-04**) chỉ sau order tạo thành công (có `orderId`); validate **VA-03** + **VA-06** trước khi apply discount. |
+| **X-03** | Voucher validate chỉ preview discount trước khi tạo order; redeem (**VA-04**) chỉ sau checkout/payment thành công. Với VNPay, payment success mới redeem; payment failed không làm mất lượt voucher. |
 | **X-04** | Cancel order → compensating: restore stock (product), refund nếu VNPAY PAID (payment), notify cancel. |
 | **X-05** | `shippingAddress` không đọc live từ `Address` khi hiển thị order cũ — luôn dùng JSONB snapshot (**BR05**). |
 
@@ -559,6 +584,7 @@ sequenceDiagram
 | OAuthAccount | UserAggregate | Child |
 | Voucher | VoucherAggregate | Root |
 | VoucherUsage | VoucherAggregate | Child |
+| VoucherAllowedUser | VoucherAggregate | Child |
 | Category | CategoryAggregate | Root |
 | Vendor | VendorAggregate | Root |
 | Product | ProductAggregate | Root |

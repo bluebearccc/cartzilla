@@ -29,7 +29,7 @@
 
 Tài liệu này mô tả yêu cầu chức năng, phi chức năng, business rules, acceptance criteria và traceability cho hệ thống **Cartzilla** — nền tảng bán hàng thời trang online theo kiến trúc microservices.
 
-Bản v2.2 cập nhật SRS theo `DBDesign_Cartzilla.md` v2.2 và Domain Model hiện có, đặc biệt là quyết định chuyển `product-service` sang PostgreSQL 16/Flyway/JPA cùng các aggregate/entity đã chi tiết hóa: `OAuthAccount`, `Vendor`, `ProductImage`, `PaymentTransaction`, `Notification`, `EmailLog`, `VoucherUsage`, `OrderStatusLog`, `SagaState`.
+Bản v2.2 cập nhật SRS theo `DBDesign_Cartzilla.md` v2.2 và Domain Model hiện có, đặc biệt là quyết định chuyển `product-service` sang PostgreSQL 16/Flyway/JPA cùng các aggregate/entity đã chi tiết hóa: `OAuthAccount`, `Vendor`, `ProductImage`, `PaymentTransaction`, `Notification`, `EmailLog`, `VoucherUsage`, `VoucherAllowedUser`, `OrderStatusLog`, `SagaState`.
 
 ### 1.2 Phạm vi
 
@@ -213,19 +213,23 @@ CONFIRMED -> CANCELLED
 
 **Admin Main Flow:**
 
-1. Admin tạo voucher với code, discount type, discount value, min order amount, max uses, expiry và min account age days.
+1. Admin tạo voucher với code, discount type, discount value, min/max discount amount, usage limit, hiệu lực thời gian và nhóm user được dùng.
 2. Hệ thống normalize code uppercase và đảm bảo unique.
-3. Admin xem usage count và trạng thái voucher.
+3. Admin cấu hình audience: `ALL_USERS`, `NEW_CUSTOMER`, `LOYAL_CUSTOMER` hoặc `SPECIFIC_USERS`.
+4. Admin xem usage count và trạng thái voucher.
 
 **Customer Main Flow:**
 
 1. Customer nhập voucher khi checkout.
-2. Hệ thống validate active, expiry, max uses, min order amount và min account age.
-3. Sau khi order tạo thành công, hệ thống ghi `VoucherUsage` idempotent theo `(voucherId, orderId)`.
+2. Hệ thống validate voucher và eligibility của user để trả discount preview; bước validate không tăng `usedCount`.
+3. Hệ thống tạo order với `voucherCode` và discount snapshot.
+4. Khi checkout/payment thành công, hệ thống redeem voucher, ghi `VoucherUsage` idempotent theo `(voucherId, orderId)` và tăng `usedCount` atomically.
 
 **Alternative Flow A1:** `accountAgeDays < minAccountAgeDays` → trả HTTP 422.  
 **Alternative Flow A2:** Voucher đã dùng hết hoặc expired → từ chối.  
 **Alternative Flow A3:** Redeem lại cùng order → trả kết quả idempotent, không tăng `usedCount` lần hai.
+
+**Alternative Flow A4:** User nhập voucher nhưng user-service lỗi → checkout trả lỗi validate voucher, không âm thầm bỏ discount.
 
 ### UC-07: Thanh toán COD/VNPay và Payment Audit
 
@@ -294,7 +298,7 @@ CONFIRMED -> CANCELLED
 | ID | Tên | Actor | UC | Mô tả |
 |---|---|---|---|---|
 | **F13** | VNPay payment | Customer/System | UC-07 | Redirect, callback, verify result, idempotent callback, refund tracking |
-| **F14** | Voucher | Admin/Customer | UC-06 | CRUD voucher, validate/redeem, `VoucherUsage`, min account age |
+| **F14** | Voucher | Admin/Customer | UC-06 | CRUD voucher, audience, validate/redeem, `VoucherUsage`, min account age |
 | **F15** | OAuth login/link | Guest/Customer | UC-02 | Login/link Google/Facebook qua `OAuthAccount` |
 | **F16** | Vendor management | Admin | UC-05 | CRUD/deactivate vendor, vendor type, link product to active vendor |
 | **F17** | Admin user/role management | Admin | UC-02 | Quản lý trạng thái user và role `CUSTOMER`/`STAFF`/`ADMIN` |
@@ -382,6 +386,13 @@ CONFIRMED -> CANCELLED
 | **BR-V05** | Mỗi cặp `(voucherId, orderId)` chỉ có một `VoucherUsage`; redeem phải idempotent. |
 | **BR-V06** | Không sửa voucher `code` sau khi đã có `VoucherUsage`. |
 | **BR-V07** | `minAccountAgeDays >= 0`; nếu customer chưa đủ tuổi tài khoản thì trả lỗi validation HTTP 422. |
+| **BR-V08** | Voucher percentage phải có `maxDiscountAmount` để giới hạn số tiền giảm tối đa. |
+| **BR-V09** | User dùng voucher không được vượt `perUserLimit`. |
+| **BR-V10** | Voucher chỉ được redeem sau khi checkout/payment thành công; validate chỉ preview discount và không tăng `usedCount`. |
+| **BR-V11** | Với VNPay, payment success mới redeem voucher; payment failed không làm mất lượt voucher. |
+| **BR-V12** | User nhập voucher nhưng validate service lỗi thì checkout phải báo lỗi, không được âm thầm bỏ voucher. |
+| **BR-V13** | Discount và voucher code phải được snapshot vào order tại thời điểm checkout. |
+| **BR-V14** | `audienceType` quyết định user nào được dùng voucher: `ALL_USERS`, `NEW_CUSTOMER`, `LOYAL_CUSTOMER`, `SPECIFIC_USERS`. |
 
 ### 5.6 Payment
 
@@ -478,15 +489,19 @@ CONFIRMED -> CANCELLED
 | TC-13 Stock insufficient | Checkout SKU không đủ stock | Checkout fail, stock không âm, order không confirmed |
 | TC-14 Voucher min age | Apply voucher yêu cầu 30 ngày cho user 5 ngày tuổi | 422, message nêu min account age |
 | TC-15 Voucher idempotent | Redeem lại cùng `(voucherId, orderId)` | Không tăng `usedCount` lần hai |
-| TC-16 VNPay success | VNPay callback success hợp lệ | Payment `PAID`, order `CONFIRMED`, transaction logged |
-| TC-17 VNPay duplicate callback | Gửi lại cùng providerTxnRef | Idempotent response, không ghi transaction trùng |
-| TC-18 Payment amount mismatch | Callback/payment event amount khác order total | Payment failed/rejected, transaction failed logged |
-| TC-19 Staff transition | PUT order `CONFIRMED -> SHIPPING` bởi Staff | 200, status đổi, `OrderStatusLog` được ghi |
-| TC-20 Invalid transition | PUT order `DELIVERED -> CANCELLED` | 422, không đổi status |
-| TC-21 Cancel reason required | Cancel order không có reason | 422, không đổi status |
-| TC-22 COD delivered | Staff chuyển COD order `SHIPPING -> DELIVERED` | Order `DELIVERED`, payment `PAID` |
-| TC-23 Notification on confirmed | Order confirmed event | Tạo `Notification` và `EmailLog` phù hợp |
-| TC-24 Email failure | SMTP lỗi khi gửi email | `EmailLog.status = FAILED`, lưu error |
+| TC-16 Voucher per-user limit | User đã redeem voucher đủ `perUserLimit` | 422, không tạo usage mới |
+| TC-17 Voucher audience | User không nằm trong `SPECIFIC_USERS` apply voucher | 422, reasonCode audience mismatch |
+| TC-18 Voucher max discount | Apply voucher 20% max 150k cho order 1M | Discount = 150k |
+| TC-19 VNPay voucher failed | VNPay payment failed sau khi preview voucher | Không tạo `VoucherUsage`, không tăng `usedCount` |
+| TC-20 VNPay success | VNPay callback success hợp lệ | Payment `PAID`, order `CONFIRMED`, transaction logged |
+| TC-21 VNPay duplicate callback | Gửi lại cùng providerTxnRef | Idempotent response, không ghi transaction trùng |
+| TC-22 Payment amount mismatch | Callback/payment event amount khác order total | Payment failed/rejected, transaction failed logged |
+| TC-23 Staff transition | PUT order `CONFIRMED -> SHIPPING` bởi Staff | 200, status đổi, `OrderStatusLog` được ghi |
+| TC-24 Invalid transition | PUT order `DELIVERED -> CANCELLED` | 422, không đổi status |
+| TC-25 Cancel reason required | Cancel order không có reason | 422, không đổi status |
+| TC-26 COD delivered | Staff chuyển COD order `SHIPPING -> DELIVERED` | Order `DELIVERED`, payment `PAID` |
+| TC-27 Notification on confirmed | Order confirmed event | Tạo `Notification` và `EmailLog` phù hợp |
+| TC-28 Email failure | SMTP lỗi khi gửi email | `EmailLog.status = FAILED`, lưu error |
 
 ### 8.2 End-to-End Flow
 
@@ -521,7 +536,7 @@ CONFIRMED -> CANCELLED
 | F11 Admin catalog | UC-05 | product-service | `POST/PUT/DELETE /api/admin/products`, `/categories`, `/products/{id}/variants`, `/products/{id}/images` | `products`, `categories`, `product_variants`, `product_images` | — |
 | F12 Notification/email | UC-08 | notification-service | `GET /api/notifications`, `PUT /api/notifications/{id}/read` | `notifications`, `email_logs` | `order.confirmed`, `order.cancelled`, `order.shipped`, `reset-password` |
 | F13 VNPay | UC-07 | payment-service | `POST /api/payments/vnpay/create`, `GET /api/payments/vnpay/callback` | `payments`, `payment_transactions` | `payment.result` |
-| F14 Voucher | UC-06 | user-service | `POST /api/admin/vouchers`, `PUT /api/admin/vouchers/{id}`, `POST /api/vouchers/validate`, `POST /api/vouchers/redeem` | `vouchers`, `voucher_usages` | — |
+| F14 Voucher | UC-06 | user-service | `POST /api/admin/vouchers`, `PUT /api/admin/vouchers/{id}`, `POST /api/vouchers/validate`, `POST /api/vouchers/redeem` | `vouchers`, `voucher_usages`, `voucher_allowed_users` | — |
 | F15 OAuth | UC-02 | user-service | `GET /api/oauth/{provider}/authorize`, `GET /api/oauth/{provider}/callback` | `oauth_accounts`, `users` | — |
 | F16 Vendor | UC-05 | product-service | `GET/POST/PUT/DELETE /api/admin/vendors` | `vendors`, `products.vendorId` | — |
 | F17 User/role admin | UC-02 | user-service | `GET/PUT /api/admin/users/{id}`, `/role`, `/status` | `users` | — |
@@ -560,6 +575,7 @@ CONFIRMED -> CANCELLED
 | **OAuthAccount** | `OAuthAccount` | user-service | Liên kết user với Google/Facebook provider |
 | **Voucher** | `VoucherAggregate` / `Voucher` | user-service | Mã giảm giá, usage limit, expiry, min account age |
 | **VoucherUsage** | `VoucherUsage` | user-service | Bản ghi redeem voucher append-only/idempotent |
+| **VoucherAllowedUser** | `VoucherAllowedUser` | user-service | Danh sách user được phép dùng voucher `SPECIFIC_USERS` |
 | **Product** | `ProductAggregate` / `Product` | product-service | Sản phẩm thời trang, thuộc category, có variant/image |
 | **Category** | `CategoryAggregate` / `Category` | product-service | Danh mục sản phẩm dạng cây |
 | **Vendor** | `VendorAggregate` / `Vendor` | product-service | Supplier/brand/manufacturer liên kết product |
@@ -583,7 +599,7 @@ CONFIRMED -> CANCELLED
 
 | Service | Database | Technology | Core Tables |
 |---|---|---|---|
-| user-service | `cartzilla_user_db` | PostgreSQL 16 | `users`, `addresses`, `refresh_tokens`, `oauth_accounts`, `vouchers`, `voucher_usages` |
+| user-service | `cartzilla_user_db` | PostgreSQL 16 | `users`, `addresses`, `refresh_tokens`, `oauth_accounts`, `vouchers`, `voucher_usages`, `voucher_allowed_users` |
 | product-service | `cartzilla_product_db` | PostgreSQL 16 | `categories`, `vendors`, `products`, `product_variants`, `product_images` |
 | order-service | `cartzilla_order_db` | PostgreSQL 16 | `cart_items`, `orders`, `order_items`, `order_status_logs`, `saga_states` |
 | payment-service | `cartzilla_pay_db` | PostgreSQL 16 | `payments`, `payment_transactions` |
@@ -595,7 +611,7 @@ CONFIRMED -> CANCELLED
 |---|---|
 | BaseEntity | Mọi bảng domain có `created_at`, `updated_at`, `created_by`, `updated_by`, `is_deleted`, `deleted_at`. |
 | Auth/OAuth | `users.email` unique; `refresh_tokens.token` unique; `oauth_accounts(provider, provider_user_id)` và `(user_id, provider)` unique. |
-| Voucher | `vouchers.code` unique; `min_account_age_days >= 0`; `voucher_usages` lưu `user_id` và `order_id` reference-only. |
+| Voucher | `upper(vouchers.code)` unique; `min_account_age_days >= 0`; `voucher_usages` lưu `user_id` và `order_id` reference-only; `voucher_allowed_users` dùng cho audience `SPECIFIC_USERS`. |
 | Catalog | `categories.slug`, `vendors.slug`, `products.slug`, `product_variants.sku` unique; price/stock không âm. |
 | Order | `cart_items(user_id, sku)` unique; `orders.shipping_address` là JSONB snapshot; `saga_states.order_id` unique. |
 | Payment | `payments.order_id` unique; `payment_transactions(provider, provider_txn_ref)` unique khi provider ref khác null. |
