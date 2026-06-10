@@ -9,7 +9,7 @@ volumes:
   pg-order-data:
   pg-pay-data:
   pg-notif-data:
-  mongo-data:
+  pg-product-data:
   grafana-data:
 
 services:
@@ -20,6 +20,7 @@ services:
       POSTGRES_DB: cartzilla_user_db
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports: [ "5433:5432" ]
     volumes: [ "pg-user-data:/var/lib/postgresql/data" ]
     networks: [ cartzilla-net ]
 
@@ -29,6 +30,7 @@ services:
       POSTGRES_DB: cartzilla_order_db
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports: [ "5434:5432" ]
     volumes: [ "pg-order-data:/var/lib/postgresql/data" ]
     networks: [ cartzilla-net ]
 
@@ -38,6 +40,7 @@ services:
       POSTGRES_DB: cartzilla_pay_db
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports: [ "5435:5432" ]
     volumes: [ "pg-pay-data:/var/lib/postgresql/data" ]
     networks: [ cartzilla-net ]
 
@@ -47,12 +50,18 @@ services:
       POSTGRES_DB: cartzilla_notif_db
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports: [ "5436:5432" ]
     volumes: [ "pg-notif-data:/var/lib/postgresql/data" ]
     networks: [ cartzilla-net ]
 
-  mongodb:
-    image: mongo:7
-    volumes: [ "mongo-data:/data/db" ]
+  postgres-product:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cartzilla_product_db
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports: [ "5437:5432" ]
+    volumes: [ "pg-product-data:/var/lib/postgresql/data" ]
     networks: [ cartzilla-net ]
 
   rabbitmq:
@@ -100,10 +109,12 @@ services:
   product-service:
     build: ./services/product-service
     environment:
-      MONGO_URI: mongodb://mongodb:27017/cartzilla_product
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/cartzilla_product_db
+      DB_USER: app
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
       RABBITMQ_HOST: rabbitmq
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-    depends_on: [ mongodb, rabbitmq, eureka-server ]
+    depends_on: [ postgres-product, rabbitmq, eureka-server ]
     networks: [ cartzilla-net ]
 
   order-service:

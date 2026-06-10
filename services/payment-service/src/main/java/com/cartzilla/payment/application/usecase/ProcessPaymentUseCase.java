@@ -3,6 +3,7 @@ package com.cartzilla.payment.application.usecase;
 import com.cartzilla.events.payment.PaymentEvents;
 import com.cartzilla.payment.domain.entity.Payment;
 import com.cartzilla.payment.domain.repository.PaymentRepository;
+import com.cartzilla.payment.domain.vo.PaymentMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,16 +26,17 @@ public class ProcessPaymentUseCase {
 
     @Transactional
     public PaymentEvents.PaymentResultEvent execute(PaymentEvents.PaymentProcessEvent event) {
-        Payment payment = Payment.create(event.orderId(), event.userId(), event.method(), event.amount());
+        PaymentMethod method = PaymentMethod.valueOf(event.method().toUpperCase());
+        Payment payment = Payment.create(event.orderId(), event.userId(), method, event.amount());
 
         boolean success = !alwaysFail;   // COD mock; VNPay xử lý qua callback riêng
         if (success) {
             String txn = "TXN-" + UUID.randomUUID();
-            payment.markPaid(txn);
+            payment.markPaid(txn, "COD Mock Success");
             paymentRepository.save(payment);
             return new PaymentEvents.PaymentResultEvent(event.orderId(), true, txn);
         } else {
-            payment.markFailed();
+            payment.markFailed("ALWAYS_FAIL flag is set to true");
             paymentRepository.save(payment);
             return new PaymentEvents.PaymentResultEvent(event.orderId(), false, null);
         }

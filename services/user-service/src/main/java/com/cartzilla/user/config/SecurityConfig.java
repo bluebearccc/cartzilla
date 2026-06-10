@@ -1,7 +1,9 @@
 package com.cartzilla.user.config;
 
+import com.cartzilla.security.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import java.util.Optional;
 
 @Configuration
+@Import(JwtTokenProvider.class)
 public class SecurityConfig {
 
     @Bean
