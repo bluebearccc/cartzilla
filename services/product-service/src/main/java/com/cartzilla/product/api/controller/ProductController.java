@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
@@ -15,7 +16,7 @@ public class ProductController {
     private final ListProductsUseCase listProductsUseCase;
 
     @GetMapping
-    public List<Product> list(@RequestParam(required = false) String category) {
-        return listProductsUseCase.execute(category);
+    public List<Product> list(@RequestParam(required = false) UUID categoryId) {
+        return listProductsUseCase.execute(categoryId);
     }
 }
