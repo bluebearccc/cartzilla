@@ -64,6 +64,23 @@ public class Category extends BaseEntity {
         return c;
     }
 
+    /** C-01/CA-05: admin cập nhật thông tin chung */
+    public void update(String name, String imageUrl, int sortOrder) {
+        if (name == null || name.isBlank())
+            throw new BusinessException("Category name must not be blank (C-01)");
+        if (sortOrder < 0) throw new BusinessException("sortOrder must be >= 0 (CA-05)");
+        this.name = name.trim();
+        this.imageUrl = imageUrl;
+        this.sortOrder = sortOrder;
+    }
+
+    /** CA-01: slug unique — usecase check trùng trước khi đổi */
+    public void changeSlug(String slug) {
+        if (slug == null || slug.isBlank())
+            throw new BusinessException("Category slug must not be blank (CA-01)");
+        this.slug = slug.trim().toLowerCase();
+    }
+
     /** CA-02: guard — không set parentId = self */
     public void setParent(UUID parentId) {
         if (id != null && id.equals(parentId))

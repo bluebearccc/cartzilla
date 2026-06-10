@@ -73,6 +73,13 @@ public class SagaState extends BaseEntity {
         if (currentStep == SagaStep.DONE) this.status = SagaStatus.COMPLETED;
     }
 
+    /** Hoàn tất saga: tiến tuần tự tới DONE (SA-04 — không nhảy bước) → COMPLETED */
+    public void complete() {
+        if (status != SagaStatus.IN_PROGRESS)
+            throw new BusinessException("Saga is not IN_PROGRESS");
+        while (currentStep != SagaStep.DONE) advanceStep();
+    }
+
     /** SA-05/BR-O13: tăng retry; nếu vượt ngưỡng → FAILED */
     public void recordRetry(String error) {
         this.retryCount++;

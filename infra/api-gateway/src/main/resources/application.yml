@@ -14,10 +14,16 @@ spring:
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/users/**,/api/vouchers/**,/api/admin/users/**
+        - id: product-service-admin
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/api/admin/products/**,/api/admin/categories/**,/api/admin/vendors/**
+          filters:
+            - JwtAuth
         - id: product-service
           uri: lb://PRODUCT-SERVICE
           predicates:
-            - Path=/api/products/**,/api/categories/**,/api/admin/products/**,/api/admin/categories/**
+            - Path=/api/products/**,/api/categories/**,/api/vendors/**
         - id: order-service
           uri: lb://ORDER-SERVICE
           predicates:

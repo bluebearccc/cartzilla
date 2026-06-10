@@ -48,11 +48,11 @@ public class OrderSagaOrchestrator {
             fail(saga, order, "Hết hàng: " + event.failedSku());
             return;
         }
-        saga.moveTo(SagaState.Step.PROCESS_PAYMENT);
+        saga.advanceStep();
         sagaRepository.save(saga);
         rabbit.convertAndSend(RabbitTopics.PAYMENT_EXCHANGE, RabbitTopics.RK_PAYMENT_PROCESS,
                 new PaymentEvents.PaymentProcessEvent(order.getId(), order.getUserId(),
-                        order.getTotalAmount(), order.getPaymentMethod()));
+                        order.getTotalAmount(), order.getPaymentMethod().name()));
     }
 
     /** Bước 3: kết quả thanh toán. */
@@ -69,7 +69,7 @@ public class OrderSagaOrchestrator {
             fail(saga, order, "Thanh toán thất bại");
             return;
         }
-        order.confirm();
+        order.confirm(null); // changedBy null = system/saga (OSL-04)
         orderRepository.save(order);
         saga.complete();
         sagaRepository.save(saga);
@@ -81,7 +81,7 @@ public class OrderSagaOrchestrator {
     private void fail(SagaState saga, Order order, String reason) {
         saga.fail(reason);
         sagaRepository.save(saga);
-        order.cancel(reason);
+        order.cancel(reason, null); // changedBy null = system/saga (OSL-04)
         orderRepository.save(order);
         rabbit.convertAndSend(RabbitTopics.ORDER_EXCHANGE, RabbitTopics.RK_ORDER_CANCELLED,
                 new OrderEvents.OrderCancelledEvent(order.getId(), reason, null));

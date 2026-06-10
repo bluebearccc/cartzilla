@@ -60,5 +60,8 @@ public class ProductImage extends BaseEntity {
     /** PI-03: gọi từ Product.addImage khi có primary conflict */
     void unsetPrimary() { this.isPrimary = false; }
 
+    /** PA-05: gọi từ Product.setPrimaryImage / ensurePrimaryImage */
+    void markPrimary() { this.isPrimary = true; }
+
     void attachTo(Product product) { this.product = product; }
 }

@@ -68,6 +68,18 @@ public class ProductVariant extends BaseEntity {
         return pv;
     }
 
+    /** PV-02/PV-03: admin cập nhật variant — SKU immutable sau khi tạo */
+    public void update(String size, String color, String colorHex, BigDecimal price, int stock) {
+        if (price == null || price.compareTo(BigDecimal.ZERO) < 0)
+            throw new BusinessException("price must be >= 0 (PV-02)");
+        if (stock < 0) throw new BusinessException("stock must be >= 0 (PV-03)");
+        this.size = size;
+        this.color = color;
+        this.colorHex = colorHex;
+        this.price = price;
+        this.stock = stock;
+    }
+
     /** PA-07: giảm stock; từ chối nếu không đủ */
     public void reserveStock(int quantity) {
         if (quantity <= 0) throw new BusinessException("Quantity to reserve must be > 0");

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Aggregate root — VendorAggregate.
@@ -21,6 +22,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLRestriction("is_deleted = false")
 public class Vendor extends BaseEntity {
+
+    /** VN-02 */
+    private static final Pattern EMAIL = Pattern.compile("^[\\w.+-]+@[\\w-]+(\\.[\\w-]+)+$");
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -67,7 +71,7 @@ public class Vendor extends BaseEntity {
         v.name = name.trim();
         v.slug = slug.trim().toLowerCase();
         v.vendorType = vendorType;
-        v.contactEmail = contactEmail;
+        v.contactEmail = validateEmail(contactEmail);
         v.phone = phone;
         v.website = website;
         v.logoUrl = logoUrl;
@@ -75,7 +79,37 @@ public class Vendor extends BaseEntity {
         return v;
     }
 
+    /** VN-01/VN-02/VE-02: admin cập nhật thông tin chung */
+    public void update(String name, VendorType vendorType, String contactEmail,
+                       String phone, String website, String logoUrl) {
+        if (name == null || name.isBlank())
+            throw new BusinessException("Vendor name must not be blank (VN-01)");
+        if (vendorType == null)
+            throw new BusinessException("Vendor type must not be null (VE-02)");
+        this.name = name.trim();
+        this.vendorType = vendorType;
+        this.contactEmail = validateEmail(contactEmail);
+        this.phone = phone;
+        this.website = website;
+        this.logoUrl = logoUrl;
+    }
+
+    /** VE-01: slug unique — usecase check trùng trước khi đổi */
+    public void changeSlug(String slug) {
+        if (slug == null || slug.isBlank())
+            throw new BusinessException("Vendor slug must not be blank (VE-01)");
+        this.slug = slug.trim().toLowerCase();
+    }
+
     /** VE-03: deactivate không xóa, chỉ ngừng gán product mới */
     public void deactivate() { this.active = false; }
     public void activate() { this.active = true; }
+
+    /** VN-02: contactEmail nếu có phải đúng format */
+    private static String validateEmail(String email) {
+        if (email == null || email.isBlank()) return null;
+        if (!EMAIL.matcher(email.trim()).matches())
+            throw new BusinessException("Invalid contact email (VN-02): " + email);
+        return email.trim();
+    }
 }
