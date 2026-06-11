@@ -2,6 +2,7 @@ package com.cartzilla.gateway.filter;
 
 import com.cartzilla.security.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,12 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     }
 
     public static class Config {}
+
+    /** Tên dùng để tham chiếu trong route config: filters: [ JwtAuth ]. */
+    @Override
+    public String name() {
+        return "JwtAuth";
+    }
 
     @Override
     public GatewayFilter apply(Config config) {

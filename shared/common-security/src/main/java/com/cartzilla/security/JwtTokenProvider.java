@@ -3,6 +3,7 @@ package com.cartzilla.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ public class JwtTokenProvider {
     private final SecretKey key;
     private final long accessTtlMs;
 
+    @Autowired
     public JwtTokenProvider(
             @Value("${jwt.secret:dev-secret-key-change-me-please-32bytes!!}") String secret,
             @Value("${jwt.access-ttl-ms:900000}") long accessTtlMs) {   // 15 phút

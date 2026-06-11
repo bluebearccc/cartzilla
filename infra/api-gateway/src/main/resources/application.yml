@@ -5,36 +5,44 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-      routes:
-        - id: user-service
-          uri: lb://USER-SERVICE
-          predicates:
-            - Path=/api/users/**,/api/vouchers/**,/api/admin/users/**
-        - id: product-service
-          uri: lb://PRODUCT-SERVICE
-          predicates:
-            - Path=/api/products/**,/api/categories/**,/api/admin/products/**,/api/admin/categories/**
-        - id: order-service
-          uri: lb://ORDER-SERVICE
-          predicates:
-            - Path=/api/orders/**,/api/staff/orders/**
-          filters:
-            - JwtAuth
-        - id: payment-service
-          uri: lb://PAYMENT-SERVICE
-          predicates:
-            - Path=/api/payments/**
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: "http://localhost:5173"
-            allowedMethods: "*"
-            allowedHeaders: "*"
-            allowCredentials: true
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: user-service
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/users/**,/api/vouchers/**,/api/admin/users/**
+            - id: product-service-admin
+              uri: lb://PRODUCT-SERVICE
+              predicates:
+                - Path=/api/admin/products/**,/api/admin/categories/**,/api/admin/vendors/**
+              filters:
+                - JwtAuth
+            - id: product-service
+              uri: lb://PRODUCT-SERVICE
+              predicates:
+                - Path=/api/products/**,/api/categories/**,/api/vendors/**
+            - id: order-service
+              uri: lb://ORDER-SERVICE
+              predicates:
+                - Path=/api/orders/**,/api/staff/orders/**
+              filters:
+                - JwtAuth
+            - id: payment-service
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payments/**
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "http://localhost:5173"
+                allowedMethods: "*"
+                allowedHeaders: "*"
+                allowCredentials: true
 
 eureka:
   client:

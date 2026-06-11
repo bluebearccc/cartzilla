@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -58,6 +59,7 @@ public class Payment extends BaseEntity {
     private String vnpayTxnRef;
 
     @Column(name = "vnpay_response", columnDefinition = "jsonb")
+    @ColumnTransformer(write = "?::jsonb")
     private String vnpayResponse;
 
     /** PYA-04: set khi PAID, ≥ createdAt */
