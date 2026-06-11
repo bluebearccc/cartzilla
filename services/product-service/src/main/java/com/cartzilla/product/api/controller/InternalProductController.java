@@ -26,7 +26,8 @@ public class InternalProductController {
     private final ProductVariantJpaRepository variantRepository;
 
     @GetMapping("/variants/{sku}")
-    public ApiResponse<VariantSnapshotDto> getVariantBySku(@PathVariable String sku) {
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public ApiResponse<VariantSnapshotDto> getVariantBySku(@PathVariable("sku") String sku) {
         ProductVariant v = variantRepository.findBySkuIgnoreCase(sku)
                 .orElseThrow(() -> new BusinessException("Variant not found: " + sku));
         var product = v.getProduct();

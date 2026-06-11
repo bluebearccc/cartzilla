@@ -4,6 +4,7 @@ import com.cartzilla.events.RabbitTopics;
 import com.cartzilla.events.order.OrderEvents;
 import com.cartzilla.events.payment.PaymentEvents;
 import com.cartzilla.events.stock.StockEvents;
+import com.cartzilla.order.application.usecase.ClearCartUseCase;
 import com.cartzilla.order.domain.entity.Order;
 import com.cartzilla.order.domain.entity.SagaState;
 import com.cartzilla.order.domain.repository.OrderRepository;
@@ -27,6 +28,7 @@ public class OrderSagaOrchestrator {
     private final RabbitTemplate rabbit;
     private final OrderRepository orderRepository;
     private final SagaStateRepository sagaRepository;
+    private final ClearCartUseCase clearCartUseCase;
 
     /** Bước 1: khởi động saga sau khi tạo Order PENDING. */
     @Transactional
@@ -71,6 +73,7 @@ public class OrderSagaOrchestrator {
         }
         order.confirm(null); // changedBy null = system/saga (OSL-04)
         orderRepository.save(order);
+        clearCartUseCase.execute(order.getUserId());
         saga.complete();
         sagaRepository.save(saga);
         rabbit.convertAndSend(RabbitTopics.ORDER_EXCHANGE, RabbitTopics.RK_ORDER_CONFIRMED,

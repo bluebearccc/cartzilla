@@ -25,7 +25,7 @@ public interface ProductFeignClient {
      * - Validate stock trước khi tạo order (PA-07, X-01).
      */
     @GetMapping("/api/internal/products/variants/{sku}")
-    ApiResponse<VariantSnapshotDto> getVariantBySku(@PathVariable String sku);
+    ApiResponse<VariantSnapshotDto> getVariantBySku(@PathVariable("sku") String sku);
 
     /**
      * Nội bộ: reserve (giảm) stock cho danh sách SKU sau khi saga RESERVE_STOCK.

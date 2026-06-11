@@ -19,21 +19,21 @@ public interface UserFeignClient {
      * Dùng trước khi thao tác cart / checkout.
      */
     @GetMapping("/api/internal/users/{userId}")
-    ApiResponse<UserDto> getUserById(@PathVariable UUID userId);
+    ApiResponse<UserDto> getUserById(@PathVariable("userId") UUID userId);
 
     /**
      * Lấy default address của user — dùng tại checkout nếu address không được truyền tường minh.
      * UA-06: user phải có ít nhất 1 address.
      */
     @GetMapping("/api/internal/users/{userId}/default-address")
-    ApiResponse<AddressDto> getDefaultAddress(@PathVariable UUID userId);
+    ApiResponse<AddressDto> getDefaultAddress(@PathVariable("userId") UUID userId);
 
     /**
      * Validate + preview discount cho voucher — VA-07, VA-09, BR-V09.
      * Không tăng usedCount.
      */
     @GetMapping("/api/internal/vouchers/{code}/validate")
-    ApiResponse<VoucherValidationDto> validateVoucher(@PathVariable String code,
+    ApiResponse<VoucherValidationDto> validateVoucher(@PathVariable("code") String code,
                                                         @org.springframework.web.bind.annotation.RequestParam UUID userId,
                                                         @org.springframework.web.bind.annotation.RequestParam java.math.BigDecimal orderSubtotal);
 

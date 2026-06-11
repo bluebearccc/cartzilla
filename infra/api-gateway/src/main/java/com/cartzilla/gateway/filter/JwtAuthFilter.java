@@ -25,6 +25,11 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     public static class Config {}
 
     @Override
+    public String name() {
+        return "JwtAuth";
+    }
+
+    @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             String auth = exchange.getRequest().getHeaders().getFirst("Authorization");
