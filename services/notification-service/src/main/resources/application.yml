@@ -6,7 +6,7 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:postgresql://localhost:5432/cartzilla_notif_db
+    url: jdbc:postgresql://${NOTIF_DB_HOST:localhost}:${NOTIF_DB_PORT:5436}/cartzilla_notif_db
     username: ${DB_USER:app}
     password: ${DB_PASSWORD:secret}
   jpa:

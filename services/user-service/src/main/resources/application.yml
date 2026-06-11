@@ -6,7 +6,7 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:postgresql://localhost:5432/cartzilla_user_db
+    url: jdbc:postgresql://${USER_DB_HOST:localhost}:${USER_DB_PORT:5432}/cartzilla_user_db
     username: ${DB_USER:app}
     password: ${DB_PASSWORD:secret}
   jpa:

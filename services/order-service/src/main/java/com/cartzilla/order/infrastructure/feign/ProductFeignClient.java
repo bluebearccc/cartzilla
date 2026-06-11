@@ -15,7 +15,7 @@ import java.util.UUID;
  * Feign client gọi product-service.
  * Dùng Eureka service name: "product-service".
  */
-@FeignClient(name = "product-service", configuration = FeignConfig.class)
+@FeignClient(name = "product-service", url = "${clients.product-service.url:}", configuration = FeignConfig.class)
 public interface ProductFeignClient {
 
     /**

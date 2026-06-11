@@ -20,8 +20,7 @@ public class DeleteProductUseCase {
     public void execute(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + id));
-        product.deactivate();
-        product.softDelete();
+        product.softDeleteCascade(); // BR-G03/PA-06: cascade xuống variant + image
         productRepository.save(product);
     }
 }

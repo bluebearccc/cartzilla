@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
@@ -69,6 +70,7 @@ public class Order extends BaseEntity {
 
     /** OA-04: JSONB snapshot — BR05 */
     @Column(name = "shipping_address", nullable = false, columnDefinition = "jsonb")
+    @ColumnTransformer(write = "?::jsonb")
     private String shippingAddress;
 
     /** O-05 */

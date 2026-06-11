@@ -76,6 +76,22 @@ class ProductTest {
     }
 
     @Test
+    void softDeleteCascade_marksProductVariantsAndImagesDeleted() {
+        Product p = newProduct();
+        p.addVariant(ProductVariant.create("SKU-1", "M", "Đen", null, BigDecimal.TEN, 5));
+        p.addImage(ProductImage.create("http://img/1.jpg", null, true, 0));
+        assertTrue(p.isSellable());
+
+        p.softDeleteCascade();
+
+        assertTrue(p.isDeleted());
+        assertFalse(p.isActive());
+        assertTrue(p.getVariants().get(0).isDeleted());
+        assertTrue(p.getImages().get(0).isDeleted());
+        assertFalse(p.isSellable()); // không còn variant/image sống
+    }
+
+    @Test
     void isSellable_requiresVariantAndImage_PA01() {
         Product p = newProduct();
         assertFalse(p.isSellable());

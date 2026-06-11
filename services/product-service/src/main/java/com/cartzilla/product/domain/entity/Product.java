@@ -211,6 +211,17 @@ public class Product extends BaseEntity {
 
     public void activate() { this.active = true; }
 
+    /**
+     * BR-G03/PA-06: soft-delete product kèm toàn bộ variant + image còn sống.
+     * Tránh để SKU mồ côi vẫn chiếm unique (PV-01) hoặc bị reserve sau khi product đã xóa.
+     */
+    public void softDeleteCascade() {
+        deactivate();
+        variants.stream().filter(v -> !v.isDeleted()).forEach(ProductVariant::softDelete);
+        images.stream().filter(i -> !i.isDeleted()).forEach(ProductImage::softDelete);
+        softDelete();
+    }
+
     private void assertComboUnique(ProductVariant exclude, String size, String color) {
         boolean exists = variants.stream().anyMatch(v -> v != exclude && !v.isDeleted()
                 && Objects.equals(normalize(v.getSize()), normalize(size))

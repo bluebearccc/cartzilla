@@ -6,7 +6,7 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:postgresql://localhost:5432/cartzilla_order_db
+    url: jdbc:postgresql://${ORDER_DB_HOST:localhost}:${ORDER_DB_PORT:5434}/cartzilla_order_db
     username: ${DB_USER:app}
     password: ${DB_PASSWORD:secret}
   jpa:
@@ -34,3 +34,7 @@ management:
     web:
       exposure:
         include: health, info, prometheus, metrics
+
+clients:
+  product-service:
+    url: ${PRODUCT_SERVICE_URL:}
