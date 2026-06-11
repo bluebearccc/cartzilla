@@ -15,15 +15,16 @@ function Invoke-Json {
     param(
         [string]$Method,
         [string]$Uri,
-        [object]$Body = $null
+        [object]$Body = $null,
+        [hashtable]$Headers = @{}
     )
 
     if ($null -eq $Body) {
-        return Invoke-RestMethod -Method $Method -Uri $Uri
+        return Invoke-RestMethod -Method $Method -Uri $Uri -Headers $Headers
     }
 
     $json = $Body | ConvertTo-Json -Depth 12
-    return Invoke-RestMethod -Method $Method -Uri $Uri -ContentType "application/json" -Body $json
+    return Invoke-RestMethod -Method $Method -Uri $Uri -ContentType "application/json" -Body $json -Headers $Headers
 }
 
 Write-Host "Checking product variant $Sku ..."
@@ -70,7 +71,7 @@ $statusResponse = $null
 
 do {
     Start-Sleep -Seconds 1
-    $statusResponse = Invoke-Json -Method "GET" -Uri "$OrderBaseUrl/api/orders/$orderId/status"
+    $statusResponse = Invoke-Json -Method "GET" -Uri "$OrderBaseUrl/api/orders/$orderId/status" -Headers @{ "X-User-Id" = $UserId }
     $data = $statusResponse.data
     $sagaStatus = if ($data.saga) { $data.saga.status } else { "NONE" }
     $currentStep = if ($data.saga) { $data.saga.currentStep } else { "NONE" }
@@ -84,7 +85,7 @@ do {
 } while ((Get-Date) -lt $deadline)
 
 Write-Host "Final order detail:"
-$detailResponse = Invoke-Json -Method "GET" -Uri "$OrderBaseUrl/api/orders/$orderId"
+$detailResponse = Invoke-Json -Method "GET" -Uri "$OrderBaseUrl/api/orders/$orderId" -Headers @{ "X-User-Id" = $UserId }
 $detailResponse.data | ConvertTo-Json -Depth 12
 
 if ($statusResponse.data.status -eq "PENDING") {
