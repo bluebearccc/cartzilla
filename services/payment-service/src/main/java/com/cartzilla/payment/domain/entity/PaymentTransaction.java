@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -61,9 +62,11 @@ public class PaymentTransaction extends BaseEntity {
     private String status;
 
     @Column(name = "request_payload", columnDefinition = "jsonb")
+    @ColumnTransformer(write = "?::jsonb")
     private String requestPayload;
 
     @Column(name = "response_payload", columnDefinition = "jsonb")
+    @ColumnTransformer(write = "?::jsonb")
     private String responsePayload;
 
     @Column(name = "error_code", length = 50)
