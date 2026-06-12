@@ -12,10 +12,16 @@ spring:
               enabled: true
               lower-case-service-id: true
           routes:
-            - id: user-service
+            - id: user-service-auth
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/api/users/**,/api/vouchers/**,/api/admin/users/**
+                - Path=/api/users/register,/api/users/login
+            - id: user-service-protected
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/users/me,/api/users/me/**,/api/vouchers/**,/api/admin/users/**,/api/admin/vouchers/**
+              filters:
+                - JwtAuth
             - id: product-service-admin
               uri: lb://PRODUCT-SERVICE
               predicates:

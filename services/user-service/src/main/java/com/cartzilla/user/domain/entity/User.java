@@ -95,6 +95,13 @@ public class User extends BaseEntity {
         this.passwordHash = newHash;
     }
 
+    public void updateProfile(String fullName, String phone) {
+        if (fullName == null || fullName.isBlank())
+            throw new BusinessException("fullName must not be blank");
+        this.fullName = fullName.trim();
+        this.phone = phone == null || phone.isBlank() ? null : phone.trim();
+    }
+
     public void verifyEmail() { this.emailVerified = true; }
 
     public void deactivate() { this.active = false; }

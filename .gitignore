@@ -12,6 +12,10 @@ target/
 .project
 .classpath
 
+# Codex local tooling
+.codex/
+skill-navigator.md
+
 # Node / frontend
 node_modules/
 dist/

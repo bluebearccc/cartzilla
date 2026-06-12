@@ -1,5 +1,6 @@
 package com.cartzilla.user.api.controller;
 
+import com.cartzilla.user.api.ApiPaths;
 import com.cartzilla.user.api.dto.AuthDtos.*;
 import com.cartzilla.user.application.usecase.LoginUseCase;
 import com.cartzilla.user.application.usecase.RegisterUserUseCase;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(ApiPaths.USERS)
 @RequiredArgsConstructor
 public class AuthController {
 

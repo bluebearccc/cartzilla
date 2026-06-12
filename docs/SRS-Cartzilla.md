@@ -524,7 +524,7 @@ CONFIRMED -> CANCELLED
 | Feature | UC | Service | REST Endpoint (qua Gateway) | DB table/collection / Entity | Event liên quan |
 |---|---|---|---|---|---|
 | F01 Auth | UC-02 | user-service | `POST /api/users/register`, `/login`, `/refresh-token`, `/logout` | `users`, `refresh_tokens` | — |
-| F02 Profile/address | UC-02 | user-service | `GET/PUT /api/users/profile`, `GET/POST/PUT/DELETE /api/users/addresses` | `users`, `addresses` | — |
+| F02 Profile/address | UC-02 | user-service | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses` | `users`, `addresses` | — |
 | F03 Browse/search | UC-01 | product-service | `GET /api/products?category=&size=&color=&vendor=&sort=&page=` | `products`, `categories`, `vendors` | — |
 | F04 Product detail | UC-01 | product-service | `GET /api/products/{id}` | `products`, `product_variants`, `product_images` | — |
 | F05 Cart | UC-03 | order-service | `GET/POST/PUT/DELETE /api/orders/cart/items` | `cart_items` | — |
@@ -536,7 +536,7 @@ CONFIRMED -> CANCELLED
 | F11 Admin catalog | UC-05 | product-service | `POST/PUT/DELETE /api/admin/products`, `/categories`, `/products/{id}/variants`, `/products/{id}/images` | `products`, `categories`, `product_variants`, `product_images` | — |
 | F12 Notification/email | UC-08 | notification-service | `GET /api/notifications`, `PUT /api/notifications/{id}/read` | `notifications`, `email_logs` | `order.confirmed`, `order.cancelled`, `order.shipped`, `reset-password` |
 | F13 VNPay | UC-07 | payment-service | `POST /api/payments/vnpay/create`, `GET /api/payments/vnpay/callback` | `payments`, `payment_transactions` | `payment.result` |
-| F14 Voucher | UC-06 | user-service | `POST /api/admin/vouchers`, `PUT /api/admin/vouchers/{id}`, `POST /api/vouchers/validate`, `POST /api/vouchers/redeem` | `vouchers`, `voucher_usages`, `voucher_allowed_users` | — |
+| F14 Voucher | UC-06 | user-service | `POST /api/admin/vouchers`, `PUT /api/admin/vouchers/{id}`, `POST /api/vouchers/validate`, internal `POST /api/internal/vouchers/redeem` | `vouchers`, `voucher_usages`, `voucher_allowed_users` | — |
 | F15 OAuth | UC-02 | user-service | `GET /api/oauth/{provider}/authorize`, `GET /api/oauth/{provider}/callback` | `oauth_accounts`, `users` | — |
 | F16 Vendor | UC-05 | product-service | `GET/POST/PUT/DELETE /api/admin/vendors` | `vendors`, `products.vendorId` | — |
 | F17 User/role admin | UC-02 | user-service | `GET/PUT /api/admin/users/{id}`, `/role`, `/status` | `users` | — |

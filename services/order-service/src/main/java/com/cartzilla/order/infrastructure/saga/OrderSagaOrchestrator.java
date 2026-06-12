@@ -8,6 +8,7 @@ import com.cartzilla.order.domain.entity.Order;
 import com.cartzilla.order.domain.entity.SagaState;
 import com.cartzilla.order.domain.repository.OrderRepository;
 import com.cartzilla.order.domain.repository.SagaStateRepository;
+import com.cartzilla.order.infrastructure.feign.UserFeignClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -27,6 +28,7 @@ public class OrderSagaOrchestrator {
     private final RabbitTemplate rabbit;
     private final OrderRepository orderRepository;
     private final SagaStateRepository sagaRepository;
+    private final UserFeignClient userFeignClient;
 
     /** Bước 1: khởi động saga sau khi tạo Order PENDING. */
     @Transactional
@@ -69,6 +71,14 @@ public class OrderSagaOrchestrator {
             fail(saga, order, "Thanh toán thất bại");
             return;
         }
+        if (!redeemVoucherIfNeeded(order)) {
+            List<StockEvents.Item> items = order.getItems().stream()
+                    .map(i -> new StockEvents.Item(i.getSku(), i.getQuantity())).toList();
+            rabbit.convertAndSend(RabbitTopics.STOCK_EXCHANGE, RabbitTopics.RK_STOCK_RELEASE,
+                    new StockEvents.StockReleaseEvent(order.getId(), items));
+            fail(saga, order, "Cannot redeem voucher");
+            return;
+        }
         order.confirm(null); // changedBy null = system/saga (OSL-04)
         orderRepository.save(order);
         saga.complete();
@@ -86,5 +96,19 @@ public class OrderSagaOrchestrator {
         rabbit.convertAndSend(RabbitTopics.ORDER_EXCHANGE, RabbitTopics.RK_ORDER_CANCELLED,
                 new OrderEvents.OrderCancelledEvent(order.getId(), reason, null));
         log.warn("Saga failed order={} reason={}", order.getId(), reason);
+    }
+
+    private boolean redeemVoucherIfNeeded(Order order) {
+        if (order.getVoucherCode() == null || order.getVoucherCode().isBlank()) {
+            return true;
+        }
+        try {
+            var response = userFeignClient.redeemVoucher(new UserFeignClient.VoucherRedeemRequest(
+                    order.getVoucherCode(), order.getUserId(), order.getId(), order.getSubtotal()));
+            return response != null && response.success() && response.data() != null;
+        } catch (Exception ex) {
+            log.warn("Voucher redeem failed order={} code={}", order.getId(), order.getVoucherCode(), ex);
+            return false;
+        }
     }
 }
