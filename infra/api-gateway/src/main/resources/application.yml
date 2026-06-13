@@ -15,7 +15,7 @@ spring:
             - id: user-service-auth
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/api/users/register,/api/users/login,/api/users/refresh-token,/api/users/logout,/api/users/forgot-password,/api/users/reset-password,/api/oauth/**
+                - Path=/api/users/register,/api/users/login,/api/users/refresh-token,/api/users/logout,/api/users/forgot-password,/api/users/reset-password,/api/users/verify-email,/api/oauth/**
             - id: user-service-protected
               uri: lb://USER-SERVICE
               predicates:

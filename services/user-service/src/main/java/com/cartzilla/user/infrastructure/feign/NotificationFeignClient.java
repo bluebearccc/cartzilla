@@ -10,5 +10,9 @@ public interface NotificationFeignClient {
     @PostMapping("/api/internal/notifications/reset-password-email")
     ApiResponse<Void> sendResetPasswordEmail(@RequestBody ResetPasswordEmailRequest request);
 
+    @PostMapping("/api/internal/notifications/verification-email")
+    ApiResponse<Void> sendVerificationEmail(@RequestBody VerificationEmailRequest request);
+
     record ResetPasswordEmailRequest(String email, String fullName, String resetLink, int expiresInMinutes) {}
+    record VerificationEmailRequest(String email, String fullName, String verificationLink, int expiresInMinutes) {}
 }

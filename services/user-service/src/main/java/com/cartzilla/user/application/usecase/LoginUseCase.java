@@ -36,6 +36,9 @@ public class LoginUseCase {
         User user = userRepository.findByEmail(cmd.email())
                 .orElseThrow(() -> new BusinessException("Invalid email or password"));
         user.requireActive();
+        if (!user.isEmailVerified()) {
+            throw new BusinessException("Email is not verified");
+        }
         if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
             throw new BusinessException("Invalid email or password");
         }

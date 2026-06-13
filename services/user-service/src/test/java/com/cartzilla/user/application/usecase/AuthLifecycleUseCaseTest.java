@@ -2,9 +2,11 @@ package com.cartzilla.user.application.usecase;
 
 import com.cartzilla.security.JwtTokenProvider;
 import com.cartzilla.user.application.command.AuthCommand;
+import com.cartzilla.user.domain.entity.EmailVerificationToken;
 import com.cartzilla.user.domain.entity.PasswordResetToken;
 import com.cartzilla.user.domain.entity.RefreshToken;
 import com.cartzilla.user.domain.entity.User;
+import com.cartzilla.user.domain.repository.EmailVerificationTokenRepository;
 import com.cartzilla.user.domain.repository.PasswordResetTokenRepository;
 import com.cartzilla.user.domain.repository.RefreshTokenRepository;
 import com.cartzilla.user.domain.repository.UserRepository;
@@ -33,6 +35,8 @@ class AuthLifecycleUseCaseTest {
     private final InMemoryUserRepository userRepository = new InMemoryUserRepository();
     private final InMemoryRefreshTokenRepository refreshTokenRepository = new InMemoryRefreshTokenRepository();
     private final InMemoryPasswordResetTokenRepository resetTokenRepository = new InMemoryPasswordResetTokenRepository();
+    private final InMemoryEmailVerificationTokenRepository verificationTokenRepository =
+            new InMemoryEmailVerificationTokenRepository();
     private final PasswordEncoder passwordEncoder = new PrefixPasswordEncoder();
     private final JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(
             "dev-secret-key-change-me-please-32bytes!!", 900000);
@@ -44,6 +48,7 @@ class AuthLifecycleUseCaseTest {
     @Test
     void loginIssuesRefreshTokenAndRefreshRotatesIt() {
         User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:secret123", "Buyer"));
+        user.verifyEmail();
         LoginUseCase loginUseCase = loginUseCase();
         RefreshTokenUseCase refreshUseCase = refreshUseCase();
 
@@ -61,6 +66,49 @@ class AuthLifecycleUseCaseTest {
     }
 
     @Test
+    void loginRejectsPasswordUserUntilEmailVerified() {
+        userRepository.save(User.createCustomer("buyer@example.com", "encoded:secret123", "Buyer"));
+        LoginUseCase loginUseCase = loginUseCase();
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> loginUseCase.execute(new AuthCommand.Login("buyer@example.com", "secret123")));
+
+        assertEquals("Email is not verified", ex.getMessage());
+    }
+
+    @Test
+    void registerCreatesUnverifiedCustomerAndQueuesVerificationEmail() {
+        RegisterUserUseCase registerUseCase = registerUseCase();
+
+        UUID userId = registerUseCase.execute(new AuthCommand.Register(
+                "Buyer@Example.com", "secret123", "Buyer"));
+
+        User user = userRepository.findById(userId).orElseThrow();
+        assertEquals("buyer@example.com", user.getEmail());
+        assertFalse(user.isEmailVerified());
+        EmailVerificationToken token = verificationTokenRepository.tokens.getFirst();
+        assertEquals(userId, token.getUserId());
+        assertEquals("refresh-1", token.getToken());
+        assertEquals("buyer@example.com", notificationFeignClient.lastVerificationRequest.email());
+        assertTrue(notificationFeignClient.lastVerificationRequest.verificationLink().contains("token=refresh-1"));
+    }
+
+    @Test
+    void verifyEmailMarksUserVerifiedAndAllowsLogin() {
+        User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:secret123", "Buyer"));
+        verificationTokenRepository.save(EmailVerificationToken.create(
+                user.getId(), "verify-token", Instant.now().plusSeconds(3600)));
+        VerifyEmailUseCase verifyEmailUseCase = new VerifyEmailUseCase(
+                verificationTokenRepository, userRepository);
+
+        verifyEmailUseCase.execute("verify-token");
+
+        assertTrue(user.isEmailVerified());
+        assertTrue(verificationTokenRepository.tokens.getFirst().isUsed());
+        assertDoesNotThrow(() -> loginUseCase().execute(new AuthCommand.Login("buyer@example.com", "secret123")));
+    }
+
+    @Test
     void loginRejectsOAuthOnlyUserWithoutPassword() {
         userRepository.save(User.createOAuthUser("oauth@example.com", "OAuth User", Role.CUSTOMER));
         LoginUseCase loginUseCase = loginUseCase();
@@ -74,6 +122,7 @@ class AuthLifecycleUseCaseTest {
     @Test
     void loginRejectsInactiveUser() {
         User user = userRepository.save(User.createCustomer("inactive@example.com", "encoded:pass", "Inactive"));
+        user.verifyEmail();
         user.deactivate();
         LoginUseCase loginUseCase = loginUseCase();
 
@@ -85,7 +134,8 @@ class AuthLifecycleUseCaseTest {
 
     @Test
     void loginRejectsWrongPassword() {
-        userRepository.save(User.createCustomer("buyer@example.com", "encoded:correctpass", "Buyer"));
+        User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:correctpass", "Buyer"));
+        user.verifyEmail();
         LoginUseCase loginUseCase = loginUseCase();
 
         BusinessException ex = assertThrows(BusinessException.class,
@@ -110,6 +160,7 @@ class AuthLifecycleUseCaseTest {
     @Test
     void refreshRejectsExpiredToken() {
         User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:pass", "Buyer"));
+        user.verifyEmail();
         // Lưu trực tiếp token đã expired vào in-memory repo (bypass factory validation)
         RefreshToken expiredToken = createExpiredToken(user.getId(), "expired-token");
         refreshTokenRepository.tokens.add(expiredToken);
@@ -125,6 +176,7 @@ class AuthLifecycleUseCaseTest {
     @Test
     void refreshRejectsRevokedToken() {
         User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:pass", "Buyer"));
+        user.verifyEmail();
         RefreshToken activeToken = refreshTokenRepository.save(
                 RefreshToken.create(user.getId(), "active-token", Instant.now().plusSeconds(3600)));
         activeToken.revoke();
@@ -141,6 +193,7 @@ class AuthLifecycleUseCaseTest {
     @Test
     void refreshRejectsTokenOfInactiveUser() {
         User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:pass", "Buyer"));
+        user.verifyEmail();
         refreshTokenRepository.save(
                 RefreshToken.create(user.getId(), "valid-token", Instant.now().plusSeconds(3600)));
         user.deactivate();
@@ -157,6 +210,7 @@ class AuthLifecycleUseCaseTest {
     @Test
     void logoutRevokesRefreshToken() {
         User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:pass", "Buyer"));
+        user.verifyEmail();
         RefreshToken token = refreshTokenRepository.save(
                 RefreshToken.create(user.getId(), "logout-token", Instant.now().plusSeconds(3600)));
         LogoutUseCase logoutUseCase = new LogoutUseCase(refreshTokenRepository);
@@ -330,6 +384,15 @@ class AuthLifecycleUseCaseTest {
         return useCase;
     }
 
+    private RegisterUserUseCase registerUseCase() {
+        RegisterUserUseCase useCase = new RegisterUserUseCase(
+                userRepository, passwordEncoder, verificationTokenRepository,
+                notificationFeignClient, tokenGenerator);
+        ReflectionTestUtils.setField(useCase, "verificationBaseUrl", "http://localhost/verify-email");
+        ReflectionTestUtils.setField(useCase, "verificationTtlSeconds", 86400L);
+        return useCase;
+    }
+
     /** Tạo RefreshToken đã expired để test mà không cần manipulate time */
     private static RefreshToken createExpiredToken(UUID userId, String tokenValue) {
         try {
@@ -383,10 +446,17 @@ class AuthLifecycleUseCaseTest {
 
     private static class FakeNotificationFeignClient implements NotificationFeignClient {
         private ResetPasswordEmailRequest lastRequest;
+        private VerificationEmailRequest lastVerificationRequest;
 
         @Override
         public ApiResponse<Void> sendResetPasswordEmail(ResetPasswordEmailRequest request) {
             this.lastRequest = request;
+            return ApiResponse.ok(null);
+        }
+
+        @Override
+        public ApiResponse<Void> sendVerificationEmail(VerificationEmailRequest request) {
+            this.lastVerificationRequest = request;
             return ApiResponse.ok(null);
         }
     }
@@ -507,6 +577,32 @@ class AuthLifecycleUseCaseTest {
                     .filter(token -> !token.isExpired())
                     .filter(token -> !token.isUsed())
                     .forEach(PasswordResetToken::markUsed);
+        }
+    }
+
+    static class InMemoryEmailVerificationTokenRepository implements EmailVerificationTokenRepository {
+        final List<EmailVerificationToken> tokens = new ArrayList<>();
+
+        @Override
+        public EmailVerificationToken save(EmailVerificationToken token) {
+            assignIdIfMissing(token);
+            tokens.removeIf(existing -> existing.getId().equals(token.getId()));
+            tokens.add(token);
+            return token;
+        }
+
+        @Override
+        public Optional<EmailVerificationToken> findByToken(String token) {
+            return tokens.stream().filter(verificationToken -> verificationToken.getToken().equals(token)).findFirst();
+        }
+
+        @Override
+        public void revokeActiveByUserId(UUID userId) {
+            tokens.stream()
+                    .filter(token -> token.getUserId().equals(userId))
+                    .filter(token -> !token.isExpired())
+                    .filter(token -> !token.isUsed())
+                    .forEach(EmailVerificationToken::markUsed);
         }
     }
 

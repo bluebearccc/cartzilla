@@ -52,6 +52,8 @@ docker compose up --build
 
 Google OAuth local setup: [`docs/OAUTH_GOOGLE_SETUP.md`](docs/OAUTH_GOOGLE_SETUP.md).
 
+SMTP email setup: [`docs/SMTP_EMAIL_SETUP.md`](docs/SMTP_EMAIL_SETUP.md).
+
 | Thành phần | URL |
 |---|---|
 | API Gateway | http://localhost:8080 |

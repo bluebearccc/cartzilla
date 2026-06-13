@@ -33,7 +33,7 @@ SRS traceability for Dev2:
 
 | SRS item | Required behavior/API | Current status |
 |---|---|---|
-| F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Implemented: register/login, refresh rotation, logout revoke, active-user guard, password change revoke |
+| F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/verify-email`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Implemented: register queues email verification, password login requires verified email, refresh rotation, logout revoke, active-user guard, password change revoke |
 | F02 / UC-02 | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses`; exactly one default address | Implemented: profile/address APIs, one-default invariant, SRS A3 default-delete rejection |
 | F14 / UC-06 | Admin voucher CRUD, audience management, public preview validate, internal idempotent redeem, atomic used count, min account age | Implemented: admin CRUD, allowed users, public validate, internal idempotent redeem, order saga integration |
 | F15 / UC-02 | OAuth authorize/callback for Google via `OAuthAccount` | Implemented backend authorize/callback flow for configured Google provider |
@@ -75,6 +75,7 @@ Implemented or partially implemented API/controllers:
 - `AuthController`
   - `POST /api/users/register`
   - `POST /api/users/login`
+  - `POST /api/users/verify-email`
   - `POST /api/users/refresh-token`
   - `POST /api/users/logout`
   - `POST /api/users/forgot-password`
@@ -166,6 +167,8 @@ Implemented backend coverage:
 - Order-service calls internal voucher redeem as part of the checkout saga.
 - Admin user management includes pagination/filtering and last-active-admin guardrails.
 - Auth token lifecycle includes login refresh-token creation, refresh rotation, logout revoke, and active-user guard.
+- Password registration now creates an email verification token and queues a verification email.
+- Password login is blocked until `emailVerified=true`; Google OAuth users are verified by provider profile.
 - Account recovery includes forgot/reset password with a 30-minute reset token and notification-service email handoff.
 - Profile account maintenance includes changing password and revoking refresh tokens after that change.
 - Customer email change is intentionally not exposed in MVP; it requires a separate email verification flow.
@@ -213,6 +216,7 @@ Avoid introducing controller-to-JPA coupling in new work. Existing direct JPA us
 
 - `POST /api/users/register`
 - `POST /api/users/login`
+- `POST /api/users/verify-email`
 - `POST /api/users/refresh-token`
 - `POST /api/users/logout`
 - `POST /api/users/forgot-password`
@@ -370,6 +374,8 @@ Phase 4 is complete for backend scope.
 - Added refresh token persistence and `POST /api/users/refresh-token`.
 - Added `POST /api/users/logout` to revoke refresh tokens.
 - Refresh/login reject deactivated users.
+- Password login rejects users whose email is not verified.
+- Registration creates a 24-hour email verification token and sends the verification link through notification-service.
 - Reset password revokes active refresh tokens.
 - Added full forgot/reset password token flow with 30-minute reset links.
 - Added notification-service internal reset-password email endpoint.
@@ -430,15 +436,19 @@ Implemented API:
 
 - `POST /api/users/refresh-token`
 - `POST /api/users/logout`
+- `POST /api/users/verify-email`
 - `POST /api/users/forgot-password`
 - `POST /api/users/reset-password`
 - `GET /api/oauth/{provider}/authorize`
 - `GET /api/oauth/{provider}/callback?code=...`
 - `POST /api/internal/notifications/reset-password-email`
+- `POST /api/internal/notifications/verification-email`
 
 Current behavior:
 
 - Login now stores a server-side refresh token and returns both access and refresh tokens.
+- Register now creates an unverified customer, stores an email verification token, and queues a verification email.
+- Password login is blocked until the user verifies email through `POST /api/users/verify-email`.
 - Refresh token use rotates the refresh token and revokes the old token.
 - Logout revokes the submitted refresh token.
 - OAuth-only users cannot use password login.

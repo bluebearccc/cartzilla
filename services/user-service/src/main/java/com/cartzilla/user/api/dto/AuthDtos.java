@@ -34,5 +34,7 @@ public class AuthDtos {
             @NotBlank String token,
             @NotBlank @Size(min = 6) String newPassword) {}
 
+    public record VerifyEmailRequest(@NotBlank String token) {}
+
     public record LoginResponse(String accessToken, String refreshToken, String email, String role) {}
 }

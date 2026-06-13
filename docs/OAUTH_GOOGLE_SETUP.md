@@ -34,6 +34,7 @@ Fill these values in `.env`:
 GOOGLE_OAUTH_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_OAUTH_CLIENT_SECRET=your-client-secret
 GOOGLE_OAUTH_REDIRECT_URI=http://localhost:8080/api/oauth/google/callback
+OAUTH_STATE_TTL_SECONDS=600
 ```
 
 Do not commit `.env`. The repository ignores local env files.
@@ -47,6 +48,7 @@ GOOGLE_OAUTH_CLIENT_ID=your-client-id.apps.googleusercontent.com;GOOGLE_OAUTH_CL
 ```
 
 The callback goes through API Gateway on port `8080`, even though `user-service` runs on port `8081`.
+`OAUTH_STATE_TTL_SECONDS` controls how long the generated OAuth state is valid before callback, defaulting to 10 minutes.
 
 ## 4. Test The Flow
 
