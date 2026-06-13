@@ -102,6 +102,12 @@ public class User extends BaseEntity {
         this.phone = phone == null || phone.isBlank() ? null : phone.trim();
     }
 
+    public void changeRole(Role role) {
+        if (role == null)
+            throw new BusinessException("role must not be null");
+        this.role = role;
+    }
+
     public void verifyEmail() { this.emailVerified = true; }
 
     public void deactivate() { this.active = false; }
