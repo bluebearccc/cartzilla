@@ -32,8 +32,9 @@ public class OAuthController {
     @GetMapping("/{provider}/callback")
     public ApiResponse<OAuthLoginResponse> callback(
             @PathVariable String provider,
-            @RequestParam String code) {
-        var result = completeOAuthLoginUseCase.execute(parseProvider(provider), code);
+            @RequestParam String code,
+            @RequestParam String state) {
+        var result = completeOAuthLoginUseCase.execute(parseProvider(provider), code, state);
         return ApiResponse.ok(new OAuthLoginResponse(
                 result.accessToken(), result.refreshToken(), result.email(), result.role()));
     }

@@ -87,6 +87,34 @@ class VoucherUseCaseTest {
     }
 
     @Test
+    void validateVoucher_rejectsOrderHistoryDependentRulesWithoutStatsIntegration() {
+        User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
+        setCreatedAt(user, Instant.now().minus(40, ChronoUnit.DAYS));
+        voucherRepository.save(Voucher.create(
+                "WELCOME50K",
+                DiscountType.FIXED_AMOUNT,
+                new BigDecimal("50000"),
+                null,
+                BigDecimal.ZERO,
+                10,
+                Instant.now().minus(1, ChronoUnit.DAYS),
+                Instant.now().plus(30, ChronoUnit.DAYS),
+                0,
+                1,
+                VoucherAudienceType.NEW_CUSTOMER,
+                true,
+                0,
+                BigDecimal.ZERO));
+        ValidateVoucherUseCase useCase = new ValidateVoucherUseCase(
+                voucherRepository, userRepository, usageRepository, allowedUserRepository);
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> useCase.execute(
+                new VoucherCommand.Validate("WELCOME50K", user.getId(), new BigDecimal("300000"))));
+
+        assertTrue(ex.getMessage().contains("order-service user stats"));
+    }
+
+    @Test
     void redeemVoucher_isIdempotentByVoucherAndOrder() {
         User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
         setCreatedAt(user, Instant.now().minus(40, ChronoUnit.DAYS));

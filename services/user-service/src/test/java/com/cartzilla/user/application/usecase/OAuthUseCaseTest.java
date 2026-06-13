@@ -35,6 +35,7 @@ class OAuthUseCaseTest {
     private final JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(
             "dev-secret-key-change-me-please-32bytes!!", 900000);
     private final StubTokenGenerator tokenGenerator = new StubTokenGenerator();
+    private final OAuthStateStore oauthStateStore = new OAuthStateStore(new StubTokenGenerator());
 
     @Test
     void completeOAuthLogin_createsCustomerAndLinksProviderAccount() {
@@ -42,7 +43,7 @@ class OAuthUseCaseTest {
                 "google-123", "buyer@example.com", "Buyer", "https://cdn/avatar.png", true);
         CompleteOAuthLoginUseCase useCase = useCase();
 
-        var result = useCase.execute(OAuthProvider.GOOGLE, "auth-code");
+        var result = useCase.execute(OAuthProvider.GOOGLE, "auth-code", stateFor(OAuthProvider.GOOGLE));
 
         assertEquals("buyer@example.com", result.email());
         assertEquals(Role.CUSTOMER.name(), result.role());
@@ -65,7 +66,7 @@ class OAuthUseCaseTest {
                 "google-123", "buyer@example.com", "Buyer Changed", null, true);
         CompleteOAuthLoginUseCase useCase = useCase();
 
-        var result = useCase.execute(OAuthProvider.GOOGLE, "auth-code");
+        var result = useCase.execute(OAuthProvider.GOOGLE, "auth-code", stateFor(OAuthProvider.GOOGLE));
 
         assertEquals(user.getId().toString(), jwtTokenProvider.parse(result.accessToken()).getSubject());
         assertEquals(1, userRepository.users.size());
@@ -81,7 +82,7 @@ class OAuthUseCaseTest {
         CompleteOAuthLoginUseCase useCase = useCase();
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> useCase.execute(OAuthProvider.GOOGLE, "auth-code"));
+                () -> useCase.execute(OAuthProvider.GOOGLE, "auth-code", stateFor(OAuthProvider.GOOGLE)));
 
         assertTrue(ex.getMessage().contains("not active"));
         assertTrue(oauthAccountRepository.accounts.isEmpty());
@@ -95,7 +96,7 @@ class OAuthUseCaseTest {
         CompleteOAuthLoginUseCase useCase = useCase();
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> useCase.execute(OAuthProvider.GOOGLE, "bad-code"));
+                () -> useCase.execute(OAuthProvider.GOOGLE, "bad-code", stateFor(OAuthProvider.GOOGLE)));
 
         assertEquals("OAuth profile is missing", ex.getMessage());
     }
@@ -107,7 +108,7 @@ class OAuthUseCaseTest {
         CompleteOAuthLoginUseCase useCase = useCase();
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> useCase.execute(OAuthProvider.GOOGLE, "code"));
+                () -> useCase.execute(OAuthProvider.GOOGLE, "code", stateFor(OAuthProvider.GOOGLE)));
 
         assertEquals("OAuth provider user id is missing", ex.getMessage());
     }
@@ -119,7 +120,7 @@ class OAuthUseCaseTest {
         CompleteOAuthLoginUseCase useCase = useCase();
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> useCase.execute(OAuthProvider.GOOGLE, "code"));
+                () -> useCase.execute(OAuthProvider.GOOGLE, "code", stateFor(OAuthProvider.GOOGLE)));
 
         assertEquals("OAuth email is missing", ex.getMessage());
     }
@@ -131,7 +132,7 @@ class OAuthUseCaseTest {
         CompleteOAuthLoginUseCase useCase = useCase();
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> useCase.execute(OAuthProvider.GOOGLE, "code"));
+                () -> useCase.execute(OAuthProvider.GOOGLE, "code", stateFor(OAuthProvider.GOOGLE)));
 
         assertEquals("OAuth email is not verified", ex.getMessage());
     }
@@ -146,7 +147,7 @@ class OAuthUseCaseTest {
                 "google-xyz", "buyer@example.com", "Buyer", null, true);
         CompleteOAuthLoginUseCase useCase = useCase();
 
-        var result = useCase.execute(OAuthProvider.GOOGLE, "auth-code");
+        var result = useCase.execute(OAuthProvider.GOOGLE, "auth-code", stateFor(OAuthProvider.GOOGLE));
 
         assertEquals("buyer@example.com", result.email());
         assertEquals(1, userRepository.users.size(), "Không tạo user mới");
@@ -168,7 +169,7 @@ class OAuthUseCaseTest {
         CompleteOAuthLoginUseCase useCase = useCase();
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> useCase.execute(OAuthProvider.GOOGLE, "code"));
+                () -> useCase.execute(OAuthProvider.GOOGLE, "code", stateFor(OAuthProvider.GOOGLE)));
 
         assertEquals("OAuth provider already linked to this user", ex.getMessage());
     }
@@ -186,17 +187,48 @@ class OAuthUseCaseTest {
         CompleteOAuthLoginUseCase useCase = useCase();
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> useCase.execute(OAuthProvider.GOOGLE, "auth-code"));
+                () -> useCase.execute(OAuthProvider.GOOGLE, "auth-code", stateFor(OAuthProvider.GOOGLE)));
 
         assertTrue(ex.getMessage().contains("not active"));
+    }
+
+    @Test
+    void completeOAuthLogin_rejectsInvalidState() {
+        oauthProviderGateway.profile = new OAuthProfile(
+                "google-123", "buyer@example.com", "Buyer", null, true);
+        CompleteOAuthLoginUseCase useCase = useCase();
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> useCase.execute(OAuthProvider.GOOGLE, "auth-code", "unknown-state"));
+
+        assertEquals("Invalid OAuth state", ex.getMessage());
+        assertTrue(refreshTokenRepository.findByUserId(UUID.randomUUID()).isEmpty());
+    }
+
+    @Test
+    void completeOAuthLogin_rejectsReusedState() {
+        oauthProviderGateway.profile = new OAuthProfile(
+                "google-123", "buyer@example.com", "Buyer", null, true);
+        CompleteOAuthLoginUseCase useCase = useCase();
+        String state = stateFor(OAuthProvider.GOOGLE);
+
+        useCase.execute(OAuthProvider.GOOGLE, "auth-code", state);
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> useCase.execute(OAuthProvider.GOOGLE, "auth-code", state));
+
+        assertEquals("Invalid OAuth state", ex.getMessage());
     }
 
     private CompleteOAuthLoginUseCase useCase() {
         CompleteOAuthLoginUseCase useCase = new CompleteOAuthLoginUseCase(
                 userRepository, oauthAccountRepository, refreshTokenRepository,
-                oauthProviderGateway, jwtTokenProvider, tokenGenerator);
+                oauthProviderGateway, oauthStateStore, jwtTokenProvider, tokenGenerator);
         ReflectionTestUtils.setField(useCase, "refreshTtlMs", 604800000L);
         return useCase;
+    }
+
+    private String stateFor(OAuthProvider provider) {
+        return oauthStateStore.issue(provider);
     }
 
     private static class FakeOAuthProviderGateway implements OAuthProviderGateway {

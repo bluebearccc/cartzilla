@@ -8,12 +8,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class StartOAuthLoginUseCase {
     private final OAuthProviderGateway oauthProviderGateway;
-    private final TokenGenerator tokenGenerator;
+    private final OAuthStateStore oauthStateStore;
 
     public record Result(String authorizationUrl, String state) {}
 
     public Result execute(OAuthProvider provider) {
-        String state = tokenGenerator.generateUrlSafeToken();
+        String state = oauthStateStore.issue(provider);
         return new Result(oauthProviderGateway.buildAuthorizationUrl(provider, state), state);
     }
 }

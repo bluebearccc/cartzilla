@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -20,7 +19,7 @@ public class UpdateUserRoleUseCase {
     @Transactional
     public User execute(UUID userId, AdminUserCommand.UpdateRole command) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
+                .orElseThrow(() -> new BusinessException("User not found: " + userId));
         Role targetRole = command.role();
         if (targetRole == null) {
             throw new BusinessException("role must not be null");

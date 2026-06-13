@@ -55,6 +55,7 @@ public class ValidateVoucherUseCase {
             throw new BusinessException("Order subtotal " + subtotal
                     + " < minOrderAmount " + voucher.getMinOrderAmount() + " (V-04)");
         }
+        validateSupportedEligibilityRules(voucher);
         validateAccountAge(voucher, user, now);
         validatePerUserLimit(voucher, user);
         validateAudience(voucher, user);
@@ -95,6 +96,15 @@ public class ValidateVoucherUseCase {
         if (userUsageCount >= voucher.getPerUserLimit()) {
             throw new BusinessException("User has reached perUserLimit="
                     + voucher.getPerUserLimit() + " for this voucher (V-11)");
+        }
+    }
+
+    private void validateSupportedEligibilityRules(Voucher voucher) {
+        if (voucher.isFirstOrderOnly()
+                || voucher.getMinCompletedOrders() > 0
+                || voucher.getMinTotalSpent().compareTo(BigDecimal.ZERO) > 0) {
+            throw new BusinessException(
+                    "Voucher order-history eligibility requires order-service user stats integration");
         }
     }
 

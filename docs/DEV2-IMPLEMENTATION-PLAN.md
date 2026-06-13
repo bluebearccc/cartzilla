@@ -446,6 +446,8 @@ Current behavior:
 - Reset password requires a valid, unused reset token, changes the password hash, marks the reset token used, and revokes active refresh tokens.
 - OAuth callback creates a verified customer if needed, links the provider account, records last login, and issues access/refresh tokens.
 - OAuth provider settings are externalized under `oauth.providers.google`.
+- OAuth callback now requires a generated `state`; states are stored in-memory with TTL and consumed once to protect the backend callback from forged/replayed OAuth callbacks.
+- Voucher rules that depend on order history (`firstOrderOnly`, `minCompletedOrders`, `minTotalSpent`) are rejected during validate/redeem until order-service exposes a user order-stats contract.
 
 Testing:
 

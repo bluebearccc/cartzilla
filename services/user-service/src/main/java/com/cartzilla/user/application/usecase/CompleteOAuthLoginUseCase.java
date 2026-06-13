@@ -25,6 +25,7 @@ public class CompleteOAuthLoginUseCase {
     private final OAuthAccountRepository oauthAccountRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final OAuthProviderGateway oauthProviderGateway;
+    private final OAuthStateStore oauthStateStore;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenGenerator tokenGenerator;
 
@@ -34,7 +35,8 @@ public class CompleteOAuthLoginUseCase {
     public record Result(String accessToken, String refreshToken, String email, String role) {}
 
     @Transactional
-    public Result execute(OAuthProvider provider, String code) {
+    public Result execute(OAuthProvider provider, String code, String state) {
+        oauthStateStore.validateAndConsume(provider, state);
         OAuthProfile profile = oauthProviderGateway.fetchProfile(provider, code);
         validateProfile(profile);
 
