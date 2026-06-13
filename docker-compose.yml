@@ -148,6 +148,9 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-me-please-32bytes!!}
       NOTIFICATION_SERVICE_URL: http://notification-service:8085
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      GOOGLE_OAUTH_REDIRECT_URI: ${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:8080/api/oauth/google/callback}
     depends_on:
       postgres-user:
         condition: service_healthy
