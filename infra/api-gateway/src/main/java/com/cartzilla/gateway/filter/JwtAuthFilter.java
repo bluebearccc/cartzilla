@@ -43,9 +43,17 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                 return unauthorized(exchange);
             }
             Claims claims = jwtTokenProvider.parse(token);
+            Object role = claims.get("role");
+            if (claims.getSubject() == null || claims.getSubject().isBlank() || role == null) {
+                return unauthorized(exchange);
+            }
             ServerHttpRequest request = exchange.getRequest().mutate()
+                    .headers(headers -> {
+                        headers.remove("X-User-Id");
+                        headers.remove("X-User-Role");
+                    })
                     .header("X-User-Id", claims.getSubject())
-                    .header("X-User-Role", String.valueOf(claims.get("role")))
+                    .header("X-User-Role", String.valueOf(role))
                     .build();
             return chain.filter(exchange.mutate().request(request).build());
         };

@@ -37,7 +37,7 @@ SRS traceability for Dev2:
 | F02 / UC-02 | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses`; exactly one default address | Partial: profile/address implemented; default-address test exists; delete default behavior still needs SRS A3 fix |
 | F14 / UC-06 | Admin voucher CRUD, audience management, public preview validate, internal idempotent redeem, atomic used count, min account age | Partial: internal validate exists; admin CRUD/redeem/audience still missing |
 | F15 / UC-02 | OAuth authorize/callback for Google/Facebook via `OAuthAccount` | Missing; SRS marks this Should Have and open question Q-01 asks whether demo requires it |
-| F17 / UC-02 | Admin user list/detail, role update, status update | Missing |
+| F17 / UC-02 | Admin user list/detail, role update, status update | Implemented: admin list/detail, role update, status update, last-active-admin guard |
 | UC-02 A1 / F12 | Forgot/reset password email, reset link valid 30 minutes | Missing; notification/email service integration may be needed |
 
 Dev2 frontend pages from SRS:
@@ -344,6 +344,7 @@ Testing focus:
 
 - Role change validation.
 - Deactivation prevents internal checkout/voucher validation.
+- Last active admin cannot be demoted or deactivated.
 
 ### Phase 4 - Token, Forgot Password, OAuth
 
@@ -397,9 +398,46 @@ Reason:
 - [x] Implement internal voucher redeem.
 - [x] Add voucher tests.
 - [x] Integrate order-service Saga with voucher redeem after payment success.
-- [ ] Implement admin user management.
-- [ ] Add admin user tests.
+- [x] Implement admin user management.
+- [x] Add admin user tests.
 - [ ] Decide refresh/forgot-password/OAuth depth based on demo requirement.
+
+## Post Phase 3 Notes
+
+Phase 3 backend implements admin user management for the current SRS scope.
+
+Implemented API:
+
+- `GET /api/admin/users`
+- `GET /api/admin/users/{id}`
+- `PUT /api/admin/users/{id}/role`
+- `PUT /api/admin/users/{id}/status`
+
+Current behavior:
+
+- Admin endpoints require `X-User-Id` from gateway and verify that the user is active `ADMIN` in `user-service`.
+- Gateway `JwtAuth` validates the JWT, removes any client-supplied `X-User-Id` / `X-User-Role`, then injects trusted values from token claims.
+- User list supports pagination/filtering: `q`, `role`, `active`, `page`, `limit`, `sort`.
+- User list defaults to `page=0`, `limit=20`, `sort=email,asc`; `limit` is capped at 100.
+- Role update supports `CUSTOMER`, `STAFF`, and `ADMIN`.
+- Status update activates or deactivates users.
+- The last active admin cannot be demoted away from `ADMIN`.
+- The last active admin cannot be deactivated.
+
+Testing:
+
+- Added `AdminUserUseCaseTest`.
+- Latest `user-service` test run: 23 tests passed.
+- Latest `api-gateway` reactor test/build passed after adding gateway `SecurityConfig`.
+- Runtime gateway test passed:
+  - no token returns 401,
+  - customer token with spoofed `X-User-Id` / `X-User-Role` is rejected,
+  - admin JWT can list users with pagination/filtering and update user role through gateway.
+
+Remaining outside Phase 3:
+
+- Refresh/logout token flow, forgot/reset password, and OAuth.
+- Full method-level Spring Security inside `user-service`. Current security boundary is gateway JWT plus downstream DB-backed admin guard.
 
 ## Post Phase 1 And Phase 2 Notes
 

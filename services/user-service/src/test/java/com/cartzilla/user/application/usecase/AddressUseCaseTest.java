@@ -5,8 +5,13 @@ import com.cartzilla.user.domain.entity.Address;
 import com.cartzilla.user.domain.entity.User;
 import com.cartzilla.user.domain.repository.AddressRepository;
 import com.cartzilla.user.domain.repository.UserRepository;
+import com.cartzilla.user.domain.repository.UserSearchCriteria;
+import com.cartzilla.user.domain.vo.Role;
 import com.cartzilla.web.exception.BusinessException;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -232,6 +237,28 @@ class AddressUseCaseTest {
         @Override
         public boolean existsByEmail(String email) {
             return findByEmail(email).isPresent();
+        }
+
+        @Override
+        public Page<User> search(UserSearchCriteria criteria, Pageable pageable) {
+            List<User> filtered = users.stream()
+                    .filter(user -> criteria.normalizedKeyword() == null
+                            || user.getEmail().contains(criteria.normalizedKeyword())
+                            || user.getFullName().toLowerCase().contains(criteria.normalizedKeyword()))
+                    .filter(user -> criteria.role() == null || user.getRole() == criteria.role())
+                    .filter(user -> criteria.active() == null || user.isActive() == criteria.active())
+                    .sorted(Comparator.comparing(User::getEmail))
+                    .toList();
+            return new PageImpl<>(filtered, pageable, filtered.size());
+        }
+
+        @Override
+        public long countActiveAdminsExcluding(UUID excludedUserId) {
+            return users.stream()
+                    .filter(user -> !user.getId().equals(excludedUserId))
+                    .filter(user -> user.getRole() == Role.ADMIN)
+                    .filter(User::isActive)
+                    .count();
         }
     }
 
