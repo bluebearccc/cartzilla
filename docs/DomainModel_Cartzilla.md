@@ -10,7 +10,7 @@
 
 | Service | Database | Aggregate Roots | Entities | Value Objects |
 |---------|----------|-----------------|----------|---------------|
-| user-service | cartzilla_user_db | `UserAggregate`, `VoucherAggregate` | User, Address, RefreshToken, OAuthAccount, Voucher, VoucherUsage, VoucherAllowedUser | Email, Phone, Role, PasswordHash, OAuthProvider, DiscountType, VoucherAudienceType, Money |
+| user-service | cartzilla_user_db | `UserAggregate`, `VoucherAggregate` | User, Address, RefreshToken, EmailVerificationToken, OAuthAccount, Voucher, VoucherUsage, VoucherAllowedUser | Email, Phone, Role, PasswordHash, OAuthProvider, DiscountType, VoucherAudienceType, Money |
 | product-service | cartzilla_product_db | `ProductAggregate`, `CategoryAggregate`, `VendorAggregate` | Product, Category, Vendor, ProductVariant, ProductImage | Money, Slug, Sku, VendorType, ColorHex |
 | order-service | cartzilla_order_db | `CartAggregate`, `OrderAggregate`, `OrderSagaAggregate` | CartItem, Order, OrderItem, OrderStatusLog, SagaState | ShippingAddress, OrderStatus, PaymentMethod, PaymentStatus, Money |
 | payment-service | cartzilla_pay_db | `PaymentAggregate` | Payment, PaymentTransaction | PaymentMethod, PaymentStatus, TransactionType, Money, Currency |
@@ -631,3 +631,38 @@ public void confirm(Instant confirmedAt) {
 ---
 
 *Domain Model Cartzilla v1.1 — derived from DBDesign_Cartzilla.md v2.2*
+
+---
+
+## Appendix A. DEV2 Auth Domain Alignment
+
+Implemented auth domain additions as of 2026-06-13.
+
+### EmailVerificationToken
+
+`EmailVerificationToken` belongs to the user-service auth/account lifecycle.
+
+Fields:
+
+- `id`
+- `userId`
+- `token`
+- `expiresAt`
+- `usedAt`
+- BaseEntity audit and soft-delete fields
+
+Rules:
+
+- Token must belong to a user.
+- Token value must be non-blank and unique.
+- `expiresAt` must be in the future when created.
+- Token can be consumed only once.
+- Consuming a token sets `usedAt` and soft-deletes the token.
+- Successful verification sets `User.emailVerified = true`.
+- Password login requires `User.active = true` and `User.emailVerified = true`.
+- OAuth Google user creation sets `emailVerified = true` only after provider profile confirms `email_verified = true`.
+
+Notification integration:
+
+- `RegisterUserUseCase` creates the token and requests notification-service to send verification email.
+- notification-service records the outbound email in `EmailLog` with template key `email_verification`.

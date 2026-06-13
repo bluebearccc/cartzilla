@@ -523,7 +523,7 @@ CONFIRMED -> CANCELLED
 
 | Feature | UC | Service | REST Endpoint (qua Gateway) | DB table/collection / Entity | Event liên quan |
 |---|---|---|---|---|---|
-| F01 Auth | UC-02 | user-service | `POST /api/users/register`, `/login`, `/refresh-token`, `/logout` | `users`, `refresh_tokens` | — |
+| F01 Auth | UC-02 | user-service | `POST /api/users/register`, `/verify-email`, `/login`, `/refresh-token`, `/logout`, `/forgot-password`, `/reset-password` | `users`, `email_verification_tokens`, `password_reset_tokens`, `refresh_tokens` | `email-verification`, `reset-password` |
 | F02 Profile/address | UC-02 | user-service | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses` | `users`, `addresses` | — |
 | F03 Browse/search | UC-01 | product-service | `GET /api/products?category=&size=&color=&vendor=&sort=&page=` | `products`, `categories`, `vendors` | — |
 | F04 Product detail | UC-01 | product-service | `GET /api/products/{id}` | `products`, `product_variants`, `product_images` | — |
@@ -534,7 +534,7 @@ CONFIRMED -> CANCELLED
 | F09 My orders | UC-03 | order-service | `GET /api/orders`, `GET /api/orders/{id}` | `orders`, `order_items`, `order_status_logs` | — |
 | F10 Staff orders | UC-04 | order-service | `GET /api/staff/orders`, `PUT /api/staff/orders/{id}/status` | `orders`, `order_status_logs` | `order.confirmed`, `order.shipped`, `order.cancelled`, `order.delivered` |
 | F11 Admin catalog | UC-05 | product-service | `POST/PUT/DELETE /api/admin/products`, `/categories`, `/products/{id}/variants`, `/products/{id}/images` | `products`, `categories`, `product_variants`, `product_images` | — |
-| F12 Notification/email | UC-08 | notification-service | `GET /api/notifications`, `PUT /api/notifications/{id}/read` | `notifications`, `email_logs` | `order.confirmed`, `order.cancelled`, `order.shipped`, `reset-password` |
+| F12 Notification/email | UC-08 | notification-service | `GET /api/notifications`, `PUT /api/notifications/{id}/read`, internal `POST /api/internal/notifications/verification-email`, internal `POST /api/internal/notifications/reset-password-email` | `notifications`, `email_logs` | `order.confirmed`, `order.cancelled`, `order.shipped`, `email-verification`, `reset-password` |
 | F13 VNPay | UC-07 | payment-service | `POST /api/payments/vnpay/create`, `GET /api/payments/vnpay/callback` | `payments`, `payment_transactions` | `payment.result` |
 | F14 Voucher | UC-06 | user-service | `POST /api/admin/vouchers`, `PUT /api/admin/vouchers/{id}`, `POST /api/vouchers/validate`, internal `POST /api/internal/vouchers/redeem` | `vouchers`, `voucher_usages`, `voucher_allowed_users` | — |
 | F15 OAuth | UC-02 | user-service | `GET /api/oauth/{provider}/authorize`, `GET /api/oauth/{provider}/callback` | `oauth_accounts`, `users` | — |
@@ -599,7 +599,7 @@ CONFIRMED -> CANCELLED
 
 | Service | Database | Technology | Core Tables |
 |---|---|---|---|
-| user-service | `cartzilla_user_db` | PostgreSQL 16 | `users`, `addresses`, `refresh_tokens`, `oauth_accounts`, `vouchers`, `voucher_usages`, `voucher_allowed_users` |
+| user-service | `cartzilla_user_db` | PostgreSQL 16 | `users`, `addresses`, `refresh_tokens`, `email_verification_tokens`, `password_reset_tokens`, `oauth_accounts`, `vouchers`, `voucher_usages`, `voucher_allowed_users` |
 | product-service | `cartzilla_product_db` | PostgreSQL 16 | `categories`, `vendors`, `products`, `product_variants`, `product_images` |
 | order-service | `cartzilla_order_db` | PostgreSQL 16 | `cart_items`, `orders`, `order_items`, `order_status_logs`, `saga_states` |
 | payment-service | `cartzilla_pay_db` | PostgreSQL 16 | `payments`, `payment_transactions` |
@@ -610,7 +610,7 @@ CONFIRMED -> CANCELLED
 | Area | Required constraints from DBDesign |
 |---|---|
 | BaseEntity | Mọi bảng domain có `created_at`, `updated_at`, `created_by`, `updated_by`, `is_deleted`, `deleted_at`. |
-| Auth/OAuth | `users.email` unique; `refresh_tokens.token` unique; `oauth_accounts(provider, provider_user_id)` và `(user_id, provider)` unique. |
+| Auth/OAuth | `users.email` unique; `refresh_tokens.token` unique; `email_verification_tokens.token` unique; `password_reset_tokens.token` unique; `oauth_accounts(provider, provider_user_id)` và `(user_id, provider)` unique. |
 | Voucher | `upper(vouchers.code)` unique; `min_account_age_days >= 0`; `voucher_usages` lưu `user_id` và `order_id` reference-only; `voucher_allowed_users` dùng cho audience `SPECIFIC_USERS`. |
 | Catalog | `categories.slug`, `vendors.slug`, `products.slug`, `product_variants.sku` unique; price/stock không âm. |
 | Order | `cart_items(user_id, sku)` unique; `orders.shipping_address` là JSONB snapshot; `saga_states.order_id` unique. |
@@ -652,3 +652,38 @@ CONFIRMED -> CANCELLED
 ---
 
 *Cartzilla SRS v2.2 — Microservices E-commerce · Java 21 + Spring Boot 3.5.14 + Spring Cloud 2025.0.0 · DDD/Hexagonal · aligned with DBDesign_Cartzilla.md v2.2 and DomainModel on 2026-06-08*
+
+---
+
+## DEV2 Implementation Alignment - Auth Email Verification
+
+This section records the implemented DEV2 auth behavior as of 2026-06-13.
+
+### Registration And Email Verification
+
+- `POST /api/users/register` creates a password user with `role = CUSTOMER`, `is_active = true`, and `email_verified = false`.
+- Registration creates an `email_verification_tokens` row with a one-time token.
+- Registration queues a verification email through notification-service internal endpoint `POST /api/internal/notifications/verification-email`.
+- The verification link is built from `VERIFY_EMAIL_BASE_URL` and the generated token.
+- `POST /api/users/verify-email` validates the token, marks the user email verified, and consumes the token.
+- Password login through `POST /api/users/login` is blocked while `email_verified = false`.
+- Google OAuth users are considered verified only when Google profile returns `email_verified = true`.
+
+### Implemented Auth Endpoints
+
+- `POST /api/users/register`
+- `POST /api/users/verify-email`
+- `POST /api/users/login`
+- `POST /api/users/refresh-token`
+- `POST /api/users/logout`
+- `POST /api/users/forgot-password`
+- `POST /api/users/reset-password`
+- `GET /api/oauth/google/authorize`
+- `GET /api/oauth/google/callback`
+
+### Data Alignment
+
+- Auth tables in `cartzilla_user_db`: `users`, `email_verification_tokens`, `refresh_tokens`, `password_reset_tokens`, `oauth_accounts`.
+- `email_verification_tokens.token`, `refresh_tokens.token`, and `password_reset_tokens.token` are unique.
+- notification-service logs verification and reset-password emails in `email_logs`.
+- SMTP is configurable through `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM`, `MAIL_SMTP_AUTH`, and `MAIL_SMTP_STARTTLS_ENABLE`.

@@ -835,3 +835,60 @@ CREATE INDEX idx_email_logs_status ON email_logs(status, created_at DESC);
 ---
 
 *Cartzilla Database Design v2.2 — Database-per-Service · PostgreSQL product DB · OAuth · payment transactions · split notifications/email · voucher min account age · aligned với repo SE1911-JV_MSS301*
+
+---
+
+## DEV2 Implementation Alignment - Auth Tokens
+
+This section records the implemented DEV2 user-service schema additions as of 2026-06-13.
+
+### User-Service Auth Tables
+
+The implemented `cartzilla_user_db` auth-related tables are:
+
+- `users`
+- `refresh_tokens`
+- `password_reset_tokens`
+- `email_verification_tokens`
+- `oauth_accounts`
+
+### Email Verification Tokens
+
+Implemented by Flyway `V4__email_verification_tokens.sql`:
+
+```sql
+CREATE TABLE email_verification_tokens (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID NOT NULL REFERENCES users(id),
+    token       TEXT NOT NULL UNIQUE,
+    expires_at  TIMESTAMP NOT NULL,
+    used_at     TIMESTAMP,
+    created_at  TIMESTAMP NOT NULL DEFAULT NOW(), updated_at TIMESTAMP,
+    created_by  VARCHAR(255), updated_by VARCHAR(255),
+    is_deleted  BOOLEAN   NOT NULL DEFAULT false, deleted_at TIMESTAMP
+);
+
+CREATE INDEX idx_email_verification_tokens_token ON email_verification_tokens(token);
+CREATE INDEX idx_email_verification_tokens_user ON email_verification_tokens(user_id);
+```
+
+Behavior:
+
+- Password registration creates one active verification token and queues a verification email.
+- Token is one-time use; successful verify sets `users.email_verified = true` and soft-deletes the token.
+- Password login requires `users.email_verified = true`.
+- Google OAuth users use provider verified email (`email_verified = true`) instead of local verification token.
+
+### Notification Email Configuration
+
+notification-service supports both local Mailhog and real SMTP providers through environment variables:
+
+- `MAIL_HOST`
+- `MAIL_PORT`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
+- `MAIL_FROM`
+- `MAIL_SMTP_AUTH`
+- `MAIL_SMTP_STARTTLS_ENABLE`
+
+Verification emails use email log template key `email_verification`; reset password emails use `reset_password`.
