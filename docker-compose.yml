@@ -147,10 +147,13 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-me-please-32bytes!!}
+      NOTIFICATION_SERVICE_URL: http://notification-service:8085
     depends_on:
       postgres-user:
         condition: service_healthy
       eureka-server:
+        condition: service_started
+      notification-service:
         condition: service_started
     networks: [ cartzilla-net ]
 

@@ -33,12 +33,12 @@ SRS traceability for Dev2:
 
 | SRS item | Required behavior/API | Current status |
 |---|---|---|
-| F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Partial: register/login exist; refresh/logout/revoke still missing; login active guard must be confirmed |
+| F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Implemented: register/login, refresh rotation, logout revoke, active-user guard |
 | F02 / UC-02 | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses`; exactly one default address | Partial: profile/address implemented; default-address test exists; delete default behavior still needs SRS A3 fix |
 | F14 / UC-06 | Admin voucher CRUD, audience management, public preview validate, internal idempotent redeem, atomic used count, min account age | Partial: internal validate exists; admin CRUD/redeem/audience still missing |
-| F15 / UC-02 | OAuth authorize/callback for Google/Facebook via `OAuthAccount` | Missing; SRS marks this Should Have and open question Q-01 asks whether demo requires it |
+| F15 / UC-02 | OAuth authorize/callback for Google/Facebook via `OAuthAccount` | Implemented backend authorize/callback flow for configured Google/Facebook providers |
 | F17 / UC-02 | Admin user list/detail, role update, status update | Implemented: admin list/detail, role update, status update, last-active-admin guard |
-| UC-02 A1 / F12 | Forgot/reset password email, reset link valid 30 minutes | Missing; notification/email service integration may be needed |
+| UC-02 A1 / F12 | Forgot/reset password email, reset link valid 30 minutes | Implemented with `password_reset_tokens`, one-time reset, notification-service email handoff |
 
 Dev2 frontend pages from SRS:
 
@@ -137,9 +137,9 @@ API/application gaps:
 - No address CRUD API yet.
 - No admin user API yet.
 - No admin voucher CRUD API yet.
-- No refresh-token endpoint even though `refresh_tokens` table exists.
-- No forgot-password flow yet.
-- No OAuth callback/linking flow yet.
+- Refresh/logout token flow implemented in Phase 4.
+- Forgot/reset password flow implemented in Phase 4.
+- OAuth authorize/callback/linking flow implemented in Phase 4.
 - Voucher validation exists, but redeem/commit is not implemented.
 - Internal voucher validation uses JPA repositories directly instead of application use cases.
 - Internal user endpoints use `AddressJpaRepository` directly instead of a domain port/usecase.
@@ -150,15 +150,15 @@ Domain/repository gaps:
 - No `AddressRepository` port.
 - No `VoucherRepository` port.
 - No `VoucherUsageRepository` port.
-- No `OAuthAccountRepository` or `RefreshTokenRepository` port.
+- `OAuthAccountRepository`, `RefreshTokenRepository`, and `PasswordResetTokenRepository` ports now exist.
 - `Address` has create/default methods but no update method.
 - `User` supports activation/password/email changes, but profile update and role changes need explicit domain methods.
 - `Voucher` supports create/redeemable/increment/deactivate, but update behavior and no-code-change rule need explicit handling.
 
 Testing gaps:
 
-- No visible `user-service` tests yet.
-- Auth, address default invariant, voucher validation/redeem, admin user status, and token flows need targeted unit tests.
+- Focused `user-service` tests exist for profile, address, vouchers, admin users, auth lifecycle, and OAuth.
+- Remaining test gap: provider-level OAuth HTTP exchange tests can be added with a mock HTTP server when needed.
 
 Gateway/API exposure gaps:
 
@@ -348,20 +348,21 @@ Testing focus:
 
 ### Phase 4 - Token, Forgot Password, OAuth
 
-This phase depends on how complete the demo needs to be.
+Phase 4 is complete for backend scope.
 
-- Add refresh token persistence and endpoint.
-- Add logout/revoke refresh token.
-- Reject refresh when user is deactivated.
-- Revoke refresh tokens after password change and email change.
-- Add forgot/reset password skeleton or full token flow.
-- Add OAuth callback/linking if required for demo.
+- Added refresh token persistence and `POST /api/users/refresh-token`.
+- Added `POST /api/users/logout` to revoke refresh tokens.
+- Refresh/login reject deactivated users.
+- Reset password revokes active refresh tokens.
+- Added full forgot/reset password token flow with 30-minute reset links.
+- Added notification-service internal reset-password email endpoint.
+- Added OAuth authorize/callback backend for configured Google/Facebook providers.
 
 Testing focus:
 
-- Refresh token expiry/revocation.
-- OAuth account uniqueness.
-- Password reset token expiry and one-time use if implemented.
+- Refresh token rotation/revocation.
+- OAuth account uniqueness and inactive-user guard.
+- Password reset token one-time use and refresh-token revocation.
 
 ## Suggested First Implementation Slice
 
@@ -400,7 +401,48 @@ Reason:
 - [x] Integrate order-service Saga with voucher redeem after payment success.
 - [x] Implement admin user management.
 - [x] Add admin user tests.
-- [ ] Decide refresh/forgot-password/OAuth depth based on demo requirement.
+- [x] Implement refresh/logout token flow.
+- [x] Implement forgot/reset password flow.
+- [x] Implement OAuth authorize/callback backend flow.
+
+## Post Phase 4 Notes
+
+Phase 4 backend implements the remaining SRS auth account flows for Dev2.
+
+Implemented API:
+
+- `POST /api/users/refresh-token`
+- `POST /api/users/logout`
+- `POST /api/users/forgot-password`
+- `POST /api/users/reset-password`
+- `GET /api/oauth/{provider}/authorize`
+- `GET /api/oauth/{provider}/callback?code=...`
+- `POST /api/internal/notifications/reset-password-email`
+
+Current behavior:
+
+- Login now stores a server-side refresh token and returns both access and refresh tokens.
+- Refresh token use rotates the refresh token and revokes the old token.
+- Logout revokes the submitted refresh token.
+- OAuth-only users cannot use password login.
+- Forgot password does not reveal whether an email exists.
+- Reset password requires a valid, unused reset token, changes the password hash, marks the reset token used, and revokes active refresh tokens.
+- OAuth callback creates a verified customer if needed, links the provider account, records last login, and issues access/refresh tokens.
+- OAuth provider settings are externalized under `oauth.providers.google` and `oauth.providers.facebook`.
+
+Testing:
+
+- Added `AuthLifecycleUseCaseTest`.
+- Added `OAuthUseCaseTest`.
+- Focused Phase 4 test run: 7 tests passed.
+- Full related reactor run passed for `user-service`, `notification-service`, and `api-gateway`: `user-service` 30 tests passed, gateway/notification compiled.
+- Startup smoke was checked on a clean runtime DB `cartzilla_user_phase4`; Flyway applied V1 and V2 and the app reached Tomcat startup in foreground.
+
+Runtime notes:
+
+- Existing `cartzilla_user_db` has an older Flyway V1 checksum, so direct runtime startup against that DB fails validation until the DB is repaired or recreated.
+- Compose currently declares application service builds but no Dockerfiles exist in the repo, so full `docker compose up user-service` is not available yet.
+- OAuth callback with real providers requires client credentials and redirect URIs via environment variables.
 
 ## Post Phase 3 Notes
 

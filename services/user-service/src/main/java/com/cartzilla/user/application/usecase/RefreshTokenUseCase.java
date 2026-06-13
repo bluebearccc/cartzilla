@@ -1,7 +1,6 @@
 package com.cartzilla.user.application.usecase;
 
 import com.cartzilla.security.JwtTokenProvider;
-import com.cartzilla.user.application.command.AuthCommand;
 import com.cartzilla.user.domain.entity.RefreshToken;
 import com.cartzilla.user.domain.entity.User;
 import com.cartzilla.user.domain.repository.RefreshTokenRepository;
@@ -9,7 +8,6 @@ import com.cartzilla.user.domain.repository.UserRepository;
 import com.cartzilla.web.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +16,9 @@ import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
-public class LoginUseCase {
-
-    private final UserRepository userRepository;
+public class RefreshTokenUseCase {
     private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenGenerator tokenGenerator;
 
@@ -32,21 +28,24 @@ public class LoginUseCase {
     public record Result(String accessToken, String refreshToken, String email, String role) {}
 
     @Transactional
-    public Result execute(AuthCommand.Login cmd) {
-        User user = userRepository.findByEmail(cmd.email())
-                .orElseThrow(() -> new BusinessException("Invalid email or password"));
+    public Result execute(String token) {
+        RefreshToken current = refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new BusinessException("Invalid refresh token"));
+        if (current.isExpired()) {
+            current.revoke();
+            refreshTokenRepository.save(current);
+            throw new BusinessException("Refresh token expired");
+        }
+        User user = userRepository.findById(current.getUserId())
+                .orElseThrow(() -> new BusinessException("User not found"));
         user.requireActive();
-        if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
-            throw new BusinessException("Invalid email or password");
-        }
-        if (!passwordEncoder.matches(cmd.password(), user.getPasswordHash())) {
-            throw new BusinessException("Invalid email or password");
-        }
+        current.revoke();
+        refreshTokenRepository.save(current);
         String accessToken = jwtTokenProvider.generateAccessToken(
                 user.getId().toString(), user.getEmail(), user.getRole().name());
-        String refreshToken = tokenGenerator.generateUrlSafeToken();
+        String newRefreshToken = tokenGenerator.generateUrlSafeToken();
         refreshTokenRepository.save(RefreshToken.create(
-                user.getId(), refreshToken, Instant.now().plus(Duration.ofMillis(refreshTtlMs))));
-        return new Result(accessToken, refreshToken, user.getEmail(), user.getRole().name());
+                user.getId(), newRefreshToken, Instant.now().plus(Duration.ofMillis(refreshTtlMs))));
+        return new Result(accessToken, newRefreshToken, user.getEmail(), user.getRole().name());
     }
 }

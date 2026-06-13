@@ -2,8 +2,12 @@ package com.cartzilla.user.api.controller;
 
 import com.cartzilla.user.api.ApiPaths;
 import com.cartzilla.user.api.dto.AuthDtos.*;
+import com.cartzilla.user.application.usecase.ForgotPasswordUseCase;
 import com.cartzilla.user.application.usecase.LoginUseCase;
+import com.cartzilla.user.application.usecase.LogoutUseCase;
+import com.cartzilla.user.application.usecase.RefreshTokenUseCase;
 import com.cartzilla.user.application.usecase.RegisterUserUseCase;
+import com.cartzilla.user.application.usecase.ResetPasswordUseCase;
 import com.cartzilla.web.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,10 @@ public class AuthController {
 
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUseCase loginUseCase;
+    private final RefreshTokenUseCase refreshTokenUseCase;
+    private final LogoutUseCase logoutUseCase;
+    private final ForgotPasswordUseCase forgotPasswordUseCase;
+    private final ResetPasswordUseCase resetPasswordUseCase;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UUID>> register(@Valid @RequestBody RegisterRequest req) {
@@ -30,6 +38,30 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
         var r = loginUseCase.execute(req.toCommand());
-        return ApiResponse.ok(new LoginResponse(r.accessToken(), r.email(), r.role()));
+        return ApiResponse.ok(new LoginResponse(r.accessToken(), r.refreshToken(), r.email(), r.role()));
+    }
+
+    @PostMapping("/refresh-token")
+    public ApiResponse<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest req) {
+        var r = refreshTokenUseCase.execute(req.refreshToken());
+        return ApiResponse.ok(new LoginResponse(r.accessToken(), r.refreshToken(), r.email(), r.role()));
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@Valid @RequestBody LogoutRequest req) {
+        logoutUseCase.execute(req.refreshToken());
+        return ApiResponse.ok("Logged out", null);
+    }
+
+    @PostMapping("/forgot-password")
+    public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        forgotPasswordUseCase.execute(req.email());
+        return ApiResponse.ok("Password reset email queued", null);
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        resetPasswordUseCase.execute(req.token(), req.newPassword());
+        return ApiResponse.ok("Password reset successful", null);
     }
 }

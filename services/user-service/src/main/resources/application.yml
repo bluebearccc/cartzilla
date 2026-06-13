@@ -27,6 +27,34 @@ eureka:
 jwt:
   secret: ${JWT_SECRET:dev-secret-key-change-me-please-32bytes!!}
   access-ttl-ms: 900000
+  refresh-ttl-ms: 604800000
+
+app:
+  reset-password:
+    base-url: ${RESET_PASSWORD_BASE_URL:http://localhost:5173/reset-password}
+
+clients:
+  notification-service:
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8085}
+
+oauth:
+  providers:
+    google:
+      client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
+      client-secret: ${GOOGLE_OAUTH_CLIENT_SECRET:}
+      authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+      token-uri: https://oauth2.googleapis.com/token
+      user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+      redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/api/oauth/google/callback}
+      scope: openid email profile
+    facebook:
+      client-id: ${FACEBOOK_OAUTH_CLIENT_ID:}
+      client-secret: ${FACEBOOK_OAUTH_CLIENT_SECRET:}
+      authorization-uri: https://www.facebook.com/v19.0/dialog/oauth
+      token-uri: https://graph.facebook.com/v19.0/oauth/access_token
+      user-info-uri: https://graph.facebook.com/me?fields=id,name,email,picture
+      redirect-uri: ${FACEBOOK_OAUTH_REDIRECT_URI:http://localhost:8080/api/oauth/facebook/callback}
+      scope: email,public_profile
 
 management:
   endpoints:
