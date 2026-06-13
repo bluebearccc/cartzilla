@@ -1,11 +1,9 @@
 package com.cartzilla.user.api.controller;
 
 import com.cartzilla.user.api.ApiPaths;
-import com.cartzilla.user.api.dto.UserDtos.ChangeEmailRequest;
 import com.cartzilla.user.api.dto.UserDtos.ChangePasswordRequest;
 import com.cartzilla.user.api.dto.UserDtos.ProfileResponse;
 import com.cartzilla.user.api.dto.UserDtos.UpdateProfileRequest;
-import com.cartzilla.user.application.usecase.ChangeEmailUseCase;
 import com.cartzilla.user.application.usecase.ChangePasswordUseCase;
 import com.cartzilla.user.application.usecase.GetProfileUseCase;
 import com.cartzilla.user.application.usecase.UpdateProfileUseCase;
@@ -28,7 +26,6 @@ public class ProfileController {
 
     private final GetProfileUseCase getProfileUseCase;
     private final UpdateProfileUseCase updateProfileUseCase;
-    private final ChangeEmailUseCase changeEmailUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
 
     @GetMapping
@@ -42,14 +39,6 @@ public class ProfileController {
             @Valid @RequestBody UpdateProfileRequest request) {
         return ApiResponse.ok("Profile updated", ProfileResponse.from(
                 updateProfileUseCase.execute(userId, request.toCommand())));
-    }
-
-    @PutMapping("/email")
-    public ApiResponse<ProfileResponse> changeEmail(
-            @RequestHeader("X-User-Id") UUID userId,
-            @Valid @RequestBody ChangeEmailRequest request) {
-        return ApiResponse.ok("Email changed", ProfileResponse.from(
-                changeEmailUseCase.execute(userId, request.toCommand())));
     }
 
     @PutMapping("/password")

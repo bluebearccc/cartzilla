@@ -2,7 +2,6 @@ package com.cartzilla.user.api.dto;
 
 import com.cartzilla.user.application.command.UserCommand;
 import com.cartzilla.user.domain.entity.User;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -16,12 +15,6 @@ public class UserDtos {
             @Size(max = 20) String phone) {
         public UserCommand.UpdateProfile toCommand() {
             return new UserCommand.UpdateProfile(fullName, phone);
-        }
-    }
-
-    public record ChangeEmailRequest(@Email @NotBlank String email) {
-        public UserCommand.ChangeEmail toCommand() {
-            return new UserCommand.ChangeEmail(email);
         }
     }
 

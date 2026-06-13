@@ -5,7 +5,5 @@ public class UserCommand {
 
     public record UpdateProfile(String fullName, String phone) {}
 
-    public record ChangeEmail(String email) {}
-
     public record ChangePassword(String currentPassword, String newPassword) {}
 }

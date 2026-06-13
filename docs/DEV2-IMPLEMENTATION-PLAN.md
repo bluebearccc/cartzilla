@@ -33,7 +33,7 @@ SRS traceability for Dev2:
 
 | SRS item | Required behavior/API | Current status |
 |---|---|---|
-| F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Implemented: register/login, refresh rotation, logout revoke, active-user guard, email/password change revoke |
+| F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Implemented: register/login, refresh rotation, logout revoke, active-user guard, password change revoke |
 | F02 / UC-02 | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses`; exactly one default address | Implemented: profile/address APIs, one-default invariant, SRS A3 default-delete rejection |
 | F14 / UC-06 | Admin voucher CRUD, audience management, public preview validate, internal idempotent redeem, atomic used count, min account age | Implemented: admin CRUD, allowed users, public validate, internal idempotent redeem, order saga integration |
 | F15 / UC-02 | OAuth authorize/callback for Google/Facebook via `OAuthAccount` | Implemented backend authorize/callback flow for configured Google/Facebook providers |
@@ -82,7 +82,6 @@ Implemented or partially implemented API/controllers:
 - `ProfileController`
   - `GET /api/users/me`
   - `PUT /api/users/me`
-  - `PUT /api/users/me/email`
   - `PUT /api/users/me/password`
 - `AddressController`
   - `GET/POST/PUT/DELETE /api/users/me/addresses`
@@ -168,7 +167,8 @@ Implemented backend coverage:
 - Admin user management includes pagination/filtering and last-active-admin guardrails.
 - Auth token lifecycle includes login refresh-token creation, refresh rotation, logout revoke, and active-user guard.
 - Account recovery includes forgot/reset password with a 30-minute reset token and notification-service email handoff.
-- Profile account maintenance includes changing email/password and revoking refresh tokens after those changes.
+- Profile account maintenance includes changing password and revoking refresh tokens after that change.
+- Customer email change is intentionally not exposed in MVP; it requires a separate email verification flow.
 - OAuth backend login/linking supports configured Google/Facebook providers.
 
 Residual non-core gaps:
@@ -219,7 +219,6 @@ Avoid introducing controller-to-JPA coupling in new work. Existing direct JPA us
 - `POST /api/users/reset-password`
 - `GET /api/users/me`
 - `PUT /api/users/me`
-- `PUT /api/users/me/email`
 - `PUT /api/users/me/password`
 
 ### Addresses
@@ -496,7 +495,7 @@ Testing:
 
 Completed after Phase 3:
 
-- Refresh/logout token flow, forgot/reset password, OAuth, and account email/password maintenance were completed in Phase 4.
+- Refresh/logout token flow, forgot/reset password, OAuth, and account password maintenance were completed in Phase 4.
 - Full method-level Spring Security inside `user-service` is still outside the current backend scope. Current security boundary is gateway JWT plus downstream DB-backed guards.
 
 ## Post Phase 1 And Phase 2 Notes
@@ -508,7 +507,7 @@ These notes capture the important follow-up context after completing and runtime
 - Phase 1 profile/address backend is complete for current scope.
 - Phase 2 voucher backend and order-service redeem integration are complete for current scope.
 - Frontend has not been implemented yet by request.
-- Admin user management, refresh/logout token flow, forgot/reset password, OAuth, and account email/password maintenance were outside Phase 1/2 at the time; they were completed in later phases.
+- Admin user management, refresh/logout token flow, forgot/reset password, OAuth, and account password maintenance were outside Phase 1/2 at the time; they were completed in later phases.
 
 ### Runtime Verification
 

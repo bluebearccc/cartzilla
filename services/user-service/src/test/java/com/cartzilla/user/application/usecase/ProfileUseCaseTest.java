@@ -66,32 +66,6 @@ class ProfileUseCaseTest {
     }
 
     @Test
-    void changeEmail_updatesEmailResetsVerificationAndRevokesRefreshTokens() {
-        User user = userRepository.save(User.createOAuthUser("old@example.com", "Customer", Role.CUSTOMER));
-        refreshTokenRepository.save(RefreshToken.create(
-                user.getId(), "active-refresh", Instant.now().plusSeconds(3600)));
-        ChangeEmailUseCase useCase = new ChangeEmailUseCase(userRepository, refreshTokenRepository);
-
-        User updated = useCase.execute(user.getId(), new UserCommand.ChangeEmail("new@example.com"));
-
-        assertEquals("new@example.com", updated.getEmail());
-        assertFalse(updated.isEmailVerified());
-        assertTrue(refreshTokenRepository.findByToken("active-refresh").orElseThrow().isDeleted());
-    }
-
-    @Test
-    void changeEmail_rejectsDuplicateEmail() {
-        userRepository.save(User.createCustomer("taken@example.com", "hash", "Taken"));
-        User user = userRepository.save(User.createCustomer("old@example.com", "hash", "Customer"));
-        ChangeEmailUseCase useCase = new ChangeEmailUseCase(userRepository, refreshTokenRepository);
-
-        BusinessException ex = assertThrows(BusinessException.class, () -> useCase.execute(
-                user.getId(), new UserCommand.ChangeEmail("TAKEN@example.com")));
-
-        assertTrue(ex.getMessage().contains("Email"));
-    }
-
-    @Test
     void changePasswordRequiresCurrentPasswordAndRevokesRefreshTokens() {
         User user = userRepository.save(User.createCustomer(
                 "customer@example.com", "encoded:oldpass", "Customer"));
