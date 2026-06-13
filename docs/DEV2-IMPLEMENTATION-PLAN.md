@@ -33,9 +33,9 @@ SRS traceability for Dev2:
 
 | SRS item | Required behavior/API | Current status |
 |---|---|---|
-| F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Implemented: register/login, refresh rotation, logout revoke, active-user guard |
-| F02 / UC-02 | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses`; exactly one default address | Partial: profile/address implemented; default-address test exists; delete default behavior still needs SRS A3 fix |
-| F14 / UC-06 | Admin voucher CRUD, audience management, public preview validate, internal idempotent redeem, atomic used count, min account age | Partial: internal validate exists; admin CRUD/redeem/audience still missing |
+| F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Implemented: register/login, refresh rotation, logout revoke, active-user guard, email/password change revoke |
+| F02 / UC-02 | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses`; exactly one default address | Implemented: profile/address APIs, one-default invariant, SRS A3 default-delete rejection |
+| F14 / UC-06 | Admin voucher CRUD, audience management, public preview validate, internal idempotent redeem, atomic used count, min account age | Implemented: admin CRUD, allowed users, public validate, internal idempotent redeem, order saga integration |
 | F15 / UC-02 | OAuth authorize/callback for Google/Facebook via `OAuthAccount` | Implemented backend authorize/callback flow for configured Google/Facebook providers |
 | F17 / UC-02 | Admin user list/detail, role update, status update | Implemented: admin list/detail, role update, status update, last-active-admin guard |
 | UC-02 A1 / F12 | Forgot/reset password email, reset link valid 30 minutes | Implemented with `password_reset_tokens`, one-time reset, notification-service email handoff |
@@ -75,12 +75,40 @@ Implemented or partially implemented API/controllers:
 - `AuthController`
   - `POST /api/users/register`
   - `POST /api/users/login`
+  - `POST /api/users/refresh-token`
+  - `POST /api/users/logout`
+  - `POST /api/users/forgot-password`
+  - `POST /api/users/reset-password`
+- `ProfileController`
+  - `GET /api/users/me`
+  - `PUT /api/users/me`
+  - `PUT /api/users/me/email`
+  - `PUT /api/users/me/password`
+- `AddressController`
+  - `GET/POST/PUT/DELETE /api/users/me/addresses`
+  - `PUT /api/users/me/addresses/{id}/default`
+- `OAuthController`
+  - `GET /api/oauth/{provider}/authorize`
+  - `GET /api/oauth/{provider}/callback`
+- `VoucherController`
+  - `POST /api/vouchers/validate`
+- `AdminUserController`
+  - `GET /api/admin/users`
+  - `GET /api/admin/users/{id}`
+  - `PUT /api/admin/users/{id}/role`
+  - `PUT /api/admin/users/{id}/status`
+- `AdminVoucherController`
+  - `GET/POST /api/admin/vouchers`
+  - `GET/PUT/DELETE /api/admin/vouchers/{id}`
+  - `POST /api/admin/vouchers/{id}/allowed-users`
+  - `DELETE /api/admin/vouchers/{id}/allowed-users/{userId}`
 - `InternalUserController`
   - `GET /api/internal/users/{userId}`
   - `GET /api/internal/users/{userId}/default-address`
   - `GET /api/internal/users/{userId}/contact`
 - `InternalVoucherController`
   - `GET /api/internal/vouchers/{code}/validate`
+  - `POST /api/internal/vouchers/redeem`
 
 Implemented use cases:
 
@@ -127,44 +155,33 @@ Security/config:
 - `SecurityConfig` provides password encoder and auditing.
 - `common-security` is used for JWT generation.
 
-### Important Gaps
+### Current Completion State
 
-The current implementation is not yet complete for Dev2 scope.
+The Dev2 backend scope is complete for the four implemented phases.
 
-API/application gaps:
+Implemented backend coverage:
 
-- No public profile API yet.
-- No address CRUD API yet.
-- No admin user API yet.
-- No admin voucher CRUD API yet.
-- Refresh/logout token flow implemented in Phase 4.
-- Forgot/reset password flow implemented in Phase 4.
-- OAuth authorize/callback/linking flow implemented in Phase 4.
-- Voucher validation exists, but redeem/commit is not implemented.
-- Internal voucher validation uses JPA repositories directly instead of application use cases.
-- Internal user endpoints use `AddressJpaRepository` directly instead of a domain port/usecase.
+- Profile and address APIs follow the `product-service` controller/use case/repository style.
+- Address default invariants match SRS UC-02 A3.
+- Voucher admin, validation, allowed users, and internal redeem are implemented through application use cases.
+- Order-service calls internal voucher redeem as part of the checkout saga.
+- Admin user management includes pagination/filtering and last-active-admin guardrails.
+- Auth token lifecycle includes login refresh-token creation, refresh rotation, logout revoke, and active-user guard.
+- Account recovery includes forgot/reset password with a 30-minute reset token and notification-service email handoff.
+- Profile account maintenance includes changing email/password and revoking refresh tokens after those changes.
+- OAuth backend login/linking supports configured Google/Facebook providers.
 
-Domain/repository gaps:
+Residual non-core gaps:
 
-- Only `UserRepository` exists as a domain port.
-- No `AddressRepository` port.
-- No `VoucherRepository` port.
-- No `VoucherUsageRepository` port.
-- `OAuthAccountRepository`, `RefreshTokenRepository`, and `PasswordResetTokenRepository` ports now exist.
-- `Address` has create/default methods but no update method.
-- `User` supports activation/password/email changes, but profile update and role changes need explicit domain methods.
-- `Voucher` supports create/redeemable/increment/deactivate, but update behavior and no-code-change rule need explicit handling.
+- Dev2 frontend pages are not implemented in this backend-only workspace.
+- Real OAuth provider testing requires client credentials and redirect URI configuration.
+- Provider-level OAuth HTTP exchange can be covered later with a mock HTTP server if required.
+- Full app `docker compose up` still depends on adding Dockerfiles for application services.
 
-Testing gaps:
+Testing:
 
-- Focused `user-service` tests exist for profile, address, vouchers, admin users, auth lifecycle, and OAuth.
-- Remaining test gap: provider-level OAuth HTTP exchange tests can be added with a mock HTTP server when needed.
-
-Gateway/API exposure gaps:
-
-- Gateway routes `/api/users/**`, `/api/vouchers/**`, `/api/admin/users/**` to user-service.
-- Admin voucher route is not visible in gateway route list yet unless it is placed under an existing path.
-- `/api/internal/**` should remain service-internal and not be exposed through gateway.
+- Focused `user-service` tests exist for profile, address, vouchers, admin users, auth lifecycle, account maintenance, and OAuth.
+- Gateway exposes public/protected Dev2 paths and keeps `/api/internal/**` service-internal.
 
 ## Product-Service Style To Follow
 
@@ -202,6 +219,7 @@ Avoid introducing controller-to-JPA coupling in new work. Existing direct JPA us
 - `POST /api/users/reset-password`
 - `GET /api/users/me`
 - `PUT /api/users/me`
+- `PUT /api/users/me/email`
 - `PUT /api/users/me/password`
 
 ### Addresses
@@ -212,7 +230,7 @@ Avoid introducing controller-to-JPA coupling in new work. Existing direct JPA us
 - `DELETE /api/users/me/addresses/{id}`
 - `PUT /api/users/me/addresses/{id}/default`
 
-SRS UC-02 A3 says deleting the default address while other addresses exist must require switching default first. The current Phase 1 implementation auto-promotes another address; this must be changed to SRS behavior.
+SRS UC-02 A3 says deleting the default address while other addresses exist must require switching default first. The current implementation enforces this behavior.
 
 ### Admin Users
 
@@ -476,10 +494,10 @@ Testing:
   - customer token with spoofed `X-User-Id` / `X-User-Role` is rejected,
   - admin JWT can list users with pagination/filtering and update user role through gateway.
 
-Remaining outside Phase 3:
+Completed after Phase 3:
 
-- Refresh/logout token flow, forgot/reset password, and OAuth.
-- Full method-level Spring Security inside `user-service`. Current security boundary is gateway JWT plus downstream DB-backed admin guard.
+- Refresh/logout token flow, forgot/reset password, OAuth, and account email/password maintenance were completed in Phase 4.
+- Full method-level Spring Security inside `user-service` is still outside the current backend scope. Current security boundary is gateway JWT plus downstream DB-backed guards.
 
 ## Post Phase 1 And Phase 2 Notes
 
@@ -490,7 +508,7 @@ These notes capture the important follow-up context after completing and runtime
 - Phase 1 profile/address backend is complete for current scope.
 - Phase 2 voucher backend and order-service redeem integration are complete for current scope.
 - Frontend has not been implemented yet by request.
-- Admin user management, refresh/logout token flow, forgot/reset password, and OAuth remain outside Phase 1/2 and are still pending.
+- Admin user management, refresh/logout token flow, forgot/reset password, OAuth, and account email/password maintenance were outside Phase 1/2 at the time; they were completed in later phases.
 
 ### Runtime Verification
 
@@ -586,6 +604,6 @@ C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.2\plugins\maven\lib\maven3\bin\m
 
 ### Recommended Next Work
 
-- Phase 3 should start with admin user management because it completes remaining Dev2 admin backend scope.
-- After Phase 3, decide demo depth for refresh/logout, forgot/reset password, and OAuth.
-- Before frontend work, confirm gateway security behavior for `X-User-Id` and `X-User-Role` headers so UI calls match real auth flow.
+- Frontend work can start when the frontend repository/location is confirmed.
+- Real OAuth provider verification needs Google/Facebook client credentials and redirect URI setup.
+- Full Docker-based runtime should add service Dockerfiles because `docker-compose.yml` already references application `build` contexts.

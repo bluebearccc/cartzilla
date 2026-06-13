@@ -1,7 +1,9 @@
 package com.cartzilla.user.application.usecase;
 
 import com.cartzilla.user.application.command.UserCommand;
+import com.cartzilla.user.domain.entity.RefreshToken;
 import com.cartzilla.user.domain.entity.User;
+import com.cartzilla.user.domain.repository.RefreshTokenRepository;
 import com.cartzilla.user.domain.repository.UserRepository;
 import com.cartzilla.user.domain.repository.UserSearchCriteria;
 import com.cartzilla.user.domain.vo.Role;
@@ -10,8 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -23,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class ProfileUseCaseTest {
 
     private final InMemoryUserRepository userRepository = new InMemoryUserRepository();
+    private final InMemoryRefreshTokenRepository refreshTokenRepository = new InMemoryRefreshTokenRepository();
+    private final PasswordEncoder passwordEncoder = new PrefixPasswordEncoder();
 
     @Test
     void getProfile_rejectsInactiveUser() {
@@ -57,6 +63,60 @@ class ProfileUseCaseTest {
         assertThrows(BusinessException.class, () -> useCase.execute(
                 user.getId(),
                 new UserCommand.UpdateProfile(" ", "0900000000")));
+    }
+
+    @Test
+    void changeEmail_updatesEmailResetsVerificationAndRevokesRefreshTokens() {
+        User user = userRepository.save(User.createOAuthUser("old@example.com", "Customer", Role.CUSTOMER));
+        refreshTokenRepository.save(RefreshToken.create(
+                user.getId(), "active-refresh", Instant.now().plusSeconds(3600)));
+        ChangeEmailUseCase useCase = new ChangeEmailUseCase(userRepository, refreshTokenRepository);
+
+        User updated = useCase.execute(user.getId(), new UserCommand.ChangeEmail("new@example.com"));
+
+        assertEquals("new@example.com", updated.getEmail());
+        assertFalse(updated.isEmailVerified());
+        assertTrue(refreshTokenRepository.findByToken("active-refresh").orElseThrow().isDeleted());
+    }
+
+    @Test
+    void changeEmail_rejectsDuplicateEmail() {
+        userRepository.save(User.createCustomer("taken@example.com", "hash", "Taken"));
+        User user = userRepository.save(User.createCustomer("old@example.com", "hash", "Customer"));
+        ChangeEmailUseCase useCase = new ChangeEmailUseCase(userRepository, refreshTokenRepository);
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> useCase.execute(
+                user.getId(), new UserCommand.ChangeEmail("TAKEN@example.com")));
+
+        assertTrue(ex.getMessage().contains("Email"));
+    }
+
+    @Test
+    void changePasswordRequiresCurrentPasswordAndRevokesRefreshTokens() {
+        User user = userRepository.save(User.createCustomer(
+                "customer@example.com", "encoded:oldpass", "Customer"));
+        refreshTokenRepository.save(RefreshToken.create(
+                user.getId(), "active-refresh", Instant.now().plusSeconds(3600)));
+        ChangePasswordUseCase useCase = new ChangePasswordUseCase(
+                userRepository, refreshTokenRepository, passwordEncoder);
+
+        useCase.execute(user.getId(), new UserCommand.ChangePassword("oldpass", "newpass123"));
+
+        assertEquals("encoded:newpass123", user.getPasswordHash());
+        assertTrue(refreshTokenRepository.findByToken("active-refresh").orElseThrow().isDeleted());
+    }
+
+    @Test
+    void changePasswordRejectsWrongCurrentPassword() {
+        User user = userRepository.save(User.createCustomer(
+                "customer@example.com", "encoded:oldpass", "Customer"));
+        ChangePasswordUseCase useCase = new ChangePasswordUseCase(
+                userRepository, refreshTokenRepository, passwordEncoder);
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> useCase.execute(
+                user.getId(), new UserCommand.ChangePassword("wrong", "newpass123")));
+
+        assertTrue(ex.getMessage().contains("Current password"));
     }
 
     private static class InMemoryUserRepository implements UserRepository {
@@ -107,16 +167,54 @@ class ProfileUseCaseTest {
                     .count();
         }
 
-        private static void assignIdIfMissing(User user) {
-            try {
-                Field field = User.class.getDeclaredField("id");
-                field.setAccessible(true);
-                if (field.get(user) == null) {
-                    field.set(user, UUID.randomUUID());
-                }
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException(e);
+        private static void assignIdIfMissing(Object target) {
+            ProfileUseCaseTest.assignIdIfMissing(target);
+        }
+    }
+
+    private static class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
+        private final List<RefreshToken> tokens = new ArrayList<>();
+
+        @Override
+        public RefreshToken save(RefreshToken refreshToken) {
+            assignIdIfMissing(refreshToken);
+            tokens.removeIf(existing -> existing.getId().equals(refreshToken.getId()));
+            tokens.add(refreshToken);
+            return refreshToken;
+        }
+
+        @Override
+        public Optional<RefreshToken> findByToken(String token) {
+            return tokens.stream().filter(refreshToken -> refreshToken.getToken().equals(token)).findFirst();
+        }
+
+        @Override
+        public List<RefreshToken> findByUserId(UUID userId) {
+            return tokens.stream().filter(refreshToken -> refreshToken.getUserId().equals(userId)).toList();
+        }
+    }
+
+    private static class PrefixPasswordEncoder implements PasswordEncoder {
+        @Override
+        public String encode(CharSequence rawPassword) {
+            return "encoded:" + rawPassword;
+        }
+
+        @Override
+        public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            return encodedPassword != null && encodedPassword.equals(encode(rawPassword));
+        }
+    }
+
+    private static void assignIdIfMissing(Object target) {
+        try {
+            Field field = target.getClass().getDeclaredField("id");
+            field.setAccessible(true);
+            if (field.get(target) == null) {
+                field.set(target, UUID.randomUUID());
             }
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
         }
     }
 }
