@@ -121,12 +121,12 @@ OAuth bổ sung:
                                         └─────────────────────────────┘
 ```
 
-Enums: `oauth_accounts.provider = GOOGLE|FACEBOOK`.
+Enums: `oauth_accounts.provider = GOOGLE`.
 
 ### Domain mapping (DDD)
 - **Aggregate root:** `UserAggregate` (chứa `User` + `List<Address>`)
 - **Entity:** `User`, `Address`, `RefreshToken`, `OAuthAccount`, `Voucher`, `VoucherUsage`, `VoucherAllowedUser`
-- **VO:** `Email`, `Role` (enum: CUSTOMER, STAFF, ADMIN), `OAuthProvider` (GOOGLE, FACEBOOK), `AccountTenure` (số ngày kể từ `users.created_at`)
+- **VO:** `Email`, `Role` (enum: CUSTOMER, STAFF, ADMIN), `OAuthProvider` (GOOGLE), `AccountTenure` (số ngày kể từ `users.created_at`)
 - **Port:** `UserRepository`, `OAuthAccountRepository`, `VoucherRepository` (domain) → adapter ở `infrastructure`
 
 ### DDL — Flyway `V1__init.sql`
@@ -177,7 +177,7 @@ CREATE TABLE refresh_tokens (
 CREATE TABLE oauth_accounts (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id          UUID NOT NULL REFERENCES users(id),
-    provider         VARCHAR(30) NOT NULL,                  -- GOOGLE|FACEBOOK
+    provider         VARCHAR(30) NOT NULL,                  -- GOOGLE
     provider_user_id VARCHAR(255) NOT NULL,
     provider_email   VARCHAR(255),
     display_name     VARCHAR(100),

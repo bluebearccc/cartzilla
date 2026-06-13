@@ -113,7 +113,7 @@
 
 | ID | Rule |
 |----|------|
-| **OA-01** | `provider` ∈ {`GOOGLE`, `FACEBOOK`}. |
+| **OA-01** | `provider` ∈ {`GOOGLE`}. |
 | **OA-02** | UNIQUE (`provider`, `providerUserId`) — một tài khoản OAuth chỉ link **một** user. |
 | **OA-03** | UNIQUE (`userId`, `provider`) — mỗi user chỉ link **một** account per provider. |
 | **OA-04** | `linkedAt` NOT NULL, default NOW; `linkedAt` ≥ user.createdAt. |
@@ -175,7 +175,7 @@
 | **Phone** | Regex VN: `0[0-9]{9,10}` hoặc `+84…`; max 20. |
 | **Role** | Enum: `CUSTOMER`, `STAFF`, `ADMIN`. |
 | **PasswordHash** | Bcrypt; never expose plain text; nullable cho OAuth-only. |
-| **OAuthProvider** | Enum: `GOOGLE`, `FACEBOOK`. |
+| **OAuthProvider** | Enum: `GOOGLE`. |
 | **DiscountType** | Enum: `PERCENTAGE`, `FIXED_AMOUNT`. |
 | **VoucherAudienceType** | Enum: `ALL_USERS`, `NEW_CUSTOMER`, `LOYAL_CUSTOMER`, `SPECIFIC_USERS`. |
 | **Money** | `amount ≥ 0`, scale 2, currency `VND`. |

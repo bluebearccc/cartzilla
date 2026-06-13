@@ -55,7 +55,7 @@ public class HttpOAuthProviderGateway implements OAuthProviderGateway {
             throw new BusinessException("OAuth provider did not return access token");
         }
         Map<?, ?> userInfo = fetchUserInfo(registration, accessToken.toString());
-        return toProfile(provider, userInfo);
+        return toProfile(userInfo);
     }
 
     private Map<?, ?> exchangeCodeForToken(OAuthProviderProperties.Registration registration, String code) {
@@ -82,12 +82,9 @@ public class HttpOAuthProviderGateway implements OAuthProviderGateway {
                 .body(Map.class);
     }
 
-    private OAuthProfile toProfile(OAuthProvider provider, Map<?, ?> userInfo) {
+    private OAuthProfile toProfile(Map<?, ?> userInfo) {
         if (userInfo == null) {
             throw new BusinessException("OAuth provider did not return user profile");
-        }
-        if (provider == OAuthProvider.FACEBOOK) {
-            return facebookProfile(userInfo);
         }
         return googleProfile(userInfo);
     }
@@ -100,24 +97,6 @@ public class HttpOAuthProviderGateway implements OAuthProviderGateway {
         Object verifiedValue = userInfo.get("email_verified");
         boolean verified = verifiedValue == null || Boolean.parseBoolean(verifiedValue.toString());
         return new OAuthProfile(id, email, name, picture, verified);
-    }
-
-    @SuppressWarnings("unchecked")
-    private OAuthProfile facebookProfile(Map<?, ?> userInfo) {
-        String picture = null;
-        Object pictureNode = userInfo.get("picture");
-        if (pictureNode instanceof Map<?, ?> pictureMap) {
-            Object dataNode = pictureMap.get("data");
-            if (dataNode instanceof Map<?, ?> dataMap) {
-                picture = value((Map<Object, Object>) dataMap, "url");
-            }
-        }
-        return new OAuthProfile(
-                value(userInfo, "id"),
-                value(userInfo, "email"),
-                value(userInfo, "name"),
-                picture,
-                true);
     }
 
     private OAuthProviderProperties.Registration registration(OAuthProvider provider) {

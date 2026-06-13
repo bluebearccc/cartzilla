@@ -36,7 +36,7 @@ SRS traceability for Dev2:
 | F01 / UC-02 | `POST /api/users/register`, `POST /api/users/login`, `POST /api/users/refresh-token`, `POST /api/users/logout`; refresh token stored server-side; deactivated users rejected | Implemented: register/login, refresh rotation, logout revoke, active-user guard, password change revoke |
 | F02 / UC-02 | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses`; exactly one default address | Implemented: profile/address APIs, one-default invariant, SRS A3 default-delete rejection |
 | F14 / UC-06 | Admin voucher CRUD, audience management, public preview validate, internal idempotent redeem, atomic used count, min account age | Implemented: admin CRUD, allowed users, public validate, internal idempotent redeem, order saga integration |
-| F15 / UC-02 | OAuth authorize/callback for Google/Facebook via `OAuthAccount` | Implemented backend authorize/callback flow for configured Google/Facebook providers |
+| F15 / UC-02 | OAuth authorize/callback for Google via `OAuthAccount` | Implemented backend authorize/callback flow for configured Google provider |
 | F17 / UC-02 | Admin user list/detail, role update, status update | Implemented: admin list/detail, role update, status update, last-active-admin guard |
 | UC-02 A1 / F12 | Forgot/reset password email, reset link valid 30 minutes | Implemented with `password_reset_tokens`, one-time reset, notification-service email handoff |
 
@@ -169,7 +169,7 @@ Implemented backend coverage:
 - Account recovery includes forgot/reset password with a 30-minute reset token and notification-service email handoff.
 - Profile account maintenance includes changing password and revoking refresh tokens after that change.
 - Customer email change is intentionally not exposed in MVP; it requires a separate email verification flow.
-- OAuth backend login/linking supports configured Google/Facebook providers.
+- OAuth backend login/linking supports the configured Google provider.
 
 Residual non-core gaps:
 
@@ -373,7 +373,7 @@ Phase 4 is complete for backend scope.
 - Reset password revokes active refresh tokens.
 - Added full forgot/reset password token flow with 30-minute reset links.
 - Added notification-service internal reset-password email endpoint.
-- Added OAuth authorize/callback backend for configured Google/Facebook providers.
+- Added OAuth authorize/callback backend for the configured Google provider.
 
 Testing focus:
 
@@ -445,7 +445,7 @@ Current behavior:
 - Forgot password does not reveal whether an email exists.
 - Reset password requires a valid, unused reset token, changes the password hash, marks the reset token used, and revokes active refresh tokens.
 - OAuth callback creates a verified customer if needed, links the provider account, records last login, and issues access/refresh tokens.
-- OAuth provider settings are externalized under `oauth.providers.google` and `oauth.providers.facebook`.
+- OAuth provider settings are externalized under `oauth.providers.google`.
 
 Testing:
 
@@ -604,5 +604,5 @@ C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.2\plugins\maven\lib\maven3\bin\m
 ### Recommended Next Work
 
 - Frontend work can start when the frontend repository/location is confirmed.
-- Real OAuth provider verification needs Google/Facebook client credentials and redirect URI setup.
+- Real OAuth provider verification needs Google client credentials and redirect URI setup.
 - Full Docker-based runtime should add service Dockerfiles because `docker-compose.yml` already references application `build` contexts.
