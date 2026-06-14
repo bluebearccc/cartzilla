@@ -36,5 +36,7 @@ public class AuthDtos {
 
     public record VerifyEmailRequest(@NotBlank String token) {}
 
+    public record ResendVerificationRequest(@Email @NotBlank String email) {}
+
     public record LoginResponse(String accessToken, String refreshToken, String email, String role) {}
 }

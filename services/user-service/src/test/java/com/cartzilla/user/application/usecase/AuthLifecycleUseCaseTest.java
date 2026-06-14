@@ -108,6 +108,55 @@ class AuthLifecycleUseCaseTest {
         assertDoesNotThrow(() -> loginUseCase().execute(new AuthCommand.Login("buyer@example.com", "secret123")));
     }
 
+    // ───────────────────────── Resend Verification ─────────────────────────
+
+    @Test
+    void resendVerificationQueuesNewTokenForUnverifiedUser() {
+        User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:secret123", "Buyer"));
+        ResendVerificationEmailUseCase useCase = resendVerificationUseCase();
+
+        useCase.execute("Buyer@Example.com");
+
+        EmailVerificationToken token = verificationTokenRepository.tokens.getLast();
+        assertEquals(user.getId(), token.getUserId());
+        assertFalse(token.isUsed());
+        assertEquals("buyer@example.com", notificationFeignClient.lastVerificationRequest.email());
+        assertTrue(notificationFeignClient.lastVerificationRequest.verificationLink().contains("token="));
+    }
+
+    @Test
+    void resendVerificationIgnoresAlreadyVerifiedUser() {
+        User user = userRepository.save(User.createCustomer("buyer@example.com", "encoded:secret123", "Buyer"));
+        user.verifyEmail();
+        ResendVerificationEmailUseCase useCase = resendVerificationUseCase();
+
+        useCase.execute("buyer@example.com");
+
+        assertTrue(verificationTokenRepository.tokens.isEmpty());
+        assertNull(notificationFeignClient.lastVerificationRequest);
+    }
+
+    @Test
+    void resendVerificationIgnoresUnknownEmail() {
+        ResendVerificationEmailUseCase useCase = resendVerificationUseCase();
+
+        assertDoesNotThrow(() -> useCase.execute("unknown@example.com"));
+        assertTrue(verificationTokenRepository.tokens.isEmpty());
+        assertNull(notificationFeignClient.lastVerificationRequest);
+    }
+
+    @Test
+    void resendVerificationIgnoresInactiveUser() {
+        User user = userRepository.save(User.createCustomer("inactive@example.com", "encoded:secret123", "Inactive"));
+        user.deactivate();
+        ResendVerificationEmailUseCase useCase = resendVerificationUseCase();
+
+        useCase.execute("inactive@example.com");
+
+        assertTrue(verificationTokenRepository.tokens.isEmpty());
+        assertNull(notificationFeignClient.lastVerificationRequest);
+    }
+
     @Test
     void loginRejectsOAuthOnlyUserWithoutPassword() {
         userRepository.save(User.createOAuthUser("oauth@example.com", "OAuth User", Role.CUSTOMER));
@@ -388,6 +437,14 @@ class AuthLifecycleUseCaseTest {
         RegisterUserUseCase useCase = new RegisterUserUseCase(
                 userRepository, passwordEncoder, verificationTokenRepository,
                 notificationFeignClient, tokenGenerator);
+        ReflectionTestUtils.setField(useCase, "verificationBaseUrl", "http://localhost/verify-email");
+        ReflectionTestUtils.setField(useCase, "verificationTtlSeconds", 86400L);
+        return useCase;
+    }
+
+    private ResendVerificationEmailUseCase resendVerificationUseCase() {
+        ResendVerificationEmailUseCase useCase = new ResendVerificationEmailUseCase(
+                userRepository, verificationTokenRepository, notificationFeignClient, tokenGenerator);
         ReflectionTestUtils.setField(useCase, "verificationBaseUrl", "http://localhost/verify-email");
         ReflectionTestUtils.setField(useCase, "verificationTtlSeconds", 86400L);
         return useCase;

@@ -6,6 +6,7 @@ import com.cartzilla.user.domain.entity.Voucher;
 import com.cartzilla.user.domain.repository.UserRepository;
 import com.cartzilla.user.domain.repository.VoucherAllowedUserRepository;
 import com.cartzilla.user.domain.repository.VoucherRepository;
+import com.cartzilla.user.domain.exception.UnprocessableEntityException;
 import com.cartzilla.user.domain.repository.VoucherUsageRepository;
 import com.cartzilla.user.domain.vo.DiscountType;
 import com.cartzilla.user.domain.vo.VoucherAudienceType;
@@ -49,10 +50,10 @@ public class ValidateVoucherUseCase {
         subtotal = requireSubtotal(subtotal);
         Instant now = Instant.now();
         if (!voucher.isRedeemable(now)) {
-            throw new BusinessException("Voucher is not redeemable (VA-03)");
+            throw new UnprocessableEntityException("Voucher is not redeemable (VA-03)");
         }
         if (subtotal.compareTo(voucher.getMinOrderAmount()) < 0) {
-            throw new BusinessException("Order subtotal " + subtotal
+            throw new UnprocessableEntityException("Order subtotal " + subtotal
                     + " < minOrderAmount " + voucher.getMinOrderAmount() + " (V-04)");
         }
         validateSupportedEligibilityRules(voucher);
@@ -80,13 +81,13 @@ public class ValidateVoucherUseCase {
             return;
         }
         if (user.getCreatedAt() == null) {
-            throw new BusinessException("Cannot validate voucher account age");
+            throw new UnprocessableEntityException("Cannot validate voucher account age");
         }
         long ageDays = ChronoUnit.DAYS.between(
                 user.getCreatedAt().atZone(ZoneOffset.UTC).toLocalDate(),
                 now.atZone(ZoneOffset.UTC).toLocalDate());
         if (ageDays < voucher.getMinAccountAgeDays()) {
-            throw new BusinessException("Voucher requires account age of at least "
+            throw new UnprocessableEntityException("Voucher requires account age of at least "
                     + voucher.getMinAccountAgeDays() + " days. Current: " + ageDays + " days");
         }
     }
@@ -94,7 +95,7 @@ public class ValidateVoucherUseCase {
     private void validatePerUserLimit(Voucher voucher, User user) {
         long userUsageCount = usageRepository.countByVoucherIdAndUserId(voucher.getId(), user.getId());
         if (userUsageCount >= voucher.getPerUserLimit()) {
-            throw new BusinessException("User has reached perUserLimit="
+            throw new UnprocessableEntityException("User has reached perUserLimit="
                     + voucher.getPerUserLimit() + " for this voucher (V-11)");
         }
     }
@@ -103,19 +104,27 @@ public class ValidateVoucherUseCase {
         if (voucher.isFirstOrderOnly()
                 || voucher.getMinCompletedOrders() > 0
                 || voucher.getMinTotalSpent().compareTo(BigDecimal.ZERO) > 0) {
-            throw new BusinessException(
+            throw new UnprocessableEntityException(
                     "Voucher order-history eligibility requires order-service user stats integration");
         }
     }
 
+    /**
+     * BR-V14: enforce audience. SPECIFIC_USERS kiểm tra allow-list; ALL_USERS hợp lệ.
+     * NEW_CUSTOMER/LOYAL_CUSTOMER phụ thuộc order-history stats (chưa tích hợp order-service)
+     * nên từ chối tường minh thay vì để hành vi sai âm thầm (trước đây LOYAL_CUSTOMER lọt mọi user).
+     */
     private void validateAudience(Voucher voucher, User user) {
-        VoucherAudienceType audienceType = voucher.getAudienceType();
-        if (audienceType == VoucherAudienceType.SPECIFIC_USERS
-                && !allowedUserRepository.existsByVoucherIdAndUserId(voucher.getId(), user.getId())) {
-            throw new BusinessException("Voucher audience mismatch: SPECIFIC_USERS");
-        }
-        if (audienceType == VoucherAudienceType.NEW_CUSTOMER && !voucher.isFirstOrderOnly()) {
-            throw new BusinessException("NEW_CUSTOMER voucher must be first-order-only");
+        switch (voucher.getAudienceType()) {
+            case ALL_USERS -> { /* hợp lệ với mọi user */ }
+            case SPECIFIC_USERS -> {
+                if (!allowedUserRepository.existsByVoucherIdAndUserId(voucher.getId(), user.getId())) {
+                    throw new UnprocessableEntityException("Voucher audience mismatch: SPECIFIC_USERS");
+                }
+            }
+            case NEW_CUSTOMER, LOYAL_CUSTOMER -> throw new UnprocessableEntityException(
+                    "Voucher audience " + voucher.getAudienceType()
+                            + " requires order-history integration and is not supported yet");
         }
     }
 

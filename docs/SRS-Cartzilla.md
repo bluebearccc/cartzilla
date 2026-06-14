@@ -523,7 +523,7 @@ CONFIRMED -> CANCELLED
 
 | Feature | UC | Service | REST Endpoint (qua Gateway) | DB table/collection / Entity | Event liên quan |
 |---|---|---|---|---|---|
-| F01 Auth | UC-02 | user-service | `POST /api/users/register`, `/verify-email`, `/login`, `/refresh-token`, `/logout`, `/forgot-password`, `/reset-password` | `users`, `email_verification_tokens`, `password_reset_tokens`, `refresh_tokens` | `email-verification`, `reset-password` |
+| F01 Auth | UC-02 | user-service | `POST /api/users/register`, `/verify-email`, `/resend-verification`, `/login`, `/refresh-token`, `/logout`, `/forgot-password`, `/reset-password` | `users`, `email_verification_tokens`, `password_reset_tokens`, `refresh_tokens` | `email-verification`, `reset-password` |
 | F02 Profile/address | UC-02 | user-service | `GET/PUT /api/users/me`, `GET/POST/PUT/DELETE /api/users/me/addresses` | `users`, `addresses` | — |
 | F03 Browse/search | UC-01 | product-service | `GET /api/products?category=&size=&color=&vendor=&sort=&page=` | `products`, `categories`, `vendors` | — |
 | F04 Product detail | UC-01 | product-service | `GET /api/products/{id}` | `products`, `product_variants`, `product_images` | — |
@@ -673,6 +673,7 @@ This section records the implemented DEV2 auth behavior as of 2026-06-13.
 
 - `POST /api/users/register`
 - `POST /api/users/verify-email`
+- `POST /api/users/resend-verification`
 - `POST /api/users/login`
 - `POST /api/users/refresh-token`
 - `POST /api/users/logout`

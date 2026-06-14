@@ -7,6 +7,7 @@ import com.cartzilla.user.api.dto.AuthDtos.LoginResponse;
 import com.cartzilla.user.api.dto.AuthDtos.LogoutRequest;
 import com.cartzilla.user.api.dto.AuthDtos.RefreshTokenRequest;
 import com.cartzilla.user.api.dto.AuthDtos.RegisterRequest;
+import com.cartzilla.user.api.dto.AuthDtos.ResendVerificationRequest;
 import com.cartzilla.user.api.dto.AuthDtos.ResetPasswordRequest;
 import com.cartzilla.user.api.dto.AuthDtos.VerifyEmailRequest;
 import com.cartzilla.user.application.usecase.ForgotPasswordUseCase;
@@ -14,6 +15,7 @@ import com.cartzilla.user.application.usecase.LoginUseCase;
 import com.cartzilla.user.application.usecase.LogoutUseCase;
 import com.cartzilla.user.application.usecase.RefreshTokenUseCase;
 import com.cartzilla.user.application.usecase.RegisterUserUseCase;
+import com.cartzilla.user.application.usecase.ResendVerificationEmailUseCase;
 import com.cartzilla.user.application.usecase.ResetPasswordUseCase;
 import com.cartzilla.user.application.usecase.VerifyEmailUseCase;
 import com.cartzilla.web.response.ApiResponse;
@@ -40,6 +42,7 @@ public class AuthController {
     private final ForgotPasswordUseCase forgotPasswordUseCase;
     private final ResetPasswordUseCase resetPasswordUseCase;
     private final VerifyEmailUseCase verifyEmailUseCase;
+    private final ResendVerificationEmailUseCase resendVerificationEmailUseCase;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UUID>> register(@Valid @RequestBody RegisterRequest req) {
@@ -82,5 +85,11 @@ public class AuthController {
     public ApiResponse<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest req) {
         verifyEmailUseCase.execute(req.token());
         return ApiResponse.ok("Email verified", null);
+    }
+
+    @PostMapping("/resend-verification")
+    public ApiResponse<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest req) {
+        resendVerificationEmailUseCase.execute(req.email());
+        return ApiResponse.ok("Verification email queued if the account requires verification", null);
     }
 }

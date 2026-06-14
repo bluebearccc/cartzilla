@@ -1,5 +1,6 @@
 package com.cartzilla.user.domain.entity;
 
+import com.cartzilla.user.domain.exception.ForbiddenException;
 import com.cartzilla.user.domain.vo.Role;
 import com.cartzilla.web.base.BaseEntity;
 import com.cartzilla.web.exception.BusinessException;
@@ -114,9 +115,9 @@ public class User extends BaseEntity {
 
     public void activate() { this.active = true; }
 
-    /** UA-04: guard — ném exception nếu user không active */
+    /** UA-04: guard — ném exception nếu user không active (HTTP 403, SRS TC-04) */
     public void requireActive() {
         if (!active)
-            throw new BusinessException("User account is not active");
+            throw new ForbiddenException("User account is not active");
     }
 }

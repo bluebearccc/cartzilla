@@ -6,6 +6,7 @@ import com.cartzilla.user.domain.entity.Voucher;
 import com.cartzilla.user.domain.entity.VoucherUsage;
 import com.cartzilla.user.domain.repository.UserRepository;
 import com.cartzilla.user.domain.repository.VoucherAllowedUserRepository;
+import com.cartzilla.user.domain.exception.UnprocessableEntityException;
 import com.cartzilla.user.domain.repository.VoucherRepository;
 import com.cartzilla.user.domain.repository.VoucherUsageRepository;
 import com.cartzilla.web.exception.BusinessException;
@@ -49,12 +50,14 @@ public class RedeemVoucherUseCase {
         validator.validateEligibility(voucher, user, command.orderSubtotal());
         BigDecimal discount = validator.calculateDiscount(voucher, command.orderSubtotal());
 
-        if (voucherRepository.incrementUsedCountIfAvailable(voucher.getId()) != 1) {
-            throw new BusinessException("Voucher has reached max uses (VA-02)");
-        }
-
+        // BR-V05: ghi VoucherUsage trước (unique (voucherId, orderId) đảm bảo idempotent),
+        // chỉ tăng usedCount khi tạo được usage mới. Nếu tăng count không thành công (hết lượt)
+        // thì throw → toàn bộ transaction rollback, không over-count, không để usage mồ côi.
         VoucherUsage usage = usageRepository.save(VoucherUsage.redeem(
                 voucher.getId(), user.getId(), command.orderId(), discount));
+        if (voucherRepository.incrementUsedCountIfAvailable(voucher.getId()) != 1) {
+            throw new UnprocessableEntityException("Voucher has reached max uses (VA-02)");
+        }
         return new Result(usage.getId(), voucher.getCode(), discount, false);
     }
 

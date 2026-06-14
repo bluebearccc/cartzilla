@@ -1,8 +1,8 @@
 package com.cartzilla.user.application.usecase;
 
+import com.cartzilla.user.domain.exception.ForbiddenException;
 import com.cartzilla.user.domain.repository.UserRepository;
 import com.cartzilla.user.domain.vo.Role;
-import com.cartzilla.web.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +17,9 @@ public class EnsureAdminUseCase {
     @Transactional(readOnly = true)
     public void execute(UUID userId) {
         var user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("Admin account not found"));
+                .orElseThrow(() -> new ForbiddenException("Admin account not found"));
         if (!user.isActive() || user.getRole() != Role.ADMIN) {
-            throw new BusinessException("Admin role required");
+            throw new ForbiddenException("Admin role required");
         }
     }
 }

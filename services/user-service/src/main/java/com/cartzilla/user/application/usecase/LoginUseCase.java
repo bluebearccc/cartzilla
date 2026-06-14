@@ -35,15 +35,16 @@ public class LoginUseCase {
     public Result execute(AuthCommand.Login cmd) {
         User user = userRepository.findByEmail(cmd.email())
                 .orElseThrow(() -> new BusinessException("Invalid email or password"));
-        user.requireActive();
-        if (!user.isEmailVerified()) {
-            throw new BusinessException("Email is not verified");
-        }
+        // Xác thực credential TRƯỚC khi tiết lộ trạng thái tài khoản (chống account enumeration).
         if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
             throw new BusinessException("Invalid email or password");
         }
         if (!passwordEncoder.matches(cmd.password(), user.getPasswordHash())) {
             throw new BusinessException("Invalid email or password");
+        }
+        user.requireActive();
+        if (!user.isEmailVerified()) {
+            throw new BusinessException("Email is not verified");
         }
         String accessToken = jwtTokenProvider.generateAccessToken(
                 user.getId().toString(), user.getEmail(), user.getRole().name());
