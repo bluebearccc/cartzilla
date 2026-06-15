@@ -1,5 +1,6 @@
 package com.cartzilla.user.domain.entity;
 
+import com.cartzilla.user.domain.exception.ForbiddenException;
 import com.cartzilla.user.domain.vo.Role;
 import com.cartzilla.web.base.BaseEntity;
 import com.cartzilla.web.exception.BusinessException;
@@ -95,15 +96,28 @@ public class User extends BaseEntity {
         this.passwordHash = newHash;
     }
 
+    public void updateProfile(String fullName, String phone) {
+        if (fullName == null || fullName.isBlank())
+            throw new BusinessException("fullName must not be blank");
+        this.fullName = fullName.trim();
+        this.phone = phone == null || phone.isBlank() ? null : phone.trim();
+    }
+
+    public void changeRole(Role role) {
+        if (role == null)
+            throw new BusinessException("role must not be null");
+        this.role = role;
+    }
+
     public void verifyEmail() { this.emailVerified = true; }
 
     public void deactivate() { this.active = false; }
 
     public void activate() { this.active = true; }
 
-    /** UA-04: guard — ném exception nếu user không active */
+    /** UA-04: guard — ném exception nếu user không active (HTTP 403, SRS TC-04) */
     public void requireActive() {
         if (!active)
-            throw new BusinessException("User account is not active");
+            throw new ForbiddenException("User account is not active");
     }
 }

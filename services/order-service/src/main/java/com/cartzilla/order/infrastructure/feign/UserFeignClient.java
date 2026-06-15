@@ -4,7 +4,10 @@ import com.cartzilla.web.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -37,6 +40,9 @@ public interface UserFeignClient {
                                                         @org.springframework.web.bind.annotation.RequestParam UUID userId,
                                                         @org.springframework.web.bind.annotation.RequestParam java.math.BigDecimal orderSubtotal);
 
+    @PostMapping("/api/internal/vouchers/redeem")
+    ApiResponse<VoucherRedeemDto> redeemVoucher(@RequestBody VoucherRedeemRequest request);
+
     // ─── Inner DTOs (response payload từ user-service) ───────────────────────
 
     record UserDto(UUID id, String email, String fullName, boolean active, String role) {}
@@ -46,4 +52,8 @@ public interface UserFeignClient {
 
     record VoucherValidationDto(String code, java.math.BigDecimal discountAmount,
                                  String discountType, boolean valid, String message) {}
+
+    record VoucherRedeemRequest(String code, UUID userId, UUID orderId, BigDecimal orderSubtotal) {}
+
+    record VoucherRedeemDto(UUID usageId, String code, BigDecimal discountAmount, boolean idempotent) {}
 }

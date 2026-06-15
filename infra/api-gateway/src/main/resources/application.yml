@@ -9,13 +9,22 @@ spring:
         webflux:
           discovery:
             locator:
-              enabled: true
+              # SECURITY: tắt auto-route theo service-id. Nếu bật, gateway sinh route
+              # /{service-id}/** KHÔNG qua filter JwtAuth → bypass xác thực/role và lộ
+              # các endpoint nội bộ /api/internal/**. Chỉ dùng explicit routes bên dưới.
+              enabled: false
               lower-case-service-id: true
           routes:
-            - id: user-service
+            - id: user-service-auth
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/api/users/**,/api/vouchers/**,/api/admin/users/**
+                - Path=/api/users/register,/api/users/login,/api/users/refresh-token,/api/users/logout,/api/users/forgot-password,/api/users/reset-password,/api/users/verify-email,/api/users/resend-verification,/api/oauth/**
+            - id: user-service-protected
+              uri: lb://USER-SERVICE
+              predicates:
+                - Path=/api/users/me,/api/users/me/**,/api/vouchers/**,/api/admin/users/**,/api/admin/vouchers/**
+              filters:
+                - JwtAuth
             - id: product-service-admin
               uri: lb://PRODUCT-SERVICE
               predicates:

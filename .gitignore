@@ -12,6 +12,10 @@ target/
 .project
 .classpath
 
+# Codex local tooling
+.codex/
+skill-navigator.md
+
 # Node / frontend
 node_modules/
 dist/
@@ -19,6 +23,9 @@ dist/
 
 # Env & secrets
 .env
+*.env
+.env.*
+!.env.example
 *.local
 
 # Logs / OS

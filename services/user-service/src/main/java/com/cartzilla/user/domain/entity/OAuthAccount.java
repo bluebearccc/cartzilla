@@ -36,7 +36,7 @@ public class OAuthAccount extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    /** OA-01: GOOGLE | FACEBOOK */
+    /** OA-01: MVP chỉ hỗ trợ GOOGLE */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private OAuthProvider provider;

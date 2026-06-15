@@ -1,5 +1,6 @@
 package com.cartzilla.user.api.controller;
 
+import com.cartzilla.user.api.ApiPaths;
 import com.cartzilla.user.domain.entity.Address;
 import com.cartzilla.user.domain.entity.User;
 import com.cartzilla.user.domain.repository.UserRepository;
@@ -17,7 +18,7 @@ import java.util.UUID;
  * Không expose qua API Gateway public (cần config gateway exclude /api/internal/**).
  */
 @RestController
-@RequestMapping("/api/internal/users")
+@RequestMapping(ApiPaths.INTERNAL_USERS)
 @RequiredArgsConstructor
 public class InternalUserController {
 

@@ -24,5 +24,19 @@ public class AuthDtos {
         }
     }
 
-    public record LoginResponse(String accessToken, String email, String role) {}
+    public record RefreshTokenRequest(@NotBlank String refreshToken) {}
+
+    public record LogoutRequest(@NotBlank String refreshToken) {}
+
+    public record ForgotPasswordRequest(@Email @NotBlank String email) {}
+
+    public record ResetPasswordRequest(
+            @NotBlank String token,
+            @NotBlank @Size(min = 6) String newPassword) {}
+
+    public record VerifyEmailRequest(@NotBlank String token) {}
+
+    public record ResendVerificationRequest(@Email @NotBlank String email) {}
+
+    public record LoginResponse(String accessToken, String refreshToken, String email, String role) {}
 }
