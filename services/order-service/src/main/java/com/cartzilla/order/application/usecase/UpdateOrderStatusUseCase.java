@@ -1,6 +1,7 @@
 package com.cartzilla.order.application.usecase;
 
 import com.cartzilla.order.application.command.OrderCommand;
+import com.cartzilla.order.application.port.OrderEventPort;
 import com.cartzilla.order.domain.entity.Order;
 import com.cartzilla.order.domain.repository.OrderRepository;
 import com.cartzilla.order.domain.vo.OrderStatus;
@@ -14,6 +15,7 @@ import java.util.NoSuchElementException;
 /**
  * F10 — UC-04: staff/admin chuyển trạng thái đơn theo state machine.
  * Mọi chuyển trạng thái hợp lệ ghi OrderStatusLog (BR-O08) — enforce trong domain.
+ * Mỗi transition phát event tương ứng để customer nhận notification/email (BR-N02, F10).
  * Transition không hợp lệ → BusinessException (422). OA-S1..OA-S5, BR-O09..BR-O11.
  */
 @Service
@@ -21,6 +23,7 @@ import java.util.NoSuchElementException;
 public class UpdateOrderStatusUseCase {
 
     private final OrderRepository orderRepository;
+    private final OrderEventPort orderEventPort;
 
     @Transactional
     public Order execute(OrderCommand.UpdateStatus cmd) {
@@ -35,7 +38,16 @@ public class UpdateOrderStatusUseCase {
             case CANCELLED -> order.cancel(cmd.reason(), cmd.changedBy()); // OA-S4/OA-07
             case PENDING   -> throw new BusinessException("Cannot transition back to PENDING (OA-S5)");
         }
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        switch (target) {
+            case CONFIRMED -> orderEventPort.orderConfirmed(saved);
+            case SHIPPING  -> orderEventPort.orderShipped(saved);
+            case DELIVERED -> orderEventPort.orderDelivered(saved);
+            case CANCELLED -> orderEventPort.orderCancelled(saved, cmd.reason());
+            case PENDING   -> { /* unreachable: rejected above */ }
+        }
+        return saved;
     }
 
     private OrderStatus parseStatus(String raw) {

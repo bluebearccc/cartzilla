@@ -137,9 +137,16 @@ POST /api/orders/checkout/by-sku
   (fail bất kỳ bước → compensate + order.cancelled)
 ```
 
-## Trạng thái skeleton
-Đã có: cấu trúc đầy đủ, auth (register/login + JWT), catalog list + stock consumer,
-checkout + Saga orchestrator hoàn chỉnh, payment COD mock, email consumer.
-TODO mở rộng: address/voucher CRUD, admin catalog, cart CRUD, staff orders,
-VNPay thật, reports, frontend React (`../frontend`).
+## Trạng thái backend
+Hoàn thiện toàn bộ feature F01–F18 theo SRS traceability:
+auth + email verification + OAuth, profile/address, catalog + admin CRUD + vendor,
+cart + checkout + Saga, COD (PAID khi delivered) + **VNPay thật** (create/callback có
+verify chữ ký HMAC-SHA512, idempotent, amount-match), voucher validate/redeem,
+staff order workflow, **notification in-app API** (`GET /api/notifications`,
+`PUT /api/notifications/{id}/read`) + email log, và **admin reports** (`/api/admin/reports/*`).
+Build: `mvn clean install` xanh, 95 unit test pass.
+
+> **Lưu ý chạy:** chưa có `Dockerfile` cho các service nên `docker compose up --build`
+> (phần build service) sẽ lỗi — chạy hạ tầng bằng docker rồi khởi động service bằng
+> `mvn -pl services/<svc> spring-boot:run` như mô tả ở trên. Frontend React ngoài phạm vi backend.
 ```

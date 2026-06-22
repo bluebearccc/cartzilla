@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hồ sơ người dùng - Cartzilla</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0F172A",
+                        secondary: "#475569",
+                        muted: "#94A3B8",
+                        brand: {
+                            DEFAULT: "#4F46E5",
+                            hover: "#4338CA",
+                            tint: "#EEF2FF"
+                        },
+                        success: {
+                            DEFAULT: "#16A34A",
+                            tint: "#DCFCE7"
+                        },
+                        warning: {
+                            DEFAULT: "#F59E0B",
+                            tint: "#FEF3C7"
+                        },
+                        danger: {
+                            DEFAULT: "#DC2626",
+                            tint: "#FEE2E2"
+                        },
+                        info: {
+                            DEFAULT: "#0EA5E9",
+                            tint: "#E0F2FE"
+                        },
+                        surface: {
+                            page: "#F8FAFC",
+                            card: "#FFFFFF",
+                            border: "#E2E8F0",
+                            divider: "#EEF2F6"
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "10px",
+                        "card": "16px",
+                        "pill": "999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC; /* surface-page */
+            color: #0F172A; /* primary */
+        }
+        h1, h2, h3, h4, h5, h6, .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Toast Animation */
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+        .toast-enter {
+            animation: slideInDown 0.3s ease-out forwards;
+        }
+        .toast-exit {
+            animation: fadeOut 0.3s ease-in forwards;
+        }
+    </style>
+</head>
+<body class="bg-surface-page min-h-screen flex flex-col font-body">
+<!-- Toast Notification (Top Right) -->
+<div class="fixed top-24 right-4 z-[60] flex items-center gap-3 bg-white px-4 py-3 rounded shadow-card border-l-4 border-success toast-enter" id="toast">
+<span class="material-symbols-outlined text-success" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div>
+<p class="text-sm font-medium text-primary">Thành công</p>
+<p class="text-xs text-secondary">Đã cập nhật hồ sơ</p>
+</div>
+<button class="ml-2 text-muted hover:text-secondary" onclick="document.getElementById('toast').classList.add('toast-exit'); setTimeout(() =&gt; document.getElementById('toast').remove(), 300);">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- TopNavBar -->
+<header class="bg-white fixed top-0 w-full z-50 border-b border-surface-border shadow-sm transition-all duration-200">
+<div class="flex justify-between items-center h-20 px-4 md:px-12 max-w-7xl mx-auto w-full">
+<!-- Logo / Brand -->
+<div class="flex items-center gap-4">
+<a class="font-headline text-2xl font-bold text-primary dark:text-white flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-brand text-3xl" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+                    Cartzilla
+                </a>
+</div>
+<!-- Search (Centered Desktop) -->
+<div class="hidden lg:flex flex-1 max-w-md mx-8">
+<div class="relative w-full">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
+<span class="material-symbols-outlined">search</span>
+</span>
+<input class="w-full pl-10 pr-4 py-2 border border-surface-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand text-sm bg-surface-page text-primary placeholder-muted transition-colors" placeholder="Tìm sản phẩm..." type="text"/>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-8 font-body text-sm text-secondary">
+<a class="text-secondary hover:text-brand transition-colors" href="#">Trang chủ</a>
+<a class="text-secondary hover:text-brand transition-colors" href="#">Sản phẩm</a>
+<a class="text-secondary hover:text-brand transition-colors" href="#">Bộ sưu tập</a>
+<a class="text-secondary hover:text-brand transition-colors" href="#">Giảm giá</a>
+<a class="text-secondary hover:text-brand transition-colors" href="#">Liên hệ</a>
+</nav>
+<!-- Trailing Icons / Actions -->
+<div class="flex items-center gap-4">
+<button class="text-secondary hover:text-brand transition-all duration-200 active:scale-95 hidden md:block">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<div class="relative">
+<button class="text-secondary hover:text-brand transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<span class="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-danger"></span>
+</div>
+<div class="relative">
+<button class="text-secondary hover:text-brand transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+<span class="absolute -top-1 -right-2 bg-brand text-white text-[10px] font-bold px-1.5 py-0.5 rounded-pill leading-none">3</span>
+</div>
+<!-- Avatar / User Menu Trigger -->
+<div class="ml-2 relative group cursor-pointer">
+<img alt="Ảnh đại diện người dùng" class="h-8 w-8 rounded-pill object-cover border border-surface-border" data-alt="A small circular profile picture of an Asian man with short dark hair, smiling warmly, wearing a professional casual shirt, well-lit studio lighting, clear light mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTuNrpjd_TnECnm4jIN-6Gku1jKTVznUm4er1yyCdf6eJvliRNeOGJOhYB-b6NEMBZVR9MBjyn__OlSolxsPy7rxivgHYoehw-lzigbOelUUOV128GcLpr-W3GGjAtPgf1xk5OIu8CyH7amOGEumvNDtVHEmQrBwjyh5pMKAAk83ttFoFF8FsnnCwGpSMh3WBKUAeeG_Q-giQJsFZXNaGdK8e_9u5VGhvHgfMFVe6iWGVFpUlCxsZlrkmvC3ELFPBCjDFt9EEvyEc"/>
+<!-- Dropdown (Hover) -->
+<div class="absolute right-0 mt-2 w-48 bg-white rounded-card shadow-card py-2 border border-surface-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+<a class="block px-4 py-2 text-sm text-brand font-medium bg-brand-tint" href="#">Hồ sơ</a>
+<a class="block px-4 py-2 text-sm text-secondary hover:bg-surface-page hover:text-primary" href="#">Đơn hàng</a>
+<a class="block px-4 py-2 text-sm text-secondary hover:bg-surface-page hover:text-primary" href="#">Thông báo</a>
+<div class="border-t border-surface-divider my-1"></div>
+<a class="block px-4 py-2 text-sm text-danger hover:bg-danger-tint" href="#">Đăng xuất</a>
+</div>
+</div>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden text-secondary hover:text-brand">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-grow pt-28 pb-16 px-4 md:px-12 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- Left Sidebar (Account Menu) -->
+<aside class="md:col-span-3 lg:col-span-3">
+<div class="sticky top-28 bg-white rounded-card shadow-card border border-surface-border p-4">
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-brand-tint text-brand font-medium transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">person</span>
+                        Hồ sơ
+                    </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-secondary hover:bg-surface-page hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary">location_on</span>
+                        Địa chỉ
+                    </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-secondary hover:bg-surface-page hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary">inventory_2</span>
+                        Đơn hàng
+                    </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-secondary hover:bg-surface-page hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary">notifications</span>
+                        Thông báo
+                        <span class="ml-auto bg-brand text-white text-[10px] font-bold px-1.5 py-0.5 rounded-pill leading-none">2</span>
+</a>
+<div class="h-px bg-surface-divider my-2"></div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-secondary hover:bg-surface-page hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary">lock</span>
+                        Đổi mật khẩu
+                    </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-danger hover:bg-danger-tint transition-colors group mt-2" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                        Đăng xuất
+                    </a>
+</nav>
+</div>
+</aside>
+<!-- Right Content Area -->
+<div class="md:col-span-9 lg:col-span-9 space-y-6">
+<!-- Breadcrumbs -->
+<nav aria-label="Breadcrumb" class="flex text-sm text-secondary mb-4">
+<ol class="inline-flex items-center space-x-1 md:space-x-2">
+<li class="inline-flex items-center">
+<a class="hover:text-brand flex items-center" href="#">
+                            Trang chủ
+                        </a>
+</li>
+<li>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-[16px] mx-1 text-muted">chevron_right</span>
+<span class="text-primary font-medium">Hồ sơ</span>
+</div>
+</li>
+</ol>
+</nav>
+<!-- Header Title -->
+<h1 class="font-headline text-3xl font-bold text-primary mb-6">Tài khoản của tôi</h1>
+<!-- Card 1: Thông tin cá nhân -->
+<div class="bg-white rounded-card shadow-card border border-surface-border p-6 md:p-8">
+<h2 class="font-headline text-xl font-bold text-primary mb-6 pb-4 border-b border-surface-divider">Thông tin cá nhân</h2>
+<div class="flex flex-col md:flex-row gap-8">
+<!-- Avatar Upload -->
+<div class="flex flex-col items-center gap-4">
+<div class="relative group cursor-pointer">
+<img alt="Ảnh đại diện" class="h-32 w-32 rounded-full object-cover border-4 border-white shadow-sm ring-1 ring-surface-border" data-alt="A large, clear, high-quality circular profile portrait of an Asian man, smiling, soft natural lighting, modern light-mode studio photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxgqptEhuzOMZ5rve2AevgGX785poaTYNrr-YVznsJJ-RNLBtQQ7NwX8jWTd6NfIxsv3TvSNEfsjYffFBLV9zZBwD2KBms_4ZwmFqUjc4RhZ5FmgjYUqGWgGlFsSmTxElOod3SsjXCHGMwv5xcZZZd22YPGVveR0sfvSh6mks2H9Ce-yVTcMDVR_qXKRDXjlr5M4PW8b7niAearZJZXP6JmCyRehvOqXeR74Vp7lTGuCeQiRg7ONlEq-27-leQvI0ZQkG6ULYT3UE"/>
+<div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white">photo_camera</span>
+</div>
+</div>
+<button class="text-sm font-medium text-brand hover:text-brand-hover border border-brand/20 px-4 py-1.5 rounded-pill hover:bg-brand-tint transition-colors">
+                            Đổi ảnh
+                        </button>
+</div>
+<!-- Form Fields -->
+<div class="flex-1 space-y-5">
+<!-- Họ và tên -->
+<div>
+<label class="block text-sm font-medium text-primary mb-1" for="fullname">Họ và tên <span class="text-danger">*</span></label>
+<input class="w-full border border-surface-border rounded px-4 py-2 text-primary focus:ring-2 focus:ring-brand focus:border-brand transition-colors shadow-sm" id="fullname" type="text" value="Nguyễn Văn A"/>
+</div>
+<!-- Email -->
+<div>
+<label class="block text-sm font-medium text-primary mb-1" for="email">Email</label>
+<div class="flex items-center gap-3">
+<input class="w-full border border-surface-border rounded px-4 py-2 text-muted bg-surface-page cursor-not-allowed shadow-sm" disabled="" id="email" type="email" value="nguyenvana@email.com"/>
+<span class="inline-flex items-center gap-1 bg-success-tint text-success text-xs font-semibold px-2.5 py-1 rounded-pill whitespace-nowrap">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    Đã xác minh
+                                </span>
+</div>
+<p class="text-xs text-muted mt-1">Email không thể thay đổi. Vui lòng liên hệ hỗ trợ nếu cần.</p>
+</div>
+<!-- Số điện thoại -->
+<div>
+<label class="block text-sm font-medium text-primary mb-1" for="phone">Số điện thoại <span class="text-danger">*</span></label>
+<input class="w-full border border-surface-border rounded px-4 py-2 text-primary focus:ring-2 focus:ring-brand focus:border-brand transition-colors shadow-sm" id="phone" type="tel" value="0901234567"/>
+</div>
+<!-- Giới tính & Ngày sinh (Optional context) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<div>
+<label class="block text-sm font-medium text-primary mb-1">Giới tính</label>
+<select class="w-full border border-surface-border rounded px-4 py-2 text-primary focus:ring-2 focus:ring-brand focus:border-brand shadow-sm bg-white">
+<option>Nam</option>
+<option>Nữ</option>
+<option>Khác</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-primary mb-1">Ngày sinh</label>
+<input class="w-full border border-surface-border rounded px-4 py-2 text-primary focus:ring-2 focus:ring-brand focus:border-brand shadow-sm" type="date" value="1990-01-01"/>
+</div>
+</div>
+<!-- Actions -->
+<div class="pt-4 flex gap-3">
+<button class="bg-brand hover:bg-brand-hover text-white font-medium px-6 py-2.5 rounded shadow-sm transition-colors active:scale-95">
+                                Lưu thay đổi
+                            </button>
+<button class="bg-white border border-surface-border text-secondary hover:text-primary hover:bg-surface-page font-medium px-6 py-2.5 rounded shadow-sm transition-colors">
+                                Hủy
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Đổi mật khẩu -->
+<div class="bg-white rounded-card shadow-card border border-surface-border p-6 md:p-8">
+<h2 class="font-headline text-xl font-bold text-primary mb-2">Đổi mật khẩu</h2>
+<p class="text-sm text-secondary mb-6 pb-4 border-b border-surface-divider">Đổi mật khẩu sẽ đăng xuất các thiết bị khác.</p>
+<div class="max-w-md space-y-5">
+<!-- Mật khẩu hiện tại (Error State) -->
+<div>
+<label class="block text-sm font-medium text-primary mb-1" for="current-password">Mật khẩu hiện tại <span class="text-danger">*</span></label>
+<div class="relative">
+<input class="w-full border border-danger rounded px-4 py-2 text-primary focus:ring-2 focus:ring-danger focus:border-danger transition-colors shadow-sm pr-10" id="current-password" type="password" value="wrongpassword"/>
+<button class="absolute inset-y-0 right-0 px-3 flex items-center text-muted hover:text-secondary">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+<p class="text-xs text-danger mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                            Mật khẩu hiện tại không đúng.
+                        </p>
+</div>
+<!-- Mật khẩu mới -->
+<div>
+<label class="block text-sm font-medium text-primary mb-1" for="new-password">Mật khẩu mới <span class="text-danger">*</span></label>
+<div class="relative">
+<input class="w-full border border-surface-border rounded px-4 py-2 text-primary focus:ring-2 focus:ring-brand focus:border-brand transition-colors shadow-sm pr-10" id="new-password" placeholder="Tối thiểu 8 ký tự" type="password"/>
+<button class="absolute inset-y-0 right-0 px-3 flex items-center text-muted hover:text-secondary">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+<!-- Strength Meter -->
+<div class="mt-2 flex gap-1 h-1.5 w-full">
+<div class="w-1/4 bg-warning rounded-full"></div>
+<div class="w-1/4 bg-surface-divider rounded-full"></div>
+<div class="w-1/4 bg-surface-divider rounded-full"></div>
+<div class="w-1/4 bg-surface-divider rounded-full"></div>
+</div>
+<p class="text-xs text-warning mt-1">Mật khẩu trung bình</p>
+</div>
+<!-- Xác nhận mật khẩu mới -->
+<div>
+<label class="block text-sm font-medium text-primary mb-1" for="confirm-password">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
+<div class="relative">
+<input class="w-full border border-danger rounded px-4 py-2 text-primary focus:ring-2 focus:ring-danger focus:border-danger transition-colors shadow-sm" id="confirm-password" type="password"/>
+</div>
+<p class="text-xs text-danger mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                            Xác nhận không khớp.
+                        </p>
+</div>
+<!-- Action -->
+<div class="pt-2">
+<button class="bg-brand hover:bg-brand-hover text-white font-medium px-6 py-2.5 rounded shadow-sm transition-colors active:scale-95">
+                            Cập nhật mật khẩu
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 dark:bg-slate-950 w-full py-12 border-t border-slate-200 dark:border-slate-800">
+<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8 px-4 md:px-12 max-w-7xl mx-auto">
+<!-- Brand Column -->
+<div class="lg:col-span-2">
+<a class="font-headline text-xl font-black text-slate-900 dark:text-white flex items-center gap-2 mb-4" href="#">
+<span class="material-symbols-outlined text-brand" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+                    Cartzilla
+                </a>
+<p class="font-body text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-xs">
+                    Nền tảng thương mại điện tử thời trang hiện đại, mang đến trải nghiệm mua sắm tuyệt vời.
+                </p>
+<div class="flex gap-4">
+<!-- Social placeholders -->
+<div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-brand cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[18px]">public</span>
+</div>
+</div>
+</div>
+<!-- Links Column 1 -->
+<div>
+<h3 class="font-headline font-bold text-slate-900 dark:text-white mb-4">Khám phá</h3>
+<ul class="space-y-3 font-body text-sm">
+<li><a class="text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform inline-block" href="#">Về chúng tôi</a></li>
+<li><a class="text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform inline-block" href="#">Sản phẩm mới</a></li>
+<li><a class="text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform inline-block" href="#">Thương hiệu</a></li>
+</ul>
+</div>
+<!-- Links Column 2 -->
+<div>
+<h3 class="font-headline font-bold text-slate-900 dark:text-white mb-4">Hỗ trợ</h3>
+<ul class="space-y-3 font-body text-sm">
+<li><a class="text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform inline-block" href="#">Chính sách đổi trả</a></li>
+<li><a class="text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform inline-block" href="#">Chính sách vận chuyển</a></li>
+<li><a class="text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform inline-block" href="#">Điều khoản dịch vụ</a></li>
+<li><a class="text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform inline-block" href="#">Liên hệ</a></li>
+</ul>
+</div>
+<!-- Newsletter / Payment -->
+<div>
+<h3 class="font-headline font-bold text-slate-900 dark:text-white mb-4">Đăng ký nhận tin</h3>
+<div class="flex gap-2 mb-6">
+<input class="w-full border border-slate-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-brand focus:border-brand" placeholder="Email của bạn..." type="email"/>
+<button class="bg-slate-900 text-white px-3 py-2 rounded hover:bg-brand transition-colors">
+<span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+<div class="flex gap-2">
+<div class="w-10 h-6 bg-slate-200 rounded border border-slate-300"></div>
+<div class="w-10 h-6 bg-slate-200 rounded border border-slate-300"></div>
+</div>
+</div>
+</div>
+<div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 text-center px-4">
+<p class="font-body text-sm text-slate-500 dark:text-slate-400">© 2024 Cartzilla. Tất cả quyền được bảo lưu.</p>
+</div>
+</footer>
+<!-- Interactive Scripts -->
+<script>
+        // Simple interactions for demo
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto hide toast after 3 seconds for demo purposes
+            setTimeout(() => {
+                const toast = document.getElementById('toast');
+                if(toast) {
+                    toast.classList.add('toast-exit');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 3000);
+        });
+    </script>
+</body></html>

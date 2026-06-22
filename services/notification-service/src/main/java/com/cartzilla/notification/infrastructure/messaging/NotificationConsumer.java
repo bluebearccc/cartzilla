@@ -15,11 +15,16 @@ public class NotificationConsumer {
 
     @RabbitListener(queues = RabbitTopics.Q_ORDER_CONFIRMED)
     public void onConfirmed(OrderEvents.OrderConfirmedEvent event) {
-        sendOrderEmailUseCase.sendConfirmed(event.orderId(), event.recipientEmail());
+        sendOrderEmailUseCase.sendConfirmed(event.orderId(), event.recipientUserId());
     }
 
     @RabbitListener(queues = RabbitTopics.Q_ORDER_CANCELLED)
     public void onCancelled(OrderEvents.OrderCancelledEvent event) {
-        sendOrderEmailUseCase.sendCancelled(event.orderId(), event.reason(), event.recipientEmail());
+        sendOrderEmailUseCase.sendCancelled(event.orderId(), event.recipientUserId(), event.reason());
+    }
+
+    @RabbitListener(queues = RabbitTopics.Q_ORDER_SHIPPED)
+    public void onShipped(OrderEvents.OrderShippedEvent event) {
+        sendOrderEmailUseCase.sendShipped(event.orderId(), event.recipientUserId());
     }
 }

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thông báo - Cartzilla</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        surface: "#F8FAFC",
+                        card: "#FFFFFF",
+                        border: "#E2E8F0",
+                        divider: "#EEF2F6",
+                        primary: "#0F172A",
+                        secondary: "#475569",
+                        muted: "#94A3B8",
+                        brand: {
+                            DEFAULT: "#4F46E5",
+                            hover: "#4338CA",
+                            tint: "#EEF2FF",
+                        },
+                        semantic: {
+                            success: "#16A34A",
+                            successTint: "#DCFCE7",
+                            warning: "#F59E0B",
+                            warningTint: "#FEF3C7",
+                            danger: "#DC2626",
+                            dangerTint: "#FEE2E2",
+                            info: "#0EA5E9",
+                            infoTint: "#E0F2FE",
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px",
+                        "inputs": "10px",
+                        "cards": "16px",
+                        "pills": "999px"
+                    },
+                    spacing: {
+                        4: "1rem",
+                        8: "2rem",
+                        12: "3rem",
+                        16: "4rem",
+                        24: "6rem",
+                        32: "8rem",
+                        48: "12rem"
+                    },
+                    fontFamily: {
+                        headline: ["Manrope", "sans-serif"],
+                        display: ["Manrope", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        card: "0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)"
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-primary font-body antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-white dark:bg-slate-900 fixed top-0 w-full z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="flex items-center gap-8">
+<a class="text-2xl font-headline font-bold text-slate-900 dark:text-white" href="#">Cartzilla</a>
+<div class="hidden md:flex gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all font-body text-sm font-medium" href="#">Trang chủ</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all font-body text-sm font-medium" href="#">Sản phẩm</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all font-body text-sm font-medium" href="#">Bộ sưu tập</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all font-body text-sm font-medium" href="#">Khuyến mãi</a>
+</div>
+</div>
+<div class="flex-1 max-w-md mx-8 hidden md:block relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface border border-border rounded-inputs text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors" placeholder="Tìm sản phẩm..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-semantic-danger rounded-full ring-2 ring-white"></span>
+</button>
+<button class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute -top-1 -right-1 bg-brand text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">2</span>
+</button>
+<button class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</nav>
+<!-- Main Content Layout -->
+<main class="flex-grow pt-24 pb-12 px-4 md:px-8 max-w-7xl mx-auto w-full flex flex-col md:flex-row gap-8">
+<!-- SideNavBar -->
+<aside class="w-full md:w-64 h-full rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 flex flex-col py-6 space-y-2 font-body text-sm flex-shrink-0">
+<div class="px-6 pb-6 border-b border-divider mb-4 text-center">
+<img class="w-20 h-20 rounded-full mx-auto object-cover mb-3 border-2 border-brand-tint" data-alt="A professional studio portrait of an Asian woman in her late 20s. She has a warm, confident smile and natural makeup. Soft, even lighting highlights her features. The background is a clean, neutral studio gray to ensure focus remains on her face. Shot with an 85mm lens for flattering compression. High resolution, bright, modern aesthetic suitable for an e-commerce platform avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnA6DVghIV1tG5TBWYV8VvWNOWsujFWszJDw4p_gn7aTP6QDcfxEPVhxcvypOvXc2DajphHeo3HYBx8sw9JSuBhWvuwVt9agq893CWWTpsq30DYLCk8SaT9GUeUlCGLsy3Q2I6-Dx_giSU25oRupaeHQc_PGARz4mj8FYOtgv38ybfeXtXgMu-eWp2Rv8B1VnJPuGg1M8kyUOUKraz1lJClQmsyKpEEbZ8-yMFzlpAojVnHo0lmcVu-VqAE1ZUQ31hMwXu6Jp2_Bo"/>
+<h3 class="font-headline font-bold text-lg text-primary">Nguyễn Văn A</h3>
+<span class="inline-block mt-1 px-3 py-1 bg-semantic-warningTint text-semantic-warning text-xs font-semibold rounded-pills">Thành viên Vàng</span>
+</div>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform flex items-center gap-3 px-6 py-3" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>Hồ sơ của tôi</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform flex items-center gap-3 px-6 py-3" href="#">
+<span class="material-symbols-outlined">package</span>
+<span>Đơn hàng</span>
+</a>
+<a class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 font-semibold active:scale-95 transition-transform flex items-center gap-3 px-6 py-3 relative" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span>Thông báo</span>
+<span class="ml-auto bg-semantic-danger text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">3</span>
+</a>
+<a class="text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform flex items-center gap-3 px-6 py-3" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span>Số địa chỉ</span>
+</a>
+<div class="mt-auto pt-6 px-6">
+<a class="text-semantic-danger hover:bg-semantic-dangerTint transition-colors active:scale-95 transition-transform flex items-center gap-3 px-4 py-2 rounded-inputs font-medium" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Đăng xuất</span>
+</a>
+</div>
+</aside>
+<!-- Canvas Area -->
+<section class="flex-1 flex flex-col min-w-0">
+<!-- Breadcrumbs -->
+<nav aria-label="Breadcrumb" class="flex text-sm text-secondary mb-6">
+<ol class="inline-flex items-center space-x-1 md:space-x-2">
+<li class="inline-flex items-center">
+<a class="hover:text-brand transition-colors" href="#">Trang chủ</a>
+</li>
+<li>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span>
+<a class="hover:text-brand transition-colors" href="#">Hồ sơ</a>
+</div>
+</li>
+<li aria-current="page">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span>
+<span class="text-primary font-medium">Thông báo</span>
+</div>
+</li>
+</ol>
+</nav>
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div class="flex items-center gap-3">
+<h2 class="font-headline text-[24px] font-bold text-primary">Thông báo</h2>
+<span class="bg-semantic-dangerTint text-semantic-danger text-xs font-semibold px-2.5 py-0.5 rounded-pills">3 chưa đọc</span>
+</div>
+<button class="text-brand hover:text-brand-hover font-medium text-sm transition-colors text-left sm:text-right">Đánh dấu tất cả đã đọc</button>
+</div>
+<!-- Tabs -->
+<div class="border-b border-border mb-6">
+<ul class="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
+<li class="mr-6" role="presentation">
+<button class="inline-block p-4 border-b-2 border-brand text-brand rounded-t-lg active" role="tab" type="button">Tất cả</button>
+</li>
+<li class="mr-6" role="presentation">
+<button class="inline-block p-4 border-b-2 border-transparent hover:text-secondary hover:border-border text-secondary rounded-t-lg transition-colors flex items-center gap-2" role="tab" type="button">
+                            Chưa đọc
+                            <span class="bg-semantic-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
+</button>
+</li>
+</ul>
+</div>
+<!-- Notification List -->
+<div class="bg-card rounded-cards shadow-card border border-border overflow-hidden">
+<ul class="divide-y divide-border">
+<!-- Row 1: Unread -->
+<li class="p-4 sm:p-6 hover:bg-surface transition-colors relative bg-brand-tint/30">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-brand rounded-r-full"></div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-semantic-successTint text-semantic-success flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-2">
+<h4 class="text-sm font-semibold text-primary truncate pr-4">Đơn hàng #CZ12345 đã xác nhận</h4>
+<span class="text-xs text-secondary whitespace-nowrap flex-shrink-0">2 giờ trước</span>
+</div>
+<p class="text-sm text-secondary mt-1 line-clamp-2">Chúc mừng! Đơn hàng của bạn đã được xác nhận và đang được chuẩn bị.</p>
+</div>
+<div class="flex-shrink-0 flex items-center">
+<div class="w-2.5 h-2.5 rounded-full bg-brand"></div>
+</div>
+</div>
+</li>
+<!-- Row 2: Unread -->
+<li class="p-4 sm:p-6 hover:bg-surface transition-colors relative bg-brand-tint/30">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-brand rounded-r-full"></div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-brand-tint text-brand flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-2">
+<h4 class="text-sm font-semibold text-primary truncate pr-4">Đơn hàng #CZ12340 đang giao</h4>
+<span class="text-xs text-secondary whitespace-nowrap flex-shrink-0">5 giờ trước</span>
+</div>
+<p class="text-sm text-secondary mt-1 line-clamp-2">Đơn hàng của bạn đã rời kho và dự kiến sẽ giao đến bạn trong hôm nay.</p>
+</div>
+<div class="flex-shrink-0 flex items-center">
+<div class="w-2.5 h-2.5 rounded-full bg-brand"></div>
+</div>
+</div>
+</li>
+<!-- Row 3: Read -->
+<li class="p-4 sm:p-6 hover:bg-surface transition-colors relative bg-white">
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-semantic-dangerTint text-semantic-danger flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-2">
+<h4 class="text-sm font-medium text-secondary truncate pr-4">Đơn hàng #CZ12338 đã hủy</h4>
+<span class="text-xs text-muted whitespace-nowrap flex-shrink-0">1 ngày trước</span>
+</div>
+<p class="text-sm text-muted mt-1 line-clamp-2">Yêu cầu hủy đơn hàng của bạn đã được xử lý thành công.</p>
+</div>
+<div class="flex-shrink-0 flex items-center w-2.5">
+<!-- No dot for read -->
+</div>
+</div>
+</li>
+<!-- Row 4: Unread -->
+<li class="p-4 sm:p-6 hover:bg-surface transition-colors relative bg-brand-tint/30">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-brand rounded-r-full"></div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-semantic-warningTint text-semantic-warning flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">local_offer</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-2">
+<h4 class="text-sm font-semibold text-primary truncate pr-4">Ưu đãi độc quyền cho bạn</h4>
+<span class="text-xs text-secondary whitespace-nowrap flex-shrink-0">2 ngày trước</span>
+</div>
+<p class="text-sm text-secondary mt-1 line-clamp-2">Nhận ngay voucher giảm 10% cho bộ sưu tập Thu Đông mới nhất.</p>
+</div>
+<div class="flex-shrink-0 flex items-center">
+<div class="w-2.5 h-2.5 rounded-full bg-brand"></div>
+</div>
+</div>
+</li>
+</ul>
+<div class="p-4 border-t border-border flex justify-center bg-surface/50">
+<button class="px-6 py-2 border border-border rounded-inputs text-sm font-medium text-primary hover:bg-white hover:border-secondary transition-all">Xem thêm</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 dark:bg-slate-950 w-full mt-auto border-t border-slate-200 dark:border-slate-800">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-4 md:px-8 py-12 max-w-7xl mx-auto font-body text-sm leading-6">
+<div class="flex flex-col space-y-4">
+<span class="text-xl font-headline font-bold text-slate-900 dark:text-white">Cartzilla</span>
+<span class="text-slate-500 dark:text-slate-400">© 2024 Cartzilla. Tất cả quyền được bảo lưu.</span>
+</div>
+<div class="flex flex-col space-y-3">
+<h4 class="text-slate-900 dark:text-white font-semibold mb-2">Thông tin</h4>
+<a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Giới thiệu</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Liên hệ</a>
+</div>
+<div class="flex flex-col space-y-3">
+<h4 class="text-slate-900 dark:text-white font-semibold mb-2">Hỗ trợ</h4>
+<a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Hướng dẫn chọn size</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Chính sách bảo mật</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Điều khoản dịch vụ</a>
+</div>
+<div class="flex flex-col space-y-3">
+<h4 class="text-slate-900 dark:text-white font-semibold mb-2">Đăng ký nhận tin</h4>
+<div class="flex gap-2">
+<input class="w-full px-3 py-2 bg-white border border-border rounded-inputs text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" placeholder="Email của bạn..." type="email"/>
+<button class="bg-brand text-white px-4 py-2 rounded-inputs hover:bg-brand-hover transition-colors font-medium">Gửi</button>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

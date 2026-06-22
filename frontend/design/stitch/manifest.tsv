@@ -1,0 +1,26 @@
+02-product-list	07f9d9e38f684c92afeeb92f7f423e0f	Cartzilla - Danh sách s?n ph?m (Chi ti?t)	30240
+03-product-detail	9dc04c0731e64ccf8a0545134d378753	Cartzilla - Chi ti?t s?n ph?m	32101
+04-login	0e67ad79021445ab89059c0ad71c3596	Cartzilla - Ðang nh?p (Chi ti?t)	11576
+05-register	4952cafcd5904fbb94716d3c57a135ed	Cartzilla - Ðang ký tài kho?n	18722
+06-verify-email	0212ceeb78924879983714d4455cc0da	Cartzilla - Xác minh email (Thành công)	4342
+07-oauth-callback	88c126f850c74ca1b727f63f0750f3eb	Cartzilla - Ðang dang nh?p v?i Google	3618
+08-forgot-password	d86d6be2713c4fec924d6ba01ebd445f	Cartzilla - Quên m?t kh?u	6873
+09-reset-password	1ee7df3893eb463cab2bc978d63b5b7d	Cartzilla - Ð?t l?i m?t kh?u	9212
+10-profile	0a54fc9c57284343a094aed87bd02964	Cartzilla - H? so cá nhân	23546
+11-addresses	27f7a62e139c4a3595a4ba140d70b818	Cartzilla - Danh sách d?a ch?	14408
+12-notifications	895ff4bd0a5541dbafbf3b7fe20e3cd1	Cartzilla - Thông báo	17287
+13-cart	043145949bee46d0a4e421356c6ba8e8	Cartzilla - Gi? hàng (Có s?n ph?m)	16654
+14-checkout	c59df4e8270546e2a3a95d0e1e2a18f9	Cartzilla - Thanh toán	18650
+15-payment	2e90633e1ff94ad2847b18abbdab6c78	Cartzilla - Thanh toán VNPay	9197
+16-payment-result	0e6a1774a8cd4168a70b155b83b0c012	Cartzilla - Ðang xác nh?n thanh toán	10789
+17-orders-list	fd2dd601148a41148e3408539419b810	Cartzilla - Danh sách don hàng	22220
+18-order-detail	6c78c2006ae641bf91b5286a8c74a411	Cartzilla - Chi ti?t don hàng (Ðã h?y)	19769
+19-staff-orders	4cb43cce56484231ba4b0cc23e24e846	Cartzilla - Qu?n lý don hàng (Staff)	23761
+20-staff-order-detail	aea27437f27a45dda95deda31aff52af	Cartzilla - Chi ti?t don hàng (Staff)	19324
+21-admin-products	421ba3d9a0984d5e8deadc6d1f415d2e	Cartzilla - Qu?n lý s?n ph?m (Admin)	24702
+22-admin-product-form	6df6a941f5b546958a2ca3701076c7b6	Cartzilla Admin - Thêm s?n ph?m m?i (Tr?ng)	28589
+23-admin-categories	60ffac917a6a49379af149fc99b7de33	Cartzilla Admin - Qu?n lý Danh m?c	20266
+24-admin-vendors	4eff95378d794dd9aec31ea0bb39a1cc	Cartzilla Admin - Qu?n lý Nhà cung c?p / Thuong hi?u	26176
+25-admin-vouchers	c160f73e71e34a56b2a248a15aa99d34	Cartzilla Admin - Qu?n lý Mã gi?m giá	30423
+26-admin-users	6d03fa0759624a08b1cd201017766fae	Cartzilla Admin - Qu?n lý ngu?i dùng	25481
+27-admin-reports	d7da51f7d80542f589bee43ec03ff84d	Cartzilla Admin - Báo cáo & Th?ng kê	31795

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quản lý Danh mục - Cartzilla Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        indigo: {
+                            50: '#eef2ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            900: '#312e81',
+                        },
+                        green: {
+                            50: '#f0fdf4',
+                            600: '#16a34a',
+                        },
+                        amber: {
+                            50: '#fffbeb',
+                            500: '#f59e0b',
+                        },
+                        red: {
+                            50: '#fef2f2',
+                            600: '#dc2626',
+                        },
+                        sky: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        '4': '0.25rem',
+                        '8': '0.5rem',
+                        '12': '0.75rem',
+                        '16': '1rem',
+                        '24': '1.5rem',
+                        '32': '2rem',
+                        '48': '3rem',
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom scrollbar for tree */
+        .tree-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .tree-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .tree-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        
+        .row-hover-actions {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .tree-row:hover .row-hover-actions {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-body antialiased flex h-screen overflow-hidden">
+<!-- Toast Notification (Top Right) -->
+<div class="fixed top-24 right-8 z-50 animate-fade-in-down flex items-start gap-12 bg-white rounded-lg shadow-card border border-amber-500/20 p-16 max-w-sm">
+<div class="flex-shrink-0 bg-amber-50 text-amber-500 rounded-full p-8 flex items-center justify-center">
+<span class="material-symbols-outlined fill">warning</span>
+</div>
+<div class="flex-1">
+<h4 class="font-headline font-semibold text-slate-900 text-sm">Cảnh báo</h4>
+<p class="text-sm text-slate-600 mt-4 leading-relaxed">Không thể ẩn danh mục đang có sản phẩm đang bán.</p>
+</div>
+<button class="text-slate-400 hover:text-slate-600 transition-colors">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-40 flex flex-col h-full">
+<div class="px-24 py-32 flex flex-col gap-16 border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-12">
+<div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
+                    C
+                </div>
+<div>
+<h1 class="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-headline">Cartzilla</h1>
+<p class="text-xs text-slate-500 font-medium">Hệ thống quản trị</p>
+</div>
+</div>
+<button class="w-full flex items-center justify-center gap-8 bg-indigo-600 hover:bg-indigo-700 text-white py-12 px-16 rounded-[10px] font-semibold text-sm transition-colors mt-8 shadow-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+                Thêm sản phẩm
+            </button>
+</div>
+<nav class="flex-1 overflow-y-auto py-16 px-12 flex flex-col gap-4">
+<a class="flex items-center gap-3 px-16 py-12 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors font-headline font-semibold text-sm" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Bảng điều khiển
+            </a>
+<a class="flex items-center gap-3 px-16 py-12 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors font-headline font-semibold text-sm" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Sản phẩm
+            </a>
+<a class="flex items-center gap-3 px-16 py-12 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 rounded-r-lg font-headline font-semibold text-sm" href="#">
+<span class="material-symbols-outlined">category</span>
+                Danh mục
+            </a>
+<a class="flex items-center gap-3 px-16 py-12 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors font-headline font-semibold text-sm" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+                Đơn hàng
+            </a>
+<a class="flex items-center gap-3 px-16 py-12 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors font-headline font-semibold text-sm mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Cài đặt
+            </a>
+</nav>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-30 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-32 py-16">
+<div class="flex items-center gap-16">
+<h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 font-headline">Quản lý Danh mục</h2>
+<div class="h-6 w-px bg-slate-200"></div>
+<nav class="flex items-center text-sm text-slate-500">
+<a class="hover:text-indigo-600 transition-colors" href="#">Tổng quan</a>
+<span class="material-symbols-outlined text-sm mx-4">chevron_right</span>
+<span class="font-medium text-slate-900">Danh mục</span>
+</nav>
+</div>
+<div class="flex items-center gap-24 font-body text-sm">
+<div class="hidden md:flex items-center gap-16">
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium" href="#">Hồ sơ</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium" href="#">Thông báo</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors font-medium" href="#">Hỗ trợ</a>
+</div>
+<div class="flex items-center gap-12 border-l border-slate-200 pl-24">
+<button class="relative p-8 text-slate-500 hover:text-indigo-600 transition-colors rounded-full hover:bg-slate-50">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-8 right-8 w-8 h-8 bg-red-600 rounded-full border-2 border-white"></span>
+</button>
+<button class="flex items-center gap-8 p-4 pr-12 rounded-full border border-slate-200 hover:border-slate-300 transition-colors">
+<img class="w-32 h-32 rounded-full object-cover" data-alt="A small, professional headshot avatar of an admin user, brightly lit, isolated on a solid color background, creating a clean light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGRK0eAEG6byh4qS8cA95KGyliz288pPV8sV-3cv4ykH5VUXDj8WXW5kGyBIOsmqEyNLYv4OOzRDXys8jjCIrl1PDDOHmIez3kkCvpyLRXfnB2sA4OgHrAniLSYCd_BqDWEM8xaelzCN4_ujjmp4pduRLqNhwkmQW9OoSb8eqG8dtbTalKT5xwhGgRDYLc8Y7gDNnAZXO2t3boQczQVtCKMeLtvacIqfnPrUxieN17eyByHieKwzi-AbJN2p2MMf3l0rgmK8rDrUA"/>
+<span class="material-symbols-outlined text-slate-500">arrow_drop_down</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Dashboard Content -->
+<main class="flex-1 p-32 overflow-hidden flex flex-col gap-24">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-32 h-full min-h-0">
+<!-- LEFT COLUMN: Category Tree (7 cols) -->
+<div class="lg:col-span-7 flex flex-col bg-white rounded-xl shadow-card border border-slate-200 overflow-hidden">
+<!-- Tree Header -->
+<div class="p-24 border-b border-slate-200 flex items-center justify-between bg-white shrink-0 z-10">
+<div>
+<h3 class="font-headline text-lg font-bold text-slate-900">Cây danh mục</h3>
+<p class="text-sm text-slate-500 mt-4 flex items-center gap-4">
+<span class="material-symbols-outlined text-[16px]">drag_indicator</span>
+                                Kéo thả để sắp xếp lại thứ tự hoặc thay đổi cấp bậc
+                            </p>
+</div>
+<button class="flex items-center gap-8 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-16 py-8 rounded-[10px] font-medium text-sm transition-colors border border-indigo-100">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            Thêm danh mục gốc
+                        </button>
+</div>
+<!-- Tree Content -->
+<div class="flex-1 overflow-y-auto tree-scroll p-24 bg-slate-50/50">
+<div class="flex flex-col gap-8">
+<!-- Level 1 Item (Expanded) -->
+<div class="tree-row flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm group">
+<div class="flex items-center justify-between p-12 cursor-grab active:cursor-grabbing hover:bg-slate-50 rounded-t-lg transition-colors">
+<div class="flex items-center gap-12">
+<button class="p-4 text-slate-400 hover:text-slate-600 rounded">
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</button>
+<span class="material-symbols-outlined text-slate-300 text-[18px] cursor-grab">drag_indicator</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-8">
+<span class="font-medium text-slate-900">Thời trang Nam</span>
+<span class="w-8 h-8 rounded-full bg-green-600"></span>
+</div>
+<span class="text-xs text-slate-400 font-mono mt-4">/thoi-trang-nam</span>
+</div>
+</div>
+<div class="flex items-center gap-16">
+<span class="text-xs font-medium text-slate-500 bg-slate-100 px-8 py-4 rounded-full">145 sản phẩm</span>
+<div class="row-hover-actions flex items-center gap-4 border-l border-slate-200 pl-12">
+<button class="p-4 text-slate-400 hover:text-indigo-600 rounded transition-colors" title="Sửa">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-4 text-slate-400 hover:text-indigo-600 rounded transition-colors" title="Thêm danh mục con">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+</button>
+<button class="p-4 text-slate-400 hover:text-amber-600 rounded transition-colors" title="Ẩn/Hiện">
+<span class="material-symbols-outlined text-[18px]">visibility_off</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Level 2 Items -->
+<div class="flex flex-col pl-32 pb-12 pr-12 gap-8 border-t border-slate-100 pt-8 bg-slate-50/30">
+<!-- Child Item -->
+<div class="tree-row flex items-center justify-between p-8 bg-white border border-slate-200 rounded shadow-sm hover:border-slate-300 transition-colors">
+<div class="flex items-center gap-12">
+<div class="w-[20px]"></div> <!-- Spacer for alignment -->
+<span class="material-symbols-outlined text-slate-300 text-[18px] cursor-grab">drag_indicator</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-8">
+<span class="text-sm font-medium text-slate-700">Áo thun</span>
+<span class="w-8 h-8 rounded-full bg-green-600"></span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-16">
+<span class="text-xs font-medium text-slate-500">82 sản phẩm</span>
+<div class="row-hover-actions flex items-center gap-4">
+<button class="p-4 text-slate-400 hover:text-indigo-600 rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+</div>
+</div>
+</div>
+<!-- Child Item (Selected/Editing state) -->
+<div class="tree-row flex items-center justify-between p-8 bg-indigo-50 border border-indigo-200 rounded shadow-sm">
+<div class="flex items-center gap-12">
+<div class="w-[20px]"></div>
+<span class="material-symbols-outlined text-indigo-300 text-[18px] cursor-grab">drag_indicator</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-8">
+<span class="text-sm font-semibold text-indigo-900">Quần Jeans</span>
+<span class="w-8 h-8 rounded-full bg-green-600"></span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-16">
+<span class="text-xs font-medium text-indigo-600">45 sản phẩm</span>
+<div class="row-hover-actions opacity-100 flex items-center gap-4">
+<button class="p-4 text-indigo-600 rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Level 1 Item (Collapsed, Hidden status) -->
+<div class="tree-row flex items-center justify-between p-12 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-slate-300 transition-colors opacity-75">
+<div class="flex items-center gap-12">
+<button class="p-4 text-slate-400 hover:text-slate-600 rounded">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+<span class="material-symbols-outlined text-slate-300 text-[18px] cursor-grab">drag_indicator</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-8">
+<span class="font-medium text-slate-500 line-through">Bộ sưu tập Hè 2023</span>
+<span class="w-8 h-8 rounded-full bg-slate-300" title="Ẩn"></span>
+</div>
+<span class="text-xs text-slate-400 font-mono mt-4">/bst-he-2023</span>
+</div>
+</div>
+<div class="flex items-center gap-16">
+<span class="text-xs font-medium text-slate-400 bg-slate-100 px-8 py-4 rounded-full">0 sản phẩm</span>
+<div class="row-hover-actions flex items-center gap-4 border-l border-slate-200 pl-12">
+<button class="p-4 text-slate-400 hover:text-indigo-600 rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-4 text-slate-400 hover:text-green-600 rounded" title="Hiện"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Form Card (5 cols) -->
+<div class="lg:col-span-5 flex flex-col bg-white rounded-xl shadow-card border border-slate-200 overflow-hidden h-fit">
+<div class="p-24 border-b border-slate-200 bg-white">
+<div class="flex items-center justify-between">
+<h3 class="font-headline text-lg font-bold text-slate-900">Chi tiết danh mục</h3>
+<span class="px-8 py-4 bg-slate-100 text-slate-600 text-xs font-medium rounded">ID: #4092</span>
+</div>
+</div>
+<form class="p-24 flex flex-col gap-24">
+<!-- Input Group: Tên -->
+<div class="flex flex-col gap-8">
+<label class="text-sm font-semibold text-slate-700 flex items-center gap-4">
+                                Tên danh mục <span class="text-red-500">*</span>
+</label>
+<input class="w-full px-12 py-8 rounded-[10px] border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-slate-900 text-sm shadow-sm transition-all" placeholder="Nhập tên danh mục..." type="text" value="Quần Jeans"/>
+</div>
+<!-- Input Group: Slug (with Error state) -->
+<div class="flex flex-col gap-8">
+<label class="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                                Slug
+                                <span class="text-xs text-slate-400 font-normal">Tự động tạo từ tên, có thể chỉnh sửa</span>
+</label>
+<div class="relative">
+<span class="absolute left-12 top-1/2 -translate-y-1/2 text-slate-400 text-sm">/</span>
+<input class="w-full pl-24 pr-12 py-8 rounded-[10px] border border-red-300 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none text-slate-900 text-sm shadow-sm transition-all bg-red-50/30" type="text" value="quan-jeans"/>
+</div>
+<p class="text-xs text-red-600 flex items-center gap-4 mt-4">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                Slug này đã tồn tại, vui lòng chọn tên khác
+                            </p>
+</div>
+<!-- Input Group: Parent Category -->
+<div class="flex flex-col gap-8">
+<label class="text-sm font-semibold text-slate-700">Danh mục cha</label>
+<div class="relative">
+<select class="w-full px-12 py-8 rounded-[10px] border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-slate-900 text-sm shadow-sm transition-all appearance-none bg-white">
+<option value="">Không (Danh mục gốc)</option>
+<option selected="" value="1">Thời trang Nam</option>
+<option value="2">Thời trang Nữ</option>
+<option value="3">Phụ kiện</option>
+</select>
+<span class="material-symbols-outlined absolute right-12 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="h-px bg-slate-200 my-8"></div>
+<!-- Toggle: Status -->
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-sm font-semibold text-slate-700">Trạng thái hoạt động</h4>
+<p class="text-xs text-slate-500 mt-4">Hiển thị danh mục này trên cửa hàng</p>
+</div>
+<!-- Toggle Switch (Active state) -->
+<button class="relative inline-flex h-24 w-48 items-center rounded-full bg-indigo-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" type="button">
+<span class="translate-x-24 inline-block h-16 w-16 transform rounded-full bg-white transition-transform"></span>
+</button>
+</div>
+</form>
+<!-- Form Footer -->
+<div class="p-24 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-12 mt-auto">
+<button class="px-16 py-8 rounded-[10px] text-sm font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
+                            Hủy
+                        </button>
+<button class="px-24 py-8 rounded-[10px] text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            Lưu thay đổi
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

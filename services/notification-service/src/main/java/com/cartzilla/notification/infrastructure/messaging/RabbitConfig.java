@@ -15,12 +15,16 @@ public class RabbitConfig {
     }
     @Bean public Queue orderConfirmedQueue() { return QueueBuilder.durable(RabbitTopics.Q_ORDER_CONFIRMED).build(); }
     @Bean public Queue orderCancelledQueue() { return QueueBuilder.durable(RabbitTopics.Q_ORDER_CANCELLED).build(); }
+    @Bean public Queue orderShippedQueue()   { return QueueBuilder.durable(RabbitTopics.Q_ORDER_SHIPPED).build(); }
 
     @Bean public Binding bindConfirmed() {
         return BindingBuilder.bind(orderConfirmedQueue()).to(orderExchange()).with(RabbitTopics.RK_ORDER_CONFIRMED);
     }
     @Bean public Binding bindCancelled() {
         return BindingBuilder.bind(orderCancelledQueue()).to(orderExchange()).with(RabbitTopics.RK_ORDER_CANCELLED);
+    }
+    @Bean public Binding bindShipped() {
+        return BindingBuilder.bind(orderShippedQueue()).to(orderExchange()).with(RabbitTopics.RK_ORDER_SHIPPED);
     }
 
     @Bean public MessageConverter jsonConverter() { return new Jackson2JsonMessageConverter(); }

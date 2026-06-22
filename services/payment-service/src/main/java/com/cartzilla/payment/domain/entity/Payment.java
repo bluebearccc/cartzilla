@@ -113,6 +113,45 @@ public class Payment extends BaseEntity {
         addTransaction(TransactionType.REFUND, amount, txnRef, "REFUNDED");
     }
 
+    /** VNPAY: gắn mã giao dịch của ta (vnp_TxnRef) khi khởi tạo redirect (PYA-05). */
+    public void attachVnpayRef(String ourTxnRef) {
+        if (method != PaymentMethod.VNPAY)
+            throw new BusinessException("attachVnpayRef chỉ áp dụng cho VNPAY");
+        this.vnpayTxnRef = ourTxnRef;
+    }
+
+    /** VNPAY success callback — giữ vnpayTxnRef (ref của ta), ghi providerTxnRef vào transaction (BR-PY06/BR-PY07). */
+    public void settleVnpaySuccess(String providerTxnRef, String responseJson) {
+        if (status == PaymentStatus.PAID)
+            throw new BusinessException("Payment is already PAID");
+        this.status = PaymentStatus.PAID;
+        this.vnpayResponse = responseJson;
+        Instant now = Instant.now();
+        if (getCreatedAt() != null && now.isBefore(getCreatedAt()))
+            throw new BusinessException("paidAt cannot be before createdAt (PYA-04/BR-G06)");
+        this.paidAt = now;
+        addTransaction(TransactionType.PAY, amount, providerTxnRef, "SUCCESS");
+    }
+
+    /** VNPAY failed callback (BR-PY07). */
+    public void settleVnpayFailed(String providerTxnRef, String errorMessage, String responseJson) {
+        this.status = PaymentStatus.FAILED;
+        this.vnpayResponse = responseJson;
+        addTransaction(TransactionType.CALLBACK, amount, providerTxnRef, "FAILED: " + errorMessage);
+    }
+
+    /** COD: chuyển PAID khi order DELIVERED (BR-PY07); idempotent. */
+    public void markCodPaidOnDelivery() {
+        if (method != PaymentMethod.COD)
+            throw new BusinessException("markCodPaidOnDelivery chỉ áp dụng cho COD");
+        if (status == PaymentStatus.PAID) return; // idempotent
+        if (status != PaymentStatus.PENDING)
+            throw new BusinessException("COD payment phải ở PENDING để chuyển PAID (hiện tại: " + status + ")");
+        this.status = PaymentStatus.PAID;
+        this.paidAt = Instant.now();
+        addTransaction(TransactionType.PAY, amount, null, "COD_DELIVERED");
+    }
+
     /** PYA-06: append-only */
     public void addTransaction(TransactionType type, BigDecimal txnAmount,
                                  String providerTxnRef, String rawStatus) {

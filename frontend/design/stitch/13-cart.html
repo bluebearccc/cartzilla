@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cartzilla - Giỏ hàng</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0F172A",
+                        secondary: "#475569",
+                        muted: "#94A3B8",
+                        brand: {
+                            DEFAULT: "#4F46E5",
+                            hover: "#4338CA",
+                            tint: "#EEF2FF"
+                        },
+                        semantic: {
+                            success: "#16A34A",
+                            successTint: "#DCFCE7",
+                            warning: "#F59E0B",
+                            warningTint: "#FEF3C7",
+                            danger: "#DC2626",
+                            dangerTint: "#FEE2E2",
+                            info: "#0EA5E9",
+                            infoTint: "#E0F2FE"
+                        },
+                        surface: {
+                            page: "#F8FAFC",
+                            card: "#FFFFFF",
+                            border: "#E2E8F0",
+                            divider: "#EEF2F6"
+                        }
+                    },
+                    borderRadius: {
+                        DEFAULT: "10px",
+                        card: "16px",
+                        pill: "999px"
+                    },
+                    fontFamily: {
+                        headline: ["Manrope", "sans-serif"],
+                        body: ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        card: "0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)"
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #0F172A; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm fixed top-0 w-full z-50">
+<div class="flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="flex items-center space-x-8">
+<a class="text-2xl font-headline font-bold text-slate-900 dark:text-white" href="#">Cartzilla</a>
+<div class="hidden md:flex space-x-6">
+<a class="text-slate-600 dark:text-slate-400 font-body text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" href="#">Trang chủ</a>
+<a class="text-slate-600 dark:text-slate-400 font-body text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" href="#">Sản phẩm</a>
+<a class="text-slate-600 dark:text-slate-400 font-body text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" href="#">Bộ sưu tập</a>
+<a class="text-slate-600 dark:text-slate-400 font-body text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" href="#">Khuyến mãi</a>
+</div>
+</div>
+<div class="flex-1 max-w-md mx-8 hidden md:block">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted">search</span>
+<input class="w-full bg-surface-page border border-surface-border rounded-full py-2 pl-10 pr-4 text-sm font-body focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors" placeholder="Tìm sản phẩm..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<button class="relative p-2 text-slate-600 hover:text-indigo-600 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-semantic-danger rounded-full"></span>
+</button>
+<button class="relative p-2 text-indigo-600 border-b-2 border-indigo-600 pb-1">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute top-0 right-0 bg-brand text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">2</span>
+</button>
+<button class="p-2 text-slate-600 hover:text-indigo-600 transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow pt-24 pb-12 px-4 md:px-8 max-w-7xl mx-auto w-full">
+<!-- Breadcrumbs -->
+<nav aria-label="Breadcrumb" class="flex text-sm font-body text-secondary mb-6">
+<ol class="flex items-center space-x-2">
+<li>
+<a class="hover:text-brand transition-colors" href="#">Trang chủ</a>
+</li>
+<li>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</li>
+<li>
+<span aria-current="page" class="text-primary font-medium">Giỏ hàng</span>
+</li>
+</ol>
+</nav>
+<h1 class="text-4xl font-headline font-bold text-primary mb-8">Giỏ hàng</h1>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Cart Items -->
+<div class="lg:col-span-2 flex flex-col space-y-6">
+<div class="bg-surface-card rounded-[16px] shadow-card border border-surface-border overflow-hidden">
+<!-- Header Row -->
+<div class="hidden md:grid grid-cols-12 gap-4 p-6 bg-surface-page border-b border-surface-border text-sm font-body font-semibold text-secondary">
+<div class="col-span-6">Sản phẩm</div>
+<div class="col-span-2 text-center">Đơn giá</div>
+<div class="col-span-2 text-center">Số lượng</div>
+<div class="col-span-2 text-right">Thành tiền</div>
+</div>
+<!-- Items List -->
+<div class="divide-y divide-surface-divider">
+<!-- Item 1 -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 p-6 items-center">
+<div class="col-span-1 md:col-span-6 flex gap-4">
+<div class="w-24 h-24 bg-cover bg-center rounded-md border border-surface-border flex-shrink-0" data-alt="A studio product shot of an elegant khaki jacket with a decorative belt, bright clean lighting, minimalistic white background, modern fashion aesthetic, high resolution." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAClr_E1BZAcUAVIli0_aqpCmx3qa0zZfFrZ9D-JEvO-TAlJLWMFFsmur4K-j9eeGjTkBwzpX2iG7nTp_IZ7Ue4SunyBF60fuLqvxL7aLt2XRZgxsWTgeDjcu_gYtQ5qit89TZcqk9aW1yEToPjl7uJR9p40gRU9gB-GGkwcaPj-4ZM676LMTtynbPy7fVE0B3vW8yTLIycusMbKBUGAiX7z__Md4WSDc5fLleZF-UWeU1WF2mnC--c59cM2QJsyJ0KRANlux2Rf7I')"></div>
+<div class="flex flex-col justify-center">
+<h3 class="font-body font-medium text-primary line-clamp-2">Áo Khoác Kaki Phối Dây Lưng Sang Trọng, Size M - Trắng</h3>
+<p class="text-sm text-secondary mt-1">SKU: TSN-001-M-WHT</p>
+</div>
+</div>
+<div class="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center">
+<span class="md:hidden text-sm text-secondary">Đơn giá:</span>
+<span class="font-body font-medium text-primary tabular-nums">1.250.000 ₫</span>
+</div>
+<div class="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center">
+<span class="md:hidden text-sm text-secondary">Số lượng:</span>
+<div class="flex items-center border border-surface-border rounded-lg">
+<button class="px-2 py-1 text-secondary hover:text-brand hover:bg-brand-tint transition-colors rounded-l-lg"><span class="material-symbols-outlined text-sm">remove</span></button>
+<span class="px-3 font-body font-medium text-primary tabular-nums">1</span>
+<button class="px-2 py-1 text-secondary hover:text-brand hover:bg-brand-tint transition-colors rounded-r-lg"><span class="material-symbols-outlined text-sm">add</span></button>
+</div>
+</div>
+<div class="col-span-1 md:col-span-2 flex justify-between md:justify-end items-center">
+<span class="md:hidden text-sm text-secondary">Thành tiền:</span>
+<div class="flex items-center gap-3">
+<span class="font-body font-semibold text-primary tabular-nums">1.250.000 ₫</span>
+<button class="text-muted hover:text-semantic-danger transition-colors p-1" title="Xóa">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 p-6 items-center">
+<div class="col-span-1 md:col-span-6 flex gap-4">
+<div class="w-24 h-24 bg-cover bg-center rounded-md border border-surface-border flex-shrink-0" data-alt="A professional studio photography shot of a perfectly tailored black blazer for men, sleek modern presentation, bright softbox lighting, clean white background, high-end fashion e-commerce vibe." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA7dHFuvQs3VLIHz6Vezy_KrUw6enGxL1bTYPUWnKHWcFPvMIqz6NkV-SPdYbBLthTB3YbEk1QpK7zjbNuIppc7JGy_QX9iNdvmMM26HUFokeg3eKZRWAus7sKpWD-VjLD069orz14AMtz86Lxss8hpJbI2Zr8Nkr8dqhsuHt0Va11PUDpnt_wB4tcaJ1KrT98fh7iggBqyfcrOixNqdnihzDJePSClu2mESoeyPRzgPBi2DioCGwV8bvT7mBAfNWPmejL2nA_Mtu0')"></div>
+<div class="flex flex-col justify-center">
+<h3 class="font-body font-medium text-primary line-clamp-2">Áo Blazer Nam Form Chuẩn, Size L - Đen</h3>
+<p class="text-sm text-secondary mt-1">SKU: BLZ-002-L-BLK</p>
+</div>
+</div>
+<div class="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center">
+<span class="md:hidden text-sm text-secondary">Đơn giá:</span>
+<span class="font-body font-medium text-primary tabular-nums">850.000 ₫</span>
+</div>
+<div class="col-span-1 md:col-span-2 flex justify-between md:justify-center items-center">
+<span class="md:hidden text-sm text-secondary">Số lượng:</span>
+<div class="flex items-center border border-surface-border rounded-lg">
+<button class="px-2 py-1 text-secondary hover:text-brand hover:bg-brand-tint transition-colors rounded-l-lg"><span class="material-symbols-outlined text-sm">remove</span></button>
+<span class="px-3 font-body font-medium text-primary tabular-nums">1</span>
+<button class="px-2 py-1 text-secondary hover:text-brand hover:bg-brand-tint transition-colors rounded-r-lg"><span class="material-symbols-outlined text-sm">add</span></button>
+</div>
+</div>
+<div class="col-span-1 md:col-span-2 flex justify-between md:justify-end items-center">
+<span class="md:hidden text-sm text-secondary">Thành tiền:</span>
+<div class="flex items-center gap-3">
+<span class="font-body font-semibold text-primary tabular-nums">850.000 ₫</span>
+<button class="text-muted hover:text-semantic-danger transition-colors p-1" title="Xóa">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- List Footer Actions -->
+<div class="p-6 bg-surface-page border-t border-surface-border flex justify-between items-center">
+<a class="inline-flex items-center gap-2 font-body font-medium text-brand hover:text-brand-hover transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            Tiếp tục mua sắm
+                        </a>
+<button class="font-body font-medium text-sm text-semantic-danger/70 hover:text-semantic-danger transition-colors">
+                            Xóa giỏ hàng
+                        </button>
+</div>
+</div>
+</div>
+<!-- Right Column: Order Summary -->
+<div class="lg:col-span-1">
+<div class="sticky top-24 bg-surface-card rounded-[16px] shadow-card border border-surface-border p-6">
+<h2 class="text-xl font-headline font-bold text-primary mb-6">TÓM TẮT ĐƠN HÀNG</h2>
+<!-- Voucher Section -->
+<div class="mb-6">
+<div class="flex gap-2 mb-3">
+<input class="flex-1 font-body text-sm border border-surface-border rounded-[10px] px-3 py-2 focus:ring-1 focus:ring-brand focus:border-brand focus:outline-none placeholder:text-muted bg-white" placeholder="Nhập mã giảm giá" type="text"/>
+<button class="bg-brand hover:bg-brand-hover text-white font-body font-medium text-sm px-4 py-2 rounded-[10px] transition-colors">Áp dụng</button>
+</div>
+<!-- Applied Voucher Chip -->
+<div class="inline-flex items-center gap-2 bg-semantic-successTint text-semantic-success px-3 py-1.5 rounded-pill text-sm font-body font-medium">
+<span class="material-symbols-outlined text-[16px]">check</span>
+                            WELCOME20
+                            <span class="text-xs ml-1">-150.000 ₫</span>
+<button class="ml-2 hover:text-semantic-danger transition-colors"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</div>
+</div>
+<!-- Summary Rows -->
+<div class="space-y-4 mb-6">
+<div class="flex justify-between items-center font-body text-sm text-secondary">
+<span>Tạm tính</span>
+<span class="font-medium text-primary tabular-nums">2.100.000 ₫</span>
+</div>
+<div class="flex justify-between items-center font-body text-sm text-secondary">
+<span>Giảm giá</span>
+<span class="font-medium text-semantic-success tabular-nums">-150.000 ₫</span>
+</div>
+<div class="flex justify-between items-center font-body text-sm text-secondary">
+<span>Phí vận chuyển</span>
+<span class="font-medium text-primary">Miễn phí</span>
+</div>
+</div>
+<hr class="border-surface-divider mb-6"/>
+<!-- Total -->
+<div class="flex justify-between items-end mb-6">
+<span class="font-body font-semibold text-primary">Tổng cộng</span>
+<span class="font-headline font-bold text-2xl text-primary tabular-nums">1.950.000 ₫</span>
+</div>
+<!-- Checkout Button -->
+<button class="w-full bg-brand hover:bg-brand-hover text-white font-body font-semibold text-base py-3.5 rounded-[10px] transition-colors shadow-sm mb-3">
+                        Tiến hành thanh toán
+                    </button>
+<p class="text-center font-body text-xs text-muted">Đã bao gồm VAT nếu có.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 w-full mt-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-4 md:px-8 py-12 max-w-7xl mx-auto">
+<div class="flex flex-col space-y-4">
+<span class="text-xl font-headline font-bold text-slate-900 dark:text-white">Cartzilla</span>
+<p class="font-body text-sm leading-6 text-slate-500 dark:text-slate-400">© 2024 Cartzilla. Tất cả quyền được bảo lưu.</p>
+</div>
+<div class="flex flex-col space-y-3">
+<h4 class="font-headline font-bold text-slate-900 dark:text-white">Công ty</h4>
+<a class="font-body text-sm leading-6 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Giới thiệu</a>
+<a class="font-body text-sm leading-6 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Chính sách bảo mật</a>
+<a class="font-body text-sm leading-6 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Điều khoản dịch vụ</a>
+</div>
+<div class="flex flex-col space-y-3">
+<h4 class="font-headline font-bold text-slate-900 dark:text-white">Hỗ trợ</h4>
+<a class="font-body text-sm leading-6 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Liên hệ</a>
+<a class="font-body text-sm leading-6 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Hướng dẫn chọn size</a>
+</div>
+<div class="flex flex-col space-y-3">
+<h4 class="font-headline font-bold text-slate-900 dark:text-white">Thanh toán</h4>
+<div class="flex space-x-2">
+<div class="w-12 h-8 bg-cover bg-center rounded border border-slate-200" data-alt="VNPay logo badge, clean white background, small payment icon size for e-commerce footer." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDb00wkXEwt2gllVbIettTDKjz_HgkHxTcL1C7oBwgfWH9zOJkPdwP1JyFvOU1p_bWiWE39_YjpPeAtIQsZ7EkGxwP6HWEjTiXlcixNuEiMp7d7CtumIrKAMnTU7LEZYrRV-Xw0z4Zh3N1e8DgD1G4QXad8DUAIJrGLQD3ZXuth66Wa6hOCrUvE_ecroGXB4DepydN1TPXuiMkLkSarp7EiP1vFwFQWrVNHWd4uMVMWRHaeLCozSdqx2D-K9zl1pgpnnf0NWbAgOZM')"></div>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

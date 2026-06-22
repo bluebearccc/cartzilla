@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cartzilla Admin - Nhà cung cấp / Thương hiệu</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {},
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    spacing: {},
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    fontSize: {}
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom Scrollbar for table */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #F8FAFC;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 font-body antialiased flex overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col h-full z-40">
+<!-- Header -->
+<div class="px-6 py-5 flex items-center gap-3 border-b border-slate-200">
+<div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">
+                C
+            </div>
+<div>
+<h1 class="text-2xl font-black text-indigo-600 tracking-tight">Cartzilla</h1>
+<p class="text-xs text-slate-500 font-medium mt-0.5">Hệ thống quản trị</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto py-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-headline font-semibold text-sm">Bảng điều khiển</span>
+</a>
+<!-- Active State on Sản phẩm as context for Vendors -->
+<a class="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-600 border-l-4 border-indigo-600" href="#">
+<span class="material-symbols-outlined icon-fill text-[20px]">inventory_2</span>
+<span class="font-headline font-semibold text-sm">Sản phẩm</span>
+</a>
+<!-- Sub-nav for context (custom addition to fit exact prompt needs while maintaining component integrity) -->
+<div class="pl-12 pr-4 py-2 space-y-2">
+<a class="block text-sm text-slate-500 hover:text-indigo-600 transition-colors" href="#">Danh sách</a>
+<a class="block text-sm font-semibold text-indigo-600" href="#">Nhà cung cấp</a>
+<a class="block text-sm text-slate-500 hover:text-indigo-600 transition-colors" href="#">Kho hàng</a>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">category</span>
+<span class="font-headline font-semibold text-sm">Danh mục</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+<span class="font-headline font-semibold text-sm">Đơn hàng</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-headline font-semibold text-sm">Cài đặt</span>
+</a>
+</nav>
+<!-- CTA -->
+<div class="p-4 border-t border-slate-200">
+<button class="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                Thêm sản phẩm
+            </button>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-64 flex flex-col h-screen relative">
+<!-- TopNavBar (Shared Component) -->
+<!-- Note: Using exact JSON content for product_name as per rules, though it says Quản lý Danh mục. Page title will clarify. -->
+<header class="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm flex items-center justify-between px-6 py-3">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold text-slate-900 font-headline">Quản lý Danh mục</h2>
+<!-- Search on Left -->
+<div class="relative hidden lg:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all" placeholder="Tìm kiếm..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-indigo-600 font-bold border-b-2 border-indigo-600 pb-4 -mb-4 font-body text-sm" href="#">Hồ sơ</a>
+<a class="text-slate-600 hover:text-indigo-600 transition-colors font-body text-sm" href="#">Thông báo</a>
+<a class="text-slate-600 hover:text-indigo-600 transition-colors font-body text-sm" href="#">Hỗ trợ</a>
+</nav>
+<div class="flex items-center gap-3 border-l border-slate-200 pl-6">
+<button class="text-slate-500 hover:text-indigo-600 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+</button>
+<button class="text-slate-500 hover:text-indigo-600 transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<div>
+<h1 class="text-3xl font-bold font-headline text-slate-900 tracking-tight">Nhà cung cấp / Thương hiệu</h1>
+<p class="text-sm text-slate-500 mt-1">Quản lý nguồn gốc sản phẩm và thương hiệu đối tác.</p>
+</div>
+<button class="inline-flex items-center gap-2 bg-indigo-600 text-white rounded-lg px-5 py-2.5 text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-[0_1px_2px_rgba(15,23,42,.06)] whitespace-nowrap" onclick="document.getElementById('vendor-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Thêm vendor
+                </button>
+</div>
+<!-- Data Table Card -->
+<div class="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,.06)] overflow-hidden flex flex-col mb-8">
+<!-- Toolbar -->
+<div class="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 justify-between bg-slate-50/50">
+<div class="relative w-full md:w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm" placeholder="Tìm kiếm vendor..." type="text"/>
+</div>
+<div class="flex gap-3">
+<select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm appearance-none pr-8 relative cursor-pointer min-w-[140px]">
+<option value="">Loại: Tất cả</option>
+<option value="supplier">Nhà cung cấp</option>
+<option value="brand">Thương hiệu</option>
+<option value="manufacturer">Nhà sản xuất</option>
+</select>
+<select class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm appearance-none pr-8 relative cursor-pointer min-w-[140px]">
+<option value="">Trạng thái: Tất cả</option>
+<option value="active">Hoạt động</option>
+<option value="inactive">Tạm ẩn</option>
+</select>
+</div>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+<th class="px-6 py-4 rounded-tl-2xl">Tên / Logo</th>
+<th class="px-6 py-4">Loại</th>
+<th class="px-6 py-4">Slug</th>
+<th class="px-6 py-4 text-right">Số SP</th>
+<th class="px-6 py-4 text-center">Trạng thái</th>
+<th class="px-6 py-4 text-right rounded-tr-2xl">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-red-50 border border-slate-200 flex items-center justify-center overflow-hidden">
+<span class="font-headline font-bold text-red-600">U</span>
+</div>
+<div>
+<p class="font-semibold text-slate-900 text-sm">Uniqlo</p>
+<p class="text-xs text-slate-500">Thời trang cơ bản</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                        Thương hiệu
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 font-mono">uniqlo</td>
+<td class="px-6 py-4 text-sm text-slate-900 text-right tabular-nums font-medium">1,245</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-100">
+                                        Hoạt động
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Sửa">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" title="Ẩn/Hiện">
+<span class="material-symbols-outlined text-[18px]">visibility_off</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-slate-400">factory</span>
+</div>
+<div>
+<p class="font-semibold text-slate-900 text-sm">Xưởng may Việt</p>
+<p class="text-xs text-slate-500">Gia công nội địa</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-100">
+                                        Nhà sản xuất
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 font-mono">xuong-may-viet</td>
+<td class="px-6 py-4 text-sm text-slate-900 text-right tabular-nums font-medium">850</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-100">
+                                        Hoạt động
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Sửa">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" title="Ẩn/Hiện">
+<span class="material-symbols-outlined text-[18px]">visibility_off</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/80 transition-colors group bg-slate-50/30">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3 opacity-60">
+<div class="w-10 h-10 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center overflow-hidden">
+<span class="font-headline font-bold text-slate-500">N</span>
+</div>
+<div>
+<p class="font-semibold text-slate-600 text-sm line-through decoration-slate-300">Nike</p>
+<p class="text-xs text-slate-400">Thể thao</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                        Thương hiệu
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-400 font-mono">nike</td>
+<td class="px-6 py-4 text-sm text-slate-400 text-right tabular-nums font-medium">0</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                        Tạm ẩn
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Sửa">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" title="Hiện">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/80 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-sky-50 border border-sky-100 flex items-center justify-center overflow-hidden text-sky-600">
+<span class="material-symbols-outlined">local_shipping</span>
+</div>
+<div>
+<p class="font-semibold text-slate-900 text-sm">Nhập khẩu ABC</p>
+<p class="text-xs text-slate-500">Phân phối khu vực</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-600 border border-sky-100">
+                                        Nhà cung cấp
+                                    </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500 font-mono">nhap-khau-abc</td>
+<td class="px-6 py-4 text-sm text-slate-900 text-right tabular-nums font-medium">312</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-100">
+                                        Hoạt động
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Sửa">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors" title="Ẩn/Hiện">
+<span class="material-symbols-outlined text-[18px]">visibility_off</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-4 border-t border-slate-200 flex items-center justify-between bg-white rounded-b-2xl">
+<p class="text-sm text-slate-500">Hiển thị <span class="font-medium text-slate-900">1</span> đến <span class="font-medium text-slate-900">4</span> trong <span class="font-medium text-slate-900">48</span> kết quả</p>
+<nav class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 disabled:opacity-50 transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-600 text-white font-medium text-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium text-sm transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium text-sm transition-colors">3</button>
+<span class="w-8 h-8 flex items-center justify-center text-slate-400 text-sm">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium text-sm transition-colors">8</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</nav>
+</div>
+</div>
+<!-- Empty State Demonstration (Hidden by default, used for reference per prompt request) -->
+<div class="mt-12 bg-white border border-slate-200 border-dashed rounded-2xl p-12 flex flex-col items-center justify-center text-center">
+<img class="w-48 h-48 object-contain mb-6 opacity-80" data-alt="A minimalist vector illustration of an empty shopping bag with a subtle magnifying glass, soft pastel colors on a pristine white background, conveying a professional yet gentle empty state for a modern e-commerce dashboard." src="https://lh3.googleusercontent.com/aida/AP1WRLvjbLN5jSpKeLLadE_YlW7mtSoGefS-n5jtflZF8F5SMS5h7lg9EzPn4gLk88yiThjNSC99jvsMnO17FRZUiQNmsUSjroyaSH_pW3kTHXKzGVhrk7Eko2WTl5xuUq23uMXUzVIpPlm7p1PY0QSis20Z_RvDGBhuDpYR-ASMmh60ffrEhgx7dSGu4k-k206zyIvLnNVfkNnnYdsdmPmpmcsJpIuWhCb9g_LkL62zH1HDaUqkcgMTihN6tAk"/>
+<h3 class="text-lg font-bold font-headline text-slate-900 mb-2">Không tìm thấy nhà cung cấp nào</h3>
+<p class="text-sm text-slate-500 max-w-md mx-auto mb-6">Thử thay đổi bộ lọc tìm kiếm hoặc thêm một nhà cung cấp mới vào hệ thống để bắt đầu quản lý.</p>
+<button class="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm" onclick="document.getElementById('vendor-modal').classList.remove('hidden')">
+                    Xóa bộ lọc
+                </button>
+</div>
+</main>
+</div>
+<!-- Modal: Create/Edit Vendor -->
+<div class="fixed inset-0 z-50 hidden" id="vendor-modal">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="this.parentElement.classList.add('hidden')"></div>
+<!-- Modal Dialog -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+<!-- Header -->
+<div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+<h3 class="text-lg font-bold font-headline text-slate-900">Thêm Vendor Mới</h3>
+<button class="text-slate-400 hover:text-slate-600 transition-colors p-1" onclick="document.getElementById('vendor-modal').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Body -->
+<div class="p-6 overflow-y-auto custom-scrollbar flex-1">
+<form class="space-y-5">
+<!-- Row 1: Tên & Loại -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1.5">Tên vendor <span class="text-red-500">*</span></label>
+<input class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm" placeholder="VD: Adidas Vietnam" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1.5">Loại <span class="text-red-500">*</span></label>
+<select class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm appearance-none">
+<option value="brand">Thương hiệu</option>
+<option value="supplier">Nhà cung cấp</option>
+<option value="manufacturer">Nhà sản xuất</option>
+</select>
+</div>
+</div>
+<!-- Row 2: Slug (Error State Demo) -->
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1.5">Đường dẫn (Slug)</label>
+<div class="flex">
+<span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-red-300 bg-red-50 text-red-500 sm:text-sm">
+                                /brand/
+                            </span>
+<input class="flex-1 min-w-0 block w-full px-3 py-2.5 rounded-none rounded-r-lg text-sm border border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500 bg-red-50/50" type="text" value="adidas-vietnam"/>
+</div>
+<p class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                            Slug này đã tồn tại trong hệ thống.
+                        </p>
+</div>
+<!-- Row 3: Logo URL -->
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1.5">Logo URL</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">link</span>
+<input class="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm" placeholder="https://..." type="url"/>
+</div>
+</div>
+<!-- Row 4: Mô tả -->
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1.5">Mô tả</label>
+<textarea class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm custom-scrollbar" placeholder="Nhập thông tin giới thiệu..." rows="3"></textarea>
+</div>
+<!-- Row 5: Toggle Trạng thái -->
+<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-4">
+<div class="flex items-center h-5 mt-0.5">
+<input checked="" class="w-4 h-4 text-indigo-600 bg-white border-slate-300 rounded focus:ring-indigo-600 focus:ring-2" id="status-toggle" type="checkbox"/>
+</div>
+<div>
+<label class="text-sm font-semibold text-slate-900 cursor-pointer block" for="status-toggle">Hoạt động</label>
+<p class="text-xs text-slate-500 mt-1">Nhà cung cấp ngừng hoạt động sẽ không thể gán cho sản phẩm mới.</p>
+</div>
+</div>
+</form>
+</div>
+<!-- Footer -->
+<div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex items-center justify-end gap-3">
+<button class="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm" onclick="document.getElementById('vendor-modal').classList.add('hidden')">
+                    Hủy bỏ
+                </button>
+<button class="px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                    Lưu thay đổi
+                </button>
+</div>
+</div>
+</div>
+</body></html>

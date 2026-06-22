@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chi tiết đơn hàng đã hủy - Cartzilla</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#F8FAFC',
+                            100: '#F1F5F9',
+                            200: '#E2E8F0',
+                            300: '#CBD5E1',
+                            400: '#94A3B8',
+                            500: '#64748B',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1E293B',
+                            900: '#0F172A',
+                            950: '#020617',
+                        },
+                        indigo: {
+                            50: '#EEF2FF',
+                            100: '#E0E7FF',
+                            500: '#6366F1',
+                            600: '#4F46E5',
+                            700: '#4338CA',
+                            900: '#312E81',
+                        },
+                        red: {
+                            50: '#FEF2F2',
+                            100: '#FEE2E2',
+                            600: '#DC2626',
+                            700: '#B91C1C',
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.625rem", // 10px inputs/buttons
+                        "lg": "1rem", // 16px cards
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #F8FAFC; color: #0F172A; }
+    </style>
+</head>
+<body class="font-body min-h-screen flex flex-col pt-16">
+<!-- TopNavBar Shared Component -->
+<nav class="bg-white dark:bg-slate-900 font-body text-sm font-medium fixed top-0 w-full z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<!-- Brand & Search -->
+<div class="flex items-center gap-8">
+<a class="text-2xl font-headline font-bold text-slate-900 dark:text-white tracking-tight" href="#">Cartzilla</a>
+<div class="hidden lg:flex items-center relative">
+<span class="material-symbols-outlined absolute left-3 text-slate-400 text-lg pointer-events-none">search</span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-full text-sm focus:bg-white focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all w-64" placeholder="Tìm sản phẩm..." type="text"/>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Trang chủ</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Sản phẩm</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Bộ sưu tập</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Khuyến mãi</a>
+</div>
+<!-- Trailing Icons -->
+<div class="flex items-center gap-4 text-slate-600">
+<button class="relative hover:text-indigo-600 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-red-600 rounded-full border border-white"></span>
+</button>
+<button class="relative hover:text-indigo-600 transition-colors">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">2</span>
+</button>
+<button class="hover:text-indigo-600 transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Layout Container -->
+<div class="flex-grow w-full max-w-7xl mx-auto px-4 md:px-8 py-8 flex gap-8">
+<!-- SideNavBar Shared Component (Desktop Only) -->
+<aside class="hidden lg:block bg-white dark:bg-slate-900 font-body text-sm w-64 h-full rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex-shrink-0 sticky top-24">
+<div class="p-6 border-b border-slate-200">
+<div class="flex items-center gap-4">
+<img alt="Avatar người dùng" class="w-12 h-12 rounded-full object-cover bg-slate-200" data-alt="A highly detailed close-up portrait of a modern Vietnamese young adult, smiling softly, lit by bright, clean, natural daylight against a neutral soft gray background. The style is premium commercial photography, focusing on approachability and modern lifestyle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDL9AqewfZMdR0cRJeVyuMJJDAK1u1HLzMT1T6ACb7XHlqyOQOvGfteYIPAefqbakFo0w78-VByml5I88ZUBF0uF7HDjn-2Pv24Jjmj0F9IMUZQ2bdbNCPq-Ch302kuiPmGF7w-ihnS2lEjkmFqc7JmtLdoAIcaCWy04Plc0DdYGw-7U08YZNQ2lsxbdfbzZSSSHosiwwDbshe-ejjooIaTQsLKQc5tzbKqtvBF2eF06p_IO58S7HEVDiJ8q4EmTabmJvaLiLk6VRE"/>
+<div>
+<h3 class="font-headline font-bold text-slate-900 text-base">Nguyễn Văn A</h3>
+<p class="text-slate-500 text-xs mt-0.5">Thành viên Vàng</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col py-6 space-y-2 px-4">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 transition-colors active:scale-95" href="#">
+<span class="material-symbols-outlined text-xl">person</span>
+                    Hồ sơ của tôi
+                </a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 font-semibold active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-xl">package</span>
+                    Đơn hàng
+                </a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95" href="#">
+<span class="material-symbols-outlined text-xl">notifications</span>
+                    Thông báo
+                </a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95" href="#">
+<span class="material-symbols-outlined text-xl">location_on</span>
+                    Số địa chỉ
+                </a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-DEFAULT text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors mt-8 active:scale-95" href="#">
+<span class="material-symbols-outlined text-xl">logout</span>
+                    Đăng xuất
+                </a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full min-w-0">
+<!-- Breadcrumbs -->
+<nav aria-label="Breadcrumb" class="flex text-sm text-slate-500 mb-6">
+<ol class="inline-flex items-center space-x-2">
+<li class="inline-flex items-center">
+<a class="hover:text-indigo-600 transition-colors" href="#">Trang chủ</a>
+</li>
+<li>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-sm mx-1">chevron_right</span>
+<a class="hover:text-indigo-600 transition-colors" href="#">Đơn hàng</a>
+</div>
+</li>
+<li aria-current="page">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-sm mx-1">chevron_right</span>
+<span class="text-slate-900 font-medium">#CZ-88294</span>
+</div>
+</li>
+</ol>
+</nav>
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<div>
+<h1 class="text-2xl font-headline font-bold text-slate-900 mb-1">Đơn hàng #CZ-88294</h1>
+<p class="text-sm text-slate-500">Ngày đặt: 12/10/2023 09:45</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">
+                        Đã hủy
+                    </span>
+</div>
+</div>
+<!-- Two Column Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+<!-- Left Column: Status, Products, History -->
+<div class="xl:col-span-8 space-y-8">
+<!-- Cancelled Status Banner -->
+<div class="bg-red-50 border border-red-200 rounded-lg p-6 flex items-start gap-4 shadow-card">
+<div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</div>
+<div>
+<h2 class="text-lg font-headline font-bold text-red-700 mb-1">Đơn hàng đã bị hủy</h2>
+<p class="text-red-600 text-sm mb-3">Rất tiếc, đơn hàng của bạn không thể tiếp tục xử lý.</p>
+<div class="bg-white/60 rounded-DEFAULT p-3 border border-red-100">
+<span class="text-sm font-medium text-slate-700 block mb-1">Lý do hủy:</span>
+<span class="text-sm text-slate-600">Thay đổi ý định mua sắm</span>
+</div>
+</div>
+</div>
+<!-- Products Card -->
+<div class="bg-white rounded-lg shadow-card border border-slate-200 overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+<h2 class="text-base font-headline font-bold text-slate-900">Sản phẩm (2)</h2>
+</div>
+<div class="p-6 space-y-6">
+<!-- Item 1 -->
+<div class="flex gap-4">
+<img alt="Sản phẩm 1" class="w-20 h-24 object-cover rounded-DEFAULT bg-slate-100 border border-slate-200" data-alt="A clean, flat-lay studio shot of a high-quality, modern minimalist men's cotton t-shirt in deep navy blue. The lighting is soft and even, highlighting the fabric texture against a pure white background. Minimalist fashion aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHcwS4gvMJ5wfejS4oLV3hzDX_ChE4t40DwuU2TDCBgmHQ2YOGSxZhiAzLmeQGiL7YW0ZjNijJMFh-Zuot44EdXMEWNNINVrUuoZna-5ZckDHV-sdK2bpMVxwizWa0ny-fSA4I1BzOd9mdhbpNit50owhFi-cZjJ3bNLKEiOrYpyatsfT-YRD8XxHN5tYZKlLz9rj4xnRwSV56ACbJ6BHLu6S_1uGQ4PM86kZmsBC_AK6kAOC_PvWHYYT9UZFQkHXkvcnP29-40yM"/>
+<div class="flex-grow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-medium text-slate-900 text-sm line-clamp-2">Áo thun nam Premium Cotton dáng Regular Fit</h3>
+<p class="text-sm text-slate-500 mt-1">Màu: Navy | Size: L</p>
+</div>
+<p class="font-medium text-slate-900 tabular-nums">350.000 ₫</p>
+</div>
+<div class="text-sm text-slate-500">
+                                        Số lượng: 1
+                                    </div>
+</div>
+</div>
+<hr class="border-slate-100"/>
+<!-- Item 2 -->
+<div class="flex gap-4">
+<img alt="Sản phẩm 2" class="w-20 h-24 object-cover rounded-DEFAULT bg-slate-100 border border-slate-200" data-alt="A professional product photography shot of a sleek, modern, slim-fit dark wash denim jeans neatly folded. The lighting is crisp, emphasizing the denim twill texture and contrast stitching, set against a pristine light gray background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEvoUC6nhhVb0gKQcB82gwPwPGIRPKUuORD0_poi3NsNc1eDZfJSShD4KB-trFjSIJJyC2oygwlTcX49kjHkERZKc0ulRxYOO40N3jhf7sRsrM0AfegTKZqxun9C7Yu5_3S1vwaWs4LL_9VOqgtoZWPFkd71BGVKJKOhXz36tG_Kcxq1rOVnhtPxpcQoTDMgkaksQqCGXfeStkQGLwqJUwBc_XRd9oo1c2ot1PSjJ0LK_kH7X31UAnaqH_hZoPd2tNLO-jp6f86rQ"/>
+<div class="flex-grow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-medium text-slate-900 text-sm line-clamp-2">Quần Jeans nam dáng Slim Fit co giãn</h3>
+<p class="text-sm text-slate-500 mt-1">Màu: Xanh đậm | Size: 32</p>
+</div>
+<p class="font-medium text-slate-900 tabular-nums">550.000 ₫</p>
+</div>
+<div class="text-sm text-slate-500">
+                                        Số lượng: 1
+                                    </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Order History Card -->
+<div class="bg-white rounded-lg shadow-card border border-slate-200 overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+<h2 class="text-base font-headline font-bold text-slate-900">Lịch sử đơn hàng</h2>
+</div>
+<div class="p-6">
+<div class="relative border-l-2 border-slate-200 ml-3 space-y-6">
+<div class="relative pl-6">
+<span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-red-100 border-2 border-red-600"></span>
+<h4 class="text-sm font-bold text-red-600 mb-0.5">Đã hủy</h4>
+<p class="text-sm text-slate-600 mb-1">Đơn hàng bị hủy bởi người dùng (Lý do: Thay đổi ý định mua sắm)</p>
+<p class="text-xs text-slate-400">12/10/2023 10:15</p>
+</div>
+<div class="relative pl-6">
+<span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-slate-200 border-2 border-slate-400"></span>
+<h4 class="text-sm font-medium text-slate-700 mb-0.5">Đặt hàng thành công</h4>
+<p class="text-sm text-slate-600 mb-1">Hệ thống đã ghi nhận đơn đặt hàng của bạn</p>
+<p class="text-xs text-slate-400">12/10/2023 09:45</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Summary, Address, Payment -->
+<div class="xl:col-span-4 space-y-6">
+<!-- Order Summary -->
+<div class="bg-white rounded-lg shadow-card border border-slate-200 p-6">
+<h2 class="text-base font-headline font-bold text-slate-900 mb-4">Tổng quan đơn hàng</h2>
+<div class="space-y-3 text-sm">
+<div class="flex justify-between text-slate-600">
+<span>Tạm tính</span>
+<span class="tabular-nums font-medium text-slate-900">900.000 ₫</span>
+</div>
+<div class="flex justify-between text-slate-600">
+<span>Phí vận chuyển</span>
+<span class="tabular-nums font-medium text-slate-900">30.000 ₫</span>
+</div>
+<div class="flex justify-between text-slate-600">
+<span>Giảm giá</span>
+<span class="tabular-nums font-medium text-red-600">-50.000 ₫</span>
+</div>
+<hr class="border-slate-200 my-3"/>
+<div class="flex justify-between items-center">
+<span class="font-medium text-slate-900 text-base">Tổng tiền</span>
+<span class="font-bold text-indigo-600 text-xl tabular-nums line-through opacity-70">880.000 ₫</span>
+</div>
+<p class="text-xs text-slate-500 text-right mt-1">Đơn hàng đã hủy, không cần thanh toán.</p>
+</div>
+</div>
+<!-- Customer Info -->
+<div class="bg-white rounded-lg shadow-card border border-slate-200 p-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-slate-400">local_shipping</span>
+<h2 class="text-base font-headline font-bold text-slate-900">Thông tin nhận hàng</h2>
+</div>
+<div class="text-sm space-y-2 text-slate-600">
+<p class="font-medium text-slate-900">Nguyễn Văn A</p>
+<p>0901 234 567</p>
+<p class="leading-relaxed">Tòa nhà Bitexco Financial Tower, Số 2 Hải Triều, Phường Bến Nghé, Quận 1, Hồ Chí Minh</p>
+</div>
+</div>
+<!-- Payment Method -->
+<div class="bg-white rounded-lg shadow-card border border-slate-200 p-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-slate-400">payments</span>
+<h2 class="text-base font-headline font-bold text-slate-900">Phương thức thanh toán</h2>
+</div>
+<div class="text-sm">
+<p class="text-slate-900 font-medium mb-1">Thanh toán khi nhận hàng (COD)</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+                                Đã hủy
+                            </span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer Shared Component -->
+<footer class="bg-slate-50 dark:bg-slate-950 font-body text-sm leading-6 w-full mt-auto border-t border-slate-200 dark:border-slate-800">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-4 md:px-8 py-12 max-w-7xl mx-auto">
+<!-- Brand Column -->
+<div class="col-span-1 md:col-span-1">
+<a class="text-xl font-headline font-bold text-slate-900 dark:text-white mb-4 block" href="#">Cartzilla</a>
+<p class="text-slate-500 dark:text-slate-400 mb-6">Trải nghiệm mua sắm thời trang hiện đại, uy tín và chất lượng hàng đầu Việt Nam.</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">© 2024 Cartzilla. Tất cả quyền được bảo lưu.</p>
+</div>
+<!-- Links Columns -->
+<div class="col-span-1">
+<h4 class="font-semibold text-slate-900 dark:text-white mb-4">Khám phá</h4>
+<ul class="space-y-3">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Sản phẩm mới</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Bộ sưu tập</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Khuyến mãi</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h4 class="font-semibold text-slate-900 dark:text-white mb-4">Hỗ trợ khách hàng</h4>
+<ul class="space-y-3">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Hướng dẫn chọn size</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Chính sách đổi trả</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Câu hỏi thường gặp</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h4 class="font-semibold text-slate-900 dark:text-white mb-4">Thông tin công ty</h4>
+<ul class="space-y-3">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Giới thiệu</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Chính sách bảo mật</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Điều khoản dịch vụ</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Liên hệ</a></li>
+</ul>
+</div>
+</div>
+</footer>
+</body></html>

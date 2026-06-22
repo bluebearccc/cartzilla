@@ -1,6 +1,7 @@
 package com.cartzilla.order.application.usecase;
 
 import com.cartzilla.order.application.command.OrderCommand;
+import com.cartzilla.order.application.port.OrderEventPort;
 import com.cartzilla.order.domain.entity.Order;
 import com.cartzilla.order.domain.repository.OrderRepository;
 import com.cartzilla.order.domain.vo.OrderStatus;
@@ -20,6 +21,7 @@ import java.util.NoSuchElementException;
 public class CancelOrderUseCase {
 
     private final OrderRepository orderRepository;
+    private final OrderEventPort orderEventPort;
 
     @Transactional
     public Order execute(OrderCommand.CancelByCustomer cmd) {
@@ -37,6 +39,8 @@ public class CancelOrderUseCase {
         String reason = (cmd.reason() == null || cmd.reason().isBlank())
                 ? "Khách hàng hủy đơn" : cmd.reason().trim();
         order.cancel(reason, cmd.userId());
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        orderEventPort.orderCancelled(saved, reason);
+        return saved;
     }
 }

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Đang xác nhận thanh toán... - Cartzilla</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#F8FAFC',
+                            200: '#E2E8F0',
+                            400: '#94A3B8',
+                            600: '#475569',
+                            800: '#1E293B',
+                            900: '#0F172A',
+                            950: '#020617',
+                        },
+                        indigo: {
+                            50: '#EEF2FF',
+                            300: '#A5B4FC',
+                            400: '#818CF8',
+                            500: '#6366F1',
+                            600: '#4F46E5',
+                        },
+                        amber: {
+                            50: '#FFFBEB',
+                            100: '#FEF3C7',
+                            500: '#F59E0B',
+                        }
+                    },
+                    fontFamily: {
+                        headline: ["Manrope", "sans-serif"],
+                        display: ["Manrope", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.625rem", // 10px
+                        lg: "1rem", // 16px
+                        full: "9999px"
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)',
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        @keyframes pulse-amber {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: .7;
+                transform: scale(1.05);
+            }
+        }
+        .animate-pulse-amber {
+            animation: pulse-amber 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes spin-slow {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 3s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-body text-slate-900 min-h-screen flex flex-col antialiased selection:bg-indigo-100 selection:text-indigo-900">
+<!-- TopNavBar (Excluded as per Semantic Shell Mandate for Transactional Screens, but user requested it. Following user request over general rule for this specific prompt nuance, though standard rule says exclude. Re-evaluating: Prompt explicitly says "Navigation: Use TopNavBar and Footer from the design system." Overriding general rule for this prompt.) -->
+<nav class="bg-white dark:bg-slate-900 sticky top-0 w-full z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="text-2xl font-headline font-bold text-slate-900 dark:text-white">Cartzilla</div>
+<div class="hidden md:flex gap-6">
+<a class="font-body text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors" href="#">Trang chủ</a>
+<a class="font-body text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors" href="#">Sản phẩm</a>
+</div>
+<div class="flex items-center gap-4 text-indigo-600 dark:text-indigo-400 font-body text-sm font-medium">
+<button aria-label="Notifications" class="active:scale-95 duration-150 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-red-600 rounded-full border border-white"></span>
+</button>
+<button aria-label="Cart" class="active:scale-95 duration-150 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">2</span>
+</button>
+<button aria-label="Profile" class="active:scale-95 duration-150 rounded-full overflow-hidden w-8 h-8 border border-slate-200 ml-2">
+<img alt="Ảnh đại diện người dùng" class="w-full h-full object-cover" data-alt="A close up, high quality studio headshot of an Asian professional wearing a modern minimal top, lit with soft daylight lighting. The background is a clean, out of focus light grey, emphasizing the modern, professional aesthetic of a high-end e-commerce brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDA9TumRy9Uel4PvqDsNbHWKIloxrzwrVWfd56lEpnRtk1lCFanZAUtt9A7s1D0YP0zE3Op-safRdpxnVO8oAHPP5djFvv-JRsMvP9iqjee3qwSATm2He1-8hDAziNRl4cr_VBsfo0w7XmS6RMScLHa8jeNuogLqsk52MlbA2DLS763d_uVL0cxFWPWHhJLS7PYhkzmYlvd41rc8ULBFZhWXrkWkwxO5NSHVWEjd6eFzHD6owPIU0lhYeUSPm1M1jjW2VJ_t6kfCU"/>
+</button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center p-4 md:p-8">
+<div class="bg-white rounded-lg shadow-card w-full max-w-md p-8 md:p-12 text-center relative overflow-hidden">
+<!-- Decorative background elements -->
+<div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-300 via-amber-500 to-amber-400"></div>
+<div class="absolute -top-24 -right-24 w-48 h-48 bg-amber-50 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+<div class="absolute -bottom-24 -left-24 w-48 h-48 bg-amber-50 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+<!-- Icon -->
+<div class="relative inline-flex items-center justify-center mb-8">
+<div class="absolute inset-0 bg-amber-100 rounded-full animate-pulse-amber"></div>
+<div class="relative w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 border border-amber-100">
+<span class="material-symbols-outlined text-5xl animate-spin-slow" style="font-variation-settings: 'FILL' 1;">pending</span>
+</div>
+</div>
+<!-- Text Content -->
+<h1 class="font-headline text-2xl md:text-3xl font-bold text-slate-900 mb-4">Đang xác nhận thanh toán...</h1>
+<p class="font-body text-slate-600 text-sm md:text-base leading-relaxed mb-8">
+                Vui lòng chờ trong giây lát. Hệ thống đang xử lý giao dịch của bạn. Quá trình này có thể mất một chút thời gian.
+            </p>
+<!-- Order Summary (Small) -->
+<div class="bg-slate-50 rounded-lg p-5 mb-8 text-left border border-slate-100">
+<div class="flex justify-between items-center mb-3">
+<span class="font-body text-sm text-slate-600">Mã đơn hàng</span>
+<span class="font-headline font-semibold text-slate-900">#CZ-8924A</span>
+</div>
+<div class="flex justify-between items-center mb-3">
+<span class="font-body text-sm text-slate-600">Tổng tiền</span>
+<span class="font-headline font-bold text-slate-900 tabular-nums">2.450.000 ₫</span>
+</div>
+<div class="flex justify-between items-center pt-3 border-t border-slate-200">
+<span class="font-body text-sm text-slate-600">Trạng thái</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-600 font-body text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Chờ xử lý
+                    </span>
+</div>
+</div>
+<!-- Action -->
+<button class="w-full inline-flex justify-center items-center gap-2 rounded px-6 py-3.5 bg-indigo-600 text-white font-body font-semibold text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors shadow-sm active:scale-95 duration-150" onclick="window.location.reload();" type="button">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+                Tải lại trang
+            </button>
+<p class="mt-6 text-xs text-slate-400 font-body">
+                Nếu bạn đã bị trừ tiền nhưng màn hình chưa cập nhật, vui lòng không đóng trình duyệt và liên hệ <a class="text-indigo-600 hover:underline" href="#">Hỗ trợ</a>.
+            </p>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 dark:bg-slate-950 w-full py-12 border-t border-slate-200 dark:border-slate-800">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-7xl mx-auto px-4 md:px-8">
+<div class="flex flex-col gap-4">
+<div class="text-xl font-headline font-bold text-slate-900 dark:text-white">Cartzilla</div>
+<p class="font-body text-sm text-slate-600 dark:text-slate-400">© 2024 Cartzilla. Tất cả quyền được bảo lưu.</p>
+</div>
+<div class="flex flex-col gap-3">
+<a class="font-body text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Về chúng tôi</a>
+<a class="font-body text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Chính sách bảo mật</a>
+</div>
+<div class="flex flex-col gap-3">
+<a class="font-body text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Điều khoản sử dụng</a>
+<a class="font-body text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Liên hệ</a>
+</div>
+<div>
+<p class="font-body text-sm font-semibold text-slate-900 mb-4">Phương thức thanh toán</p>
+<div class="flex gap-2">
+<div class="w-10 h-6 bg-white border border-slate-200 rounded flex items-center justify-center text-[10px] font-bold text-blue-600">VNPay</div>
+<div class="w-10 h-6 bg-white border border-slate-200 rounded flex items-center justify-center text-[10px] font-bold text-red-500">Momo</div>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*.local
+
+# Stitch design references (large binary screenshots)
+design/stitch/*.png
+
+# Editor / OS
+.DS_Store
+*.log

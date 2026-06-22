@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Người dùng - Cartzilla Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#F8FAFC',
+                            200: '#E2E8F0',
+                            400: '#94A3B8',
+                            600: '#475569',
+                            800: '#1E293B',
+                            900: '#0F172A',
+                        },
+                        indigo: {
+                            50: '#EEF2FF',
+                            400: '#818CF8',
+                            600: '#4F46E5',
+                            700: '#4338CA',
+                        },
+                        success: {
+                            DEFAULT: '#16A34A',
+                            tint: '#DCFCE7'
+                        },
+                        warning: {
+                            DEFAULT: '#F59E0B',
+                            tint: '#FEF3C7'
+                        },
+                        danger: {
+                            DEFAULT: '#DC2626',
+                            tint: '#FEE2E2'
+                        },
+                        info: {
+                            DEFAULT: '#0EA5E9',
+                            tint: '#E0F2FE'
+                        },
+                        purple: {
+                            100: '#F3E8FF',
+                            600: '#9333EA'
+                        },
+                        cyan: {
+                            100: '#CFFAFE',
+                            600: '#0891B2'
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'card-sm': '0 1px 2px rgba(15,23,42,.06)',
+                        'card-lg': '0 8px 24px rgba(15,23,42,.04)'
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-body antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-sm flex flex-col py-6 z-40">
+<div class="px-6 mb-8 flex items-center gap-3">
+<img class="w-8 h-8 rounded-lg object-cover" data-alt="A clean, modern minimalist logo for a fashion e-commerce brand named Cartzilla. The logo features a sleek, geometric monogram or abstract shape in deep indigo and dark slate colors, set against a pure white background. The typography is bold and modern, conveying a premium and trustworthy vibe suitable for an administrative dashboard interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8OsRotg-lz1JVRDENtBHqVqPZYjyx5Z9NFGussEcty2hcsXuG6uTPTyh4VgJf_NbyeT8TEHftPot1uyahB4mSg4F5jEg1BMg3NG_p4bI1MS4ajOZLzQiy0R2_OeF61wEl7emEc1ZY1ir2wZQs3fju-38V0T8Asb8yV9GxOXZBlp8mw7iDRXtQVuzzkVHKrJqLdhNSVQUJhSZTUEAzZJw0hKAFUUovGZ8GqZYxCJ5PAd6eQexXAn8cRU-f1u6xIJR-RpLFMhq6Db0"/>
+<div>
+<h1 class="font-headline text-2xl font-bold text-slate-900 dark:text-white leading-none">Cartzilla</h1>
+<p class="text-xs text-slate-400 mt-1">Quản trị hệ thống</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span>
+                Tổng quan
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg">inventory_2</span>
+                Sản phẩm
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg">shopping_cart</span>
+                Đơn hàng
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body text-sm font-medium bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 cursor-pointer active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg">group</span>
+                Khách hàng
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-md font-body text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg">settings</span>
+                Cài đặt
+            </a>
+</nav>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-64 flex flex-col h-screen overflow-hidden relative">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-30 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between px-8 h-16">
+<div class="flex items-center">
+<!-- Breadcrumbs or simple title context -->
+<h2 class="font-headline text-lg font-bold text-slate-900">Cartzilla Dashboard</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 relative p-2 rounded-full hover:bg-slate-100">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full border border-white"></span>
+</button>
+<button class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 p-2 rounded-full hover:bg-slate-100">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-px bg-slate-200 mx-2"></div>
+<button class="flex items-center gap-2 hover:bg-slate-50 p-1 pr-3 rounded-full transition-colors border border-transparent hover:border-slate-200">
+<img class="w-8 h-8 rounded-full object-cover border border-slate-200" data-alt="A professional headshot of a young adult working as a system administrator. They look approachable and competent, smiling slightly. The photo has a soft, studio lighting setup with a neutral light gray background, giving it a modern and clean aesthetic typical of enterprise dashboard avatars." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7RvpAlGro5DJf8Ydtlpuyw8j9STnjJe01Fhpm_2ofsnadlO5Y46nysBmhmy_d99a_Ab9UQoMc1dtgm3YpratoyKmoDjKHWAZgq_6O_5XDohsm7-6pznaveFVXpZJTCR1u9NXitTd_j3WFvnwRhRFUQEp1brgINFgP4KFsAgEkzCUZu-Vle9Ww5CR0EFUTUXO_TfxlS7PrZKEBV6fcHPJ59jL_APEXf5fXAz6r10RUEbcnuDikaAgmJ78VXFQLZTdZEUpQbie3t4g"/>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto p-8 relative">
+<div class="max-w-7xl mx-auto space-y-6">
+<!-- Page Header & Toolbar -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h1 class="font-headline text-[32px] leading-10 font-bold text-slate-900">Người dùng</h1>
+<p class="text-slate-600 text-sm mt-1">Quản lý tài khoản, vai trò và trạng thái truy cập.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2.5 rounded-[10px] text-sm font-medium hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-lg">download</span>
+                            Xuất CSV
+                        </button>
+<button class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-[10px] text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+                            Thêm người dùng
+                        </button>
+</div>
+</div>
+<!-- Filters & Search Bar -->
+<div class="bg-white p-4 rounded-2xl shadow-card-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+<div class="relative w-full md:w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-shadow" placeholder="Tìm theo tên, email..." type="text"/>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+<div class="relative group">
+<select class="appearance-none bg-white border border-slate-200 text-slate-600 px-4 py-2.5 pr-10 rounded-[10px] text-sm font-medium hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-shadow cursor-pointer min-w-[140px]">
+<option value="">Tất cả vai trò</option>
+<option value="CUSTOMER">CUSTOMER</option>
+<option value="STAFF">STAFF</option>
+<option value="ADMIN">ADMIN</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+<div class="relative group">
+<select class="appearance-none bg-white border border-slate-200 text-slate-600 px-4 py-2.5 pr-10 rounded-[10px] text-sm font-medium hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-shadow cursor-pointer min-w-[160px]">
+<option value="">Tất cả trạng thái</option>
+<option value="active">Hoạt động</option>
+<option value="locked">Đã khóa</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-white rounded-2xl shadow-card-sm border border-slate-200 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-600 font-medium">
+<th class="px-6 py-4">Người dùng</th>
+<th class="px-6 py-4">Vai trò</th>
+<th class="px-6 py-4">Trạng thái</th>
+<th class="px-6 py-4">Ngày tạo</th>
+<th class="px-6 py-4 text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 text-sm">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover bg-slate-200" data-alt="A close up portrait of a young vietnamese man, casually dressed, natural lighting, looking straight at the camera. The background is a soft blur of a modern cafe interior. The image has a warm, inviting, and professional tone suitable for a user profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKWZyQW4qROBQpVP2vs0gpKfKIiToBbumrowAHd1ZMDqrj9CjRSfw_vtYFiyg384hDuh68ix_bHQJI970nccQb2GuZKoE3F8Kol1bhx5Vi3N44rkhFBZ2amltEg1UZT_OL24trv68YDTCx_ubBSvZJyYJLOO6fscCCbBbXjSWq2x95czvg9MbxL51oa622i2bcWSdJopRK102g5rrR57LdYQLiD6PI3Om5gSpM9Y4vAGCqd6ieVqVKJE1SGMgpFLeq1aD5nWZ4Fkk"/>
+<div>
+<div class="font-medium text-slate-900">Nguyễn Văn A</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-slate-600 text-xs">nguyen.a@gmail.com</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-success-tint text-success">
+<span class="material-symbols-outlined text-[10px] mr-0.5">check_circle</span>
+                                                        Đã xác minh
+                                                    </span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                            CUSTOMER
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-success"></div>
+<span class="text-slate-900">Hoạt động</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-600 font-mono text-xs">
+                                        12/05/2024
+                                    </td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Đổi vai trò">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-danger hover:bg-danger-tint rounded-md transition-colors" title="Khóa">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center font-bold text-sm">
+                                                TB
+                                            </div>
+<div>
+<div class="font-medium text-slate-900">Trần Thị B</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-slate-600 text-xs">tran.b@cartzilla.vn</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-success-tint text-success">
+<span class="material-symbols-outlined text-[10px] mr-0.5">check_circle</span>
+                                                        Đã xác minh
+                                                    </span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-600 border border-cyan-200">
+                                            STAFF
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-success"></div>
+<span class="text-slate-900">Hoạt động</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-600 font-mono text-xs">
+                                        10/05/2024
+                                    </td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Đổi vai trò">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-danger hover:bg-danger-tint rounded-md transition-colors" title="Khóa">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 transition-colors group bg-danger-tint/10">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover bg-slate-200 opacity-70 grayscale" data-alt="A casual portrait of a young vietnamese woman with glasses, smiling lightly. The background is an abstract gradient of soft neutral colors. The image feels bright, clear, and modern, suitable for a professional user profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8YeLZyumX7gHKUCpWIzqnQeS5Cpy9csm0rYpsn8wvVurMMeWsrP3iyWNhBdeho-X8xeKiVcepMgHBpQQSDYNP-SwZGIWEA5azKF-MWGdKD5Qjrsdkq4HL08vPqvzvW-ZKZobLLuftL5vn4T-OpulEz29kVWgE9iN4CDpSSyfarqR_1-W1WDMNPRtzgxaLd8C2pNTtOos86qqMpD1SyIkQkEa-8gfS8hy86EBf1MXcNyWbvoahxH-P72ia5wDItMuhyBpXX8G6Jw4"/>
+<div>
+<div class="font-medium text-slate-900">Lê Văn C</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-slate-600 text-xs">levanc.test@yahoo.com</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-200 text-slate-600">
+                                                        Chưa xác minh
+                                                    </span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-100 opacity-70">
+                                            CUSTOMER
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-danger">
+<div class="w-2 h-2 rounded-full bg-danger"></div>
+<span class="font-medium">Đã khóa</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-600 font-mono text-xs">
+                                        08/05/2024
+                                    </td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Đổi vai trò">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-success hover:bg-success-tint rounded-md transition-colors" title="Mở khóa">
+<span class="material-symbols-outlined text-[20px]">lock_open</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">
+                                                PM
+                                            </div>
+<div>
+<div class="font-medium text-slate-900">Phạm Minh Admin</div>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-slate-600 text-xs">admin@cartzilla.vn</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-success-tint text-success">
+<span class="material-symbols-outlined text-[10px] mr-0.5">check_circle</span>
+                                                        Đã xác minh
+                                                    </span>
+</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-600 border border-purple-200">
+                                            ADMIN
+                                        </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-success"></div>
+<span class="text-slate-900">Hoạt động</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-600 font-mono text-xs">
+                                        01/01/2024
+                                    </td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Đổi vai trò">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-danger hover:bg-danger-tint rounded-md transition-colors" title="Khóa">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="bg-white border-t border-slate-200 px-6 py-4 flex items-center justify-between">
+<div class="text-sm text-slate-600">
+                            Hiển thị <span class="font-medium text-slate-900">1</span> đến <span class="font-medium text-slate-900">4</span> trong số <span class="font-medium text-slate-900">128</span> kết quả
+                        </div>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-slate-200 rounded-lg text-slate-400 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-600 text-white text-sm font-medium">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">3</button>
+<span class="text-slate-400">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors">12</button>
+<button class="p-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Hidden/Reference Modals (For design completeness, positioned absolutely outside document flow) -->
+<!-- Example: Error Toast (Fixed top right) -->
+<!-- 
+                <div class="fixed top-20 right-8 z-50 bg-white border border-danger-tint rounded-xl shadow-card-lg p-4 flex items-start gap-3 w-80 animate-fade-in">
+                    <span class="material-symbols-outlined text-danger mt-0.5">error</span>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-900">Lỗi phân quyền</h4>
+                        <p class="text-xs text-slate-600 mt-1">Không thể tự hạ quyền admin cuối cùng của hệ thống.</p>
+                    </div>
+                    <button class="ml-auto text-slate-400 hover:text-slate-600"><span class="material-symbols-outlined text-sm">close</span></button>
+                </div>
+                -->
+<!-- Example: Lock Confirmation Modal (Overlay) -->
+<!--
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div class="bg-white rounded-2xl shadow-card-lg p-6 max-w-md w-full mx-4">
+                        <div class="w-12 h-12 rounded-full bg-danger-tint text-danger flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined">lock</span>
+                        </div>
+                        <h3 class="text-lg font-headline font-bold text-slate-900 mb-2">Khóa tài khoản này?</h3>
+                        <p class="text-sm text-slate-600 mb-6">Người dùng "Nguyễn Văn A" sẽ không thể đăng nhập hoặc thực hiện checkout. Bạn có chắc chắn muốn tiếp tục?</p>
+                        <div class="flex gap-3 justify-end">
+                            <button class="px-4 py-2 rounded-[10px] text-sm font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">Hủy</button>
+                            <button class="px-4 py-2 rounded-[10px] text-sm font-medium text-white bg-danger hover:bg-danger/90 transition-colors">Khóa tài khoản</button>
+                        </div>
+                    </div>
+                </div>
+                -->
+</div>
+</main>
+</div>
+</body></html>

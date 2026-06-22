@@ -10,8 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
+/**
+ * F08 — UC-07 COD qua Saga: tạo Payment COD trạng thái PENDING (BR-PY01) và báo success
+ * để order chuyển CONFIRMED (COD accepted — BR-O09). Payment chỉ chuyển PAID khi order
+ * DELIVERED (BR-PY07, xử lý ở MarkCodPaidUseCase). Idempotent theo orderId khi Saga retry.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProcessPaymentUseCase {
@@ -23,22 +26,20 @@ public class ProcessPaymentUseCase {
 
     @Transactional
     public PaymentEvents.PaymentResultEvent execute(PaymentEvents.PaymentProcessEvent event) {
-        Payment payment = Payment.create(
-                event.orderId(),
-                event.userId(),
-                parsePaymentMethod(event.method()),
-                event.amount());
+        Payment payment = paymentRepository.findByOrderId(event.orderId())
+                .orElseGet(() -> Payment.create(
+                        event.orderId(), event.userId(),
+                        parsePaymentMethod(event.method()), event.amount()));
 
-        if (!alwaysFail) {
-            String txn = "TXN-" + UUID.randomUUID();
-            payment.markPaid(txn, null);
+        if (alwaysFail) {
+            payment.markFailed("Payment forced to fail for demo");
             paymentRepository.save(payment);
-            return new PaymentEvents.PaymentResultEvent(event.orderId(), true, txn);
+            return new PaymentEvents.PaymentResultEvent(event.orderId(), false, null);
         }
 
-        payment.markFailed("Payment forced to fail for demo");
+        // COD: giữ PENDING; Saga xác nhận đơn (COD accepted).
         paymentRepository.save(payment);
-        return new PaymentEvents.PaymentResultEvent(event.orderId(), false, null);
+        return new PaymentEvents.PaymentResultEvent(event.orderId(), true, "COD-" + payment.getOrderId());
     }
 
     private PaymentMethod parsePaymentMethod(String raw) {

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Đơn hàng của tôi - Cartzilla</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        surface: {
+                            page: "#F8FAFC",
+                            card: "#FFFFFF",
+                            border: "#E2E8F0",
+                            divider: "#EEF2F6"
+                        },
+                        text: {
+                            primary: "#0F172A",
+                            secondary: "#475569",
+                            muted: "#94A3B8"
+                        },
+                        brand: {
+                            indigo: "#4F46E5",
+                            indigoHover: "#4338CA",
+                            tint: "#EEF2FF"
+                        },
+                        semantic: {
+                            success: "#16A34A",
+                            successTint: "#DCFCE7",
+                            warning: "#F59E0B",
+                            warningTint: "#FEF3C7",
+                            danger: "#DC2626",
+                            dangerTint: "#FEE2E2",
+                            info: "#0EA5E9",
+                            infoTint: "#E0F2FE"
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "10px",
+                        "lg": "16px",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)',
+                    },
+                    spacing: {
+                        '4': '0.25rem',
+                        '8': '0.5rem',
+                        '12': '0.75rem',
+                        '16': '1rem',
+                        '24': '1.5rem',
+                        '32': '2rem',
+                        '48': '3rem',
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        'h1': ['32px', { lineHeight: '40px', fontWeight: '700' }],
+                        'h2': ['24px', { lineHeight: '32px', fontWeight: '600' }],
+                        'h3': ['18px', { lineHeight: '28px', fontWeight: '600' }],
+                        'body': ['14px', { lineHeight: '24px', fontWeight: '400' }],
+                        'body-lg': ['16px', { lineHeight: '24px', fontWeight: '400' }],
+                        'caption': ['12px', { lineHeight: '16px', fontWeight: '400' }],
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+        }
+        h1, h2, h3, h4, h5, h6, .font-headline {
+            font-family: 'Manrope', sans-serif;
+        }
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Skeleton Animation */
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        .skeleton-loader::after {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0,
+                rgba(255, 255, 255, 0.2) 20%,
+                rgba(255, 255, 255, 0.5) 60%,
+                rgba(255, 255, 255, 0)
+            );
+            animation: shimmer 2s infinite;
+            content: '';
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-surface-page font-body">
+<!-- TopNavBar -->
+<nav class="bg-white dark:bg-slate-900 fixed top-0 w-full z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm font-body text-sm font-medium">
+<div class="flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-headline font-bold text-slate-900 dark:text-white">Cartzilla</span>
+<!-- Search Bar Placeholder -->
+<div class="hidden md:flex items-center relative w-64">
+<span class="material-symbols-outlined absolute left-3 text-text-muted" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-page border border-surface-border rounded-full text-sm focus:outline-none focus:border-brand-indigo focus:ring-1 focus:ring-brand-indigo" placeholder="Tìm sản phẩm..." type="text"/>
+</div>
+</div>
+<!-- Navigation Links (Hidden on Mobile) -->
+<div class="hidden md:flex items-center space-x-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Trang chủ</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Sản phẩm</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Bộ sưu tập</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Khuyến mãi</a>
+</div>
+<!-- Trailing Icons -->
+<div class="flex items-center space-x-4 text-indigo-600 dark:text-indigo-400">
+<button class="relative hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-semantic-danger rounded-full border-2 border-white"></span>
+</button>
+<button class="relative hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute -top-1 -right-1 bg-brand-indigo text-white text-xs font-bold px-1.5 py-0.5 rounded-full">3</span>
+</button>
+<button class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-24 md:py-32 flex flex-col md:flex-row gap-8">
+<!-- SideNavBar -->
+<aside class="w-full md:w-64 shrink-0 hidden md:block">
+<div class="bg-white dark:bg-slate-900 w-64 h-full rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col py-6 space-y-2 sticky top-24 font-body text-sm text-indigo-600 dark:text-indigo-400">
+<!-- User Header -->
+<div class="px-6 pb-6 border-b border-surface-border mb-4 flex items-center gap-4">
+<img alt="Avatar người dùng" class="w-12 h-12 rounded-full object-cover border border-surface-border" data-alt="A clean, modern headshot of a young Vietnamese user, brightly lit, soft studio lighting, light background, professional e-commerce profile aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwbfR2la7wWjpgRvTqs_OFJXCPZZv8q0--omD6KmCFi7CdlwLWVBzyLqMJur2ZW3NXlnC78IMQQXWcPYrgLGLyM7Ecwg1Lry1eJUpJgiqSBosGmN_IUQjGT1qtwEswvQQsco2_BiBtVbMCNmdf_lWge3HLIc02Zq2K1oHbQkaUcxSAtURDPPvA2p3lt8H6CNx0K-BLYTKhwLuYkdyKDGksC4cZPCwh304hYlnflmkDSX7DG-ZoQeTBq1BAM1HnCam905WdWQ6sPRA"/>
+<div>
+<h3 class="text-xl font-headline font-bold text-slate-900">Nguyễn Văn A</h3>
+<p class="text-text-muted text-xs">Thành viên Vàng</p>
+</div>
+</div>
+<!-- Tabs -->
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="person">person</span>
+<span>Hồ sơ của tôi</span>
+</a>
+<!-- Active Tab: Đơn hàng -->
+<a class="flex items-center gap-3 px-6 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 font-semibold active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="package">package</span>
+<span>Đơn hàng</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="notifications">notifications</span>
+<span>Thông báo</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="location_on">location_on</span>
+<span>Số địa chỉ</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors mt-auto border-t border-surface-border pt-4 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="logout">logout</span>
+<span>Đăng xuất</span>
+</a>
+</div>
+</aside>
+<!-- Main Dashboard Content -->
+<div class="flex-1 w-full flex flex-col gap-8">
+<header>
+<h2 class="text-h2 font-headline text-text-primary mb-6">Đơn hàng của tôi</h2>
+<!-- Status Filter Tab Bar -->
+<div class="flex overflow-x-auto border-b border-surface-border hide-scrollbar gap-6">
+<button class="pb-3 text-sm font-semibold text-brand-indigo border-b-2 border-brand-indigo whitespace-nowrap">Tất cả (12)</button>
+<button class="pb-3 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors whitespace-nowrap">Chờ xử lý (2)</button>
+<button class="pb-3 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors whitespace-nowrap">Đã xác nhận (1)</button>
+<button class="pb-3 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors whitespace-nowrap">Đang giao (3)</button>
+<button class="pb-3 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors whitespace-nowrap">Đã giao (5)</button>
+<button class="pb-3 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors whitespace-nowrap">Đã hủy (1)</button>
+</div>
+</header>
+<!-- Order List Container -->
+<div class="space-y-6">
+<!-- Order Card 1 (Đang giao / Đã thanh toán) -->
+<div class="bg-surface-card rounded-lg border border-surface-border shadow-card overflow-hidden">
+<!-- Header -->
+<div class="px-6 py-4 border-b border-surface-divider flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-gray-50/50">
+<div class="flex items-center gap-3">
+<span class="font-semibold text-text-primary">Đơn #CZ12345</span>
+<span class="text-text-muted text-sm">|</span>
+<span class="text-text-secondary text-sm">20/05/2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-3 py-1 rounded-full text-xs font-medium bg-semantic-infoTint text-semantic-info">Đang giao</span>
+<span class="px-3 py-1 rounded-full text-xs font-medium bg-semantic-successTint text-semantic-success">Đã thanh toán</span>
+</div>
+</div>
+<!-- Body (Products) -->
+<div class="p-6">
+<div class="flex flex-col gap-4">
+<!-- Product Row -->
+<div class="flex items-start gap-4">
+<img alt="Áo thun cơ bản" class="w-20 h-20 rounded-md object-cover border border-surface-border shrink-0" data-alt="A sleek, modern pair of white sneakers on a light grey background, high-end product photography, soft shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC65DV4cnjwxM-3VG8ve3FtX_pv4ZCU2KU_We3Z1hKe8oJ9Gx3-PWAER0w8-MgTUORTOXrpF1qnjhttWigDaByCDkl689hVvbh4TRoN74CthLmXo5N85EHby_EFBbI_7D80MfeoNsa7ziSRBTp6MEqlEYz_jDvlQK1tZZRO4AkCD8R5MsCKlOrZwDJnGbBkruji4hbNwW7zl6pW7joZh_zEPiSYuiZVyBu9Vc6pNiT9ef7I10yp0CSpJBdBguqmliWIoO7j3tta6vw"/>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-medium text-text-primary truncate">Giày Sneaker Nam Thể Thao Trắng Cơ Bản</h4>
+<p class="text-sm text-text-secondary mt-1">Phân loại: Trắng, Size 42</p>
+<p class="text-sm font-medium text-text-primary mt-2">x1</p>
+</div>
+<div class="text-right shrink-0">
+<p class="text-sm font-semibold tabular-nums">750.000 ₫</p>
+</div>
+</div>
+<!-- Product Row -->
+<div class="flex items-start gap-4">
+<img alt="Áo thun cơ bản" class="w-20 h-20 rounded-md object-cover border border-surface-border shrink-0" data-alt="A neatly folded premium cotton t-shirt in navy blue, minimalist e-commerce flat lay photography, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmv_YkFCsYSc5NI5IN3GrMufcPSSbjqCdb6c-FkGzMQamXmXY2djkkH625MoNAa1nSGNUp4288jBVfDX69bfDZkofWx-SxTgCl-5p1w2dt6wzlY7ye8hHbKqZQBgDl1352auZcwa1TLwPFVsTYNetsz7HqLXzud28Co1vjyv2vDKT9OwwnhvXa5qyL0c1DlR32WTgcD4FrpFRO8Lxu4Ur_HOX2zWfKzPThv7mCObeb-vYikFUMEjmZuzUCrfSTi-iO8GeyfSDRKOc"/>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-medium text-text-primary truncate">Áo Thun Nam Premium Cotton Cổ Tròn</h4>
+<p class="text-sm text-text-secondary mt-1">Phân loại: Xanh Navy, Size L</p>
+<p class="text-sm font-medium text-text-primary mt-2">x2</p>
+</div>
+<div class="text-right shrink-0">
+<p class="text-sm font-semibold tabular-nums">500.000 ₫</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="px-6 py-4 bg-gray-50/50 border-t border-surface-divider flex flex-col sm:flex-row justify-between items-center gap-4">
+<div class="text-right sm:text-left w-full sm:w-auto">
+<span class="text-sm text-text-secondary mr-2">Tổng tiền:</span>
+<span class="text-lg font-bold text-text-primary tabular-nums">1.250.000 ₫</span>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+<button class="px-6 py-2.5 rounded text-sm font-medium text-brand-indigo border border-brand-indigo hover:bg-brand-tint transition-colors w-full sm:w-auto text-center">Xem chi tiết</button>
+</div>
+</div>
+</div>
+<!-- Order Card 2 (Chờ xử lý / Chờ thanh toán) -->
+<div class="bg-surface-card rounded-lg border border-surface-border shadow-card overflow-hidden">
+<!-- Header -->
+<div class="px-6 py-4 border-b border-surface-divider flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-gray-50/50">
+<div class="flex items-center gap-3">
+<span class="font-semibold text-text-primary">Đơn #CZ12348</span>
+<span class="text-text-muted text-sm">|</span>
+<span class="text-text-secondary text-sm">22/05/2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-3 py-1 rounded-full text-xs font-medium bg-semantic-warningTint text-semantic-warning">Chờ xử lý</span>
+<span class="px-3 py-1 rounded-full text-xs font-medium bg-semantic-warningTint text-semantic-warning">Chờ thanh toán</span>
+</div>
+</div>
+<!-- Body (Products) -->
+<div class="p-6">
+<div class="flex flex-col gap-4">
+<!-- Product Row -->
+<div class="flex items-start gap-4">
+<img alt="Áo khoác" class="w-20 h-20 rounded-md object-cover border border-surface-border shrink-0" data-alt="A stylish black denim jacket laid flat, top-down view, crisp studio lighting, minimalist e-commerce aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfgt5xourfBet5ytxDbf2UxLL5o5giZmK3disg3BX4SNBqAbp9k3uB7sFZ02a5tyYAjlDFDVOmtGPF58cfbrLkpjyBiLiUd4PnNDdIc74S-rgeICl0lMrYb3JKVtRuwoxP2B-KA18R_v_L98J6u5s2wuHqg0W3ZwQzbphk3askpAof6tkjbz8eo55BcIoBcH96NByd8sAvXEy-cxYqX-F5Hf4GXeizebgXqi13J7E5qjPXpzreLzkDJSrVNrKmZGPLzb5mVpYCb6A"/>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-medium text-text-primary truncate">Áo Khoác Denim Nam Dáng Loose Fit</h4>
+<p class="text-sm text-text-secondary mt-1">Phân loại: Đen, Size XL</p>
+<p class="text-sm font-medium text-text-primary mt-2">x1</p>
+</div>
+<div class="text-right shrink-0">
+<p class="text-sm font-semibold tabular-nums">890.000 ₫</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="px-6 py-4 bg-gray-50/50 border-t border-surface-divider flex flex-col sm:flex-row justify-between items-center gap-4">
+<div class="text-right sm:text-left w-full sm:w-auto">
+<span class="text-sm text-text-secondary mr-2">Tổng tiền:</span>
+<span class="text-lg font-bold text-text-primary tabular-nums">890.000 ₫</span>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+<button class="px-4 py-2.5 rounded text-sm font-medium text-text-secondary hover:bg-gray-100 transition-colors w-full sm:w-auto text-center">Hủy đơn</button>
+<button class="px-6 py-2.5 rounded text-sm font-medium text-brand-indigo border border-brand-indigo hover:bg-brand-tint transition-colors w-full sm:w-auto text-center">Xem chi tiết</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex justify-center items-center gap-2 mt-8">
+<button class="w-10 h-10 flex items-center justify-center rounded border border-surface-border text-text-secondary hover:bg-gray-50 disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded bg-brand-indigo text-white font-medium">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded border border-surface-border text-text-secondary hover:bg-gray-50 font-medium">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded border border-surface-border text-text-secondary hover:bg-gray-50 font-medium">3</button>
+<span class="px-2 text-text-muted">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded border border-surface-border text-text-secondary hover:bg-gray-50">
+<span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<!-- 
+                Special States Below (Included for reference as requested) 
+            -->
+<hr class="my-12 border-surface-border"/>
+<h3 class="text-text-muted text-sm mb-4">Tham khảo: Empty State</h3>
+<!-- Empty State -->
+<div class="bg-surface-card rounded-lg border border-surface-border shadow-card p-12 flex flex-col items-center justify-center text-center">
+<div class="w-24 h-24 bg-brand-tint rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-4xl text-brand-indigo" data-icon="inventory_2">inventory_2</span>
+</div>
+<h3 class="text-h3 font-headline text-text-primary mb-2">Bạn chưa có đơn hàng nào</h3>
+<p class="text-text-secondary text-sm mb-6 max-w-md">Khám phá các sản phẩm thời trang mới nhất và thêm vào giỏ hàng ngay hôm nay.</p>
+<button class="px-6 py-3 rounded bg-brand-indigo hover:bg-brand-indigoHover text-white font-medium transition-colors">Mua sắm ngay</button>
+</div>
+<hr class="my-12 border-surface-border"/>
+<h3 class="text-text-muted text-sm mb-4">Tham khảo: Loading State</h3>
+<!-- Loading State (Skeleton) -->
+<div class="space-y-6 opacity-60">
+<div class="bg-surface-card rounded-lg border border-surface-border shadow-card overflow-hidden relative skeleton-loader bg-gray-100">
+<div class="h-16 border-b border-surface-divider"></div>
+<div class="p-6 h-32"></div>
+<div class="h-16 border-t border-surface-divider bg-gray-50/50"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 dark:bg-slate-950 w-full mt-auto border-t border-slate-200 dark:border-slate-800 font-body text-sm leading-6">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-4 md:px-8 py-12 max-w-7xl mx-auto">
+<!-- Brand / Copyright -->
+<div class="col-span-1 md:col-span-1 flex flex-col gap-4">
+<span class="text-xl font-headline font-bold text-slate-900 dark:text-white">Cartzilla</span>
+<p class="text-slate-500 dark:text-slate-400 mt-auto">© 2024 Cartzilla. Tất cả quyền được bảo lưu.</p>
+</div>
+<!-- Links Column 1 -->
+<div class="col-span-1 flex flex-col gap-3 text-slate-500 dark:text-slate-400">
+<a class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Giới thiệu</a>
+<a class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Liên hệ</a>
+</div>
+<!-- Links Column 2 -->
+<div class="col-span-1 flex flex-col gap-3 text-slate-500 dark:text-slate-400">
+<a class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Chính sách bảo mật</a>
+<a class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Điều khoản dịch vụ</a>
+</div>
+<!-- Links Column 3 -->
+<div class="col-span-1 flex flex-col gap-3 text-slate-500 dark:text-slate-400">
+<a class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Hướng dẫn chọn size</a>
+<div class="mt-4 flex gap-2">
+<!-- Fake VNPay / Trust badges -->
+<div class="w-12 h-8 bg-surface-border rounded-sm"></div>
+<div class="w-12 h-8 bg-surface-border rounded-sm"></div>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cartzilla Admin - Báo cáo</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        surface: {
+                            DEFAULT: '#F8FAFC',
+                            card: '#FFFFFF',
+                            border: '#E2E8F0',
+                            divider: '#EEF2F6',
+                        },
+                        text: {
+                            primary: '#0F172A',
+                            secondary: '#475569',
+                            muted: '#94A3B8',
+                        },
+                        brand: {
+                            DEFAULT: '#4F46E5',
+                            hover: '#4338CA',
+                            tint: '#EEF2FF',
+                        },
+                        semantic: {
+                            success: '#16A34A',
+                            successTint: '#DCFCE7',
+                            warning: '#F59E0B',
+                            warningTint: '#FEF3C7',
+                            danger: '#DC2626',
+                            dangerTint: '#FEE2E2',
+                            info: '#0EA5E9',
+                            infoTint: '#E0F2FE',
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px",
+                        "btn": "10px",
+                        "card": "16px",
+                        "pill": "999px"
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)',
+                    },
+                    spacing: {
+                        '4': '0.25rem',
+                        '8': '0.5rem',
+                        '12': '0.75rem',
+                        '16': '1rem',
+                        '24': '1.5rem',
+                        '32': '2rem',
+                        '48': '3rem',
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        .skeleton { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        
+        /* Custom scrollbar for table container */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-text-primary antialiased flex h-screen overflow-hidden">
+<!-- Sidebar Component (Injected from JSON) -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-full py-6 z-40 transition-transform md:translate-x-0 -translate-x-full" id="mobile-sidebar">
+<!-- Logo / Header -->
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-brand flex items-center justify-center text-white font-headline font-bold text-xl">
+                C
+            </div>
+<div>
+<h1 class="font-headline text-xl font-bold text-slate-900 dark:text-white leading-tight">Cartzilla Admin</h1>
+<p class="text-xs text-text-secondary">Quản trị hệ thống</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-brand transition-colors">dashboard</span>
+                Tổng quan
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-brand transition-colors">inventory_2</span>
+                Sản phẩm
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-brand transition-colors">category</span>
+                Danh mục
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-brand transition-colors">shopping_cart</span>
+                Đơn hàng
+            </a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 font-body text-sm font-medium transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+                Báo cáo
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-brand transition-colors">confirmation_number</span>
+                Mã giảm giá
+            </a>
+</nav>
+<!-- Footer Actions -->
+<div class="px-4 mt-auto pt-4 border-t border-surface-divider space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+                Cài đặt
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium text-semantic-danger" href="#">
+<span class="material-symbols-outlined text-xl">logout</span>
+                Đăng xuất
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col md:ml-64 h-screen overflow-hidden bg-surface relative">
+<!-- Mobile Header Overlay -->
+<div class="md:hidden flex items-center justify-between p-4 bg-white border-b border-surface-border sticky top-0 z-30">
+<div class="flex items-center gap-2">
+<button class="p-2 -ml-2 text-text-secondary" onclick="document.getElementById('mobile-sidebar').classList.toggle('-translate-x-full')">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-headline font-bold text-lg">Báo cáo</span>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-divider flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small, professional avatar of a Vietnamese administrator, neutral background, sharp focus, high quality" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvGm3inkiw4ZAslCabtRUzYhqXqRpsO_SYyG--FoXz2O8qL_r64K8jKJXuszxc3VmBZxhYdF5LlgvuzJIyplFFEBVjnaYETzFQd3O2jj6k4IsC8u4zg2UP8a6XPgiqHyCUirpXoyy3gOi6ByRS4z5cNGbHiHKppZDoi7uayHeiJDuMZJdguFS1hvXvQJaGOYpM5_daUkjL3aBpJ1NgnsGPi7QzUtPq-t0cAZIcCxzFyQUL3CX8CxGjPfx3v2ajRXLLyxY_YXWJlZU"/>
+</button>
+</div>
+<!-- Sticky Top Bar (Desktop) -->
+<header class="hidden md:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-md border-b border-surface-divider sticky top-0 z-20">
+<div class="flex items-center gap-4">
+<h1 class="font-headline text-2xl font-bold text-text-primary tracking-tight">Báo cáo</h1>
+</div>
+<!-- Date Range Controls -->
+<div class="flex items-center gap-3">
+<div class="hidden lg:flex items-center p-1 bg-surface-divider rounded-lg">
+<button class="px-3 py-1.5 text-sm font-medium rounded-md text-text-secondary hover:text-text-primary transition-colors">Hôm nay</button>
+<button class="px-3 py-1.5 text-sm font-medium rounded-md text-text-secondary hover:text-text-primary transition-colors">7 ngày</button>
+<button class="px-3 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-text-primary transition-all">30 ngày</button>
+<button class="px-3 py-1.5 text-sm font-medium rounded-md text-text-secondary hover:text-text-primary transition-colors">Tháng này</button>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">calendar_today</span>
+<input class="pl-9 pr-3 py-2 border border-surface-border rounded-btn text-sm focus:ring-2 focus:ring-brand focus:border-brand w-64 bg-white" placeholder="Từ ngày - Đến ngày" readonly="" type="text" value="01/10/2023 - 31/10/2023"/>
+</div>
+<button class="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors shadow-sm">
+                        Áp dụng
+                    </button>
+</div>
+<div class="w-px h-6 bg-surface-divider mx-2 hidden xl:block"></div>
+<button class="hidden xl:flex items-center gap-2 border border-surface-border bg-white hover:bg-surface-divider px-4 py-2 rounded-btn text-sm font-medium text-text-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">download</span>
+                    Xuất CSV
+                </button>
+</div>
+</header>
+<!-- Scrollable Dashboard Content -->
+<div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 custom-scrollbar">
+<!-- Row 1: KPI Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+<!-- Card 1 -->
+<div class="bg-surface-card rounded-card p-5 shadow-card border border-surface-border/50 flex flex-col relative overflow-hidden group hover:border-brand/30 transition-colors">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-tint rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<h3 class="text-text-secondary text-sm font-medium">Tổng doanh thu</h3>
+<div class="w-8 h-8 rounded-full bg-brand-tint flex items-center justify-center text-brand">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</div>
+</div>
+<div class="relative z-10">
+<div class="font-headline font-bold text-2xl md:text-3xl text-text-primary tabular-nums tracking-tight mb-1">125.000.000 ₫</div>
+<div class="flex items-center gap-1 text-xs">
+<span class="flex items-center text-semantic-success bg-semantic-successTint px-1.5 py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +12.5%
+                            </span>
+<span class="text-text-muted">so với tháng trước</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-card rounded-card p-5 shadow-card border border-surface-border/50 flex flex-col relative overflow-hidden group hover:border-infoTint/50 transition-colors">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-semantic-infoTint rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<h3 class="text-text-secondary text-sm font-medium">Tổng đơn hàng</h3>
+<div class="w-8 h-8 rounded-full bg-semantic-infoTint flex items-center justify-center text-semantic-info">
+<span class="material-symbols-outlined text-[20px]">shopping_bag</span>
+</div>
+</div>
+<div class="relative z-10">
+<div class="font-headline font-bold text-2xl md:text-3xl text-text-primary tabular-nums tracking-tight mb-1">1,240</div>
+<div class="flex items-center gap-1 text-xs">
+<span class="flex items-center text-semantic-success bg-semantic-successTint px-1.5 py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +5.2%
+                            </span>
+<span class="text-text-muted">so với tháng trước</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-card rounded-card p-5 shadow-card border border-surface-border/50 flex flex-col relative overflow-hidden group hover:border-successTint/50 transition-colors">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-semantic-successTint rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<h3 class="text-text-secondary text-sm font-medium">Đơn đã giao</h3>
+<div class="w-8 h-8 rounded-full bg-semantic-successTint flex items-center justify-center text-semantic-success">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</div>
+</div>
+<div class="relative z-10">
+<div class="font-headline font-bold text-2xl md:text-3xl text-text-primary tabular-nums tracking-tight mb-1">980</div>
+<div class="flex items-center gap-1 text-xs">
+<span class="text-text-secondary">Tỷ lệ thành công: <strong class="text-text-primary">79%</strong></span>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-card rounded-card p-5 shadow-card border border-surface-border/50 flex flex-col relative overflow-hidden group hover:border-dangerTint/50 transition-colors">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-semantic-dangerTint rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<h3 class="text-text-secondary text-sm font-medium">Tỷ lệ hủy (%)</h3>
+<div class="w-8 h-8 rounded-full bg-semantic-dangerTint flex items-center justify-center text-semantic-danger">
+<span class="material-symbols-outlined text-[20px]">cancel</span>
+</div>
+</div>
+<div class="relative z-10">
+<div class="font-headline font-bold text-2xl md:text-3xl text-text-primary tabular-nums tracking-tight mb-1">4.2%</div>
+<div class="flex items-center gap-1 text-xs">
+<span class="flex items-center text-semantic-danger bg-semantic-dangerTint px-1.5 py-0.5 rounded font-medium">
+<span class="material-symbols-outlined text-[14px]">trending_down</span>
+                                -0.8%
+                            </span>
+<span class="text-text-muted">Cải thiện so với kỳ trước</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Row 2: Charts -->
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<!-- Donut Chart Card -->
+<div class="bg-surface-card rounded-card p-6 shadow-card border border-surface-border/50">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline font-bold text-lg">Đơn theo trạng thái</h2>
+<button class="text-text-muted hover:text-text-primary"><span class="material-symbols-outlined text-xl">more_vert</span></button>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-8 justify-center">
+<!-- Simulated Donut Chart using CSS conic-gradient -->
+<div class="relative w-48 h-48 flex-shrink-0">
+<div class="w-full h-full rounded-full" style="background: conic-gradient(#16A34A 0% 50%, #0EA5E9 50% 75%, #F59E0B 75% 85%, #4F46E5 85% 95%, #DC2626 95% 100%);"></div>
+<div class="absolute inset-0 m-auto w-32 h-32 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
+<span class="text-text-secondary text-sm">Tổng</span>
+<span class="font-headline font-bold text-2xl tabular-nums">1,240</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="space-y-3 w-full sm:w-auto">
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-semantic-success"></div>
+<span class="text-sm text-text-secondary">Đã giao</span>
+</div>
+<span class="text-sm font-medium tabular-nums">50% (620)</span>
+</div>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-semantic-info"></div>
+<span class="text-sm text-text-secondary">Đã xác nhận</span>
+</div>
+<span class="text-sm font-medium tabular-nums">25% (310)</span>
+</div>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-semantic-warning"></div>
+<span class="text-sm text-text-secondary">Chờ xử lý</span>
+</div>
+<span class="text-sm font-medium tabular-nums">10% (124)</span>
+</div>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-brand"></div>
+<span class="text-sm text-text-secondary">Đang giao</span>
+</div>
+<span class="text-sm font-medium tabular-nums">10% (124)</span>
+</div>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-semantic-danger"></div>
+<span class="text-sm text-text-secondary">Đã hủy</span>
+</div>
+<span class="text-sm font-medium tabular-nums">5% (62)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bar Chart Card -->
+<div class="bg-surface-card rounded-card p-6 shadow-card border border-surface-border/50">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline font-bold text-lg">Trạng thái thanh toán</h2>
+<button class="text-text-muted hover:text-text-primary"><span class="material-symbols-outlined text-xl">more_vert</span></button>
+</div>
+<div class="space-y-5">
+<!-- Bar 1 -->
+<div>
+<div class="flex justify-between text-sm mb-1.5">
+<span class="text-text-secondary flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-semantic-success"></div>
+                                    Đã thanh toán
+                                </span>
+<span class="font-medium tabular-nums">75% (930)</span>
+</div>
+<div class="w-full bg-surface-divider rounded-full h-2.5 overflow-hidden">
+<div class="bg-semantic-success h-2.5 rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<!-- Bar 2 -->
+<div>
+<div class="flex justify-between text-sm mb-1.5">
+<span class="text-text-secondary flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-semantic-warning"></div>
+                                    Chờ thanh toán
+                                </span>
+<span class="font-medium tabular-nums">15% (186)</span>
+</div>
+<div class="w-full bg-surface-divider rounded-full h-2.5 overflow-hidden">
+<div class="bg-semantic-warning h-2.5 rounded-full" style="width: 15%"></div>
+</div>
+</div>
+<!-- Bar 3 -->
+<div>
+<div class="flex justify-between text-sm mb-1.5">
+<span class="text-text-secondary flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-text-muted"></div>
+                                    Đã hoàn tiền
+                                </span>
+<span class="font-medium tabular-nums">6% (74)</span>
+</div>
+<div class="w-full bg-surface-divider rounded-full h-2.5 overflow-hidden">
+<div class="bg-text-muted h-2.5 rounded-full" style="width: 6%"></div>
+</div>
+</div>
+<!-- Bar 4 -->
+<div>
+<div class="flex justify-between text-sm mb-1.5">
+<span class="text-text-secondary flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-semantic-danger"></div>
+                                    Thất bại
+                                </span>
+<span class="font-medium tabular-nums">4% (50)</span>
+</div>
+<div class="w-full bg-surface-divider rounded-full h-2.5 overflow-hidden">
+<div class="bg-semantic-danger h-2.5 rounded-full" style="width: 4%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Row 3 & 4 Container -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Row 3: Revenue by Method -->
+<section class="lg:col-span-1 bg-surface-card rounded-card p-6 shadow-card border border-surface-border/50 h-fit">
+<h2 class="font-headline font-bold text-lg mb-6">Doanh thu theo phương thức</h2>
+<div class="space-y-6">
+<!-- COD -->
+<div class="p-4 rounded-xl border border-surface-border bg-surface/50">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 rounded-lg bg-surface-card shadow-sm flex items-center justify-center border border-surface-border">
+<span class="material-symbols-outlined text-text-secondary">local_shipping</span>
+</div>
+<div>
+<div class="font-medium">Thanh toán khi nhận hàng (COD)</div>
+<div class="text-xs text-text-muted">744 đơn hàng</div>
+</div>
+</div>
+<div class="flex justify-between items-end mb-2">
+<div class="font-headline font-bold text-xl tabular-nums">65.000.000 ₫</div>
+<div class="text-sm font-medium text-brand">52%</div>
+</div>
+<div class="w-full bg-surface-divider rounded-full h-1.5 overflow-hidden">
+<div class="bg-brand h-1.5 rounded-full" style="width: 52%"></div>
+</div>
+</div>
+<!-- VNPay -->
+<div class="p-4 rounded-xl border border-surface-border bg-surface/50">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 rounded-lg bg-surface-card shadow-sm flex items-center justify-center border border-surface-border">
+<span class="material-symbols-outlined text-text-secondary">account_balance_wallet</span>
+</div>
+<div>
+<div class="font-medium">VNPay / Thẻ ngân hàng</div>
+<div class="text-xs text-text-muted">496 đơn hàng</div>
+</div>
+</div>
+<div class="flex justify-between items-end mb-2">
+<div class="font-headline font-bold text-xl tabular-nums">60.000.000 ₫</div>
+<div class="text-sm font-medium text-brand">48%</div>
+</div>
+<div class="w-full bg-surface-divider rounded-full h-1.5 overflow-hidden">
+<div class="bg-brand h-1.5 rounded-full" style="width: 48%"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Row 4: Top Products Table -->
+<section class="lg:col-span-2 bg-surface-card rounded-card shadow-card border border-surface-border/50 overflow-hidden flex flex-col">
+<div class="p-6 border-b border-surface-divider flex justify-between items-center">
+<h2 class="font-headline font-bold text-lg">Top sản phẩm bán chạy</h2>
+<button class="text-sm font-medium text-brand hover:text-brand-hover">Xem tất cả</button>
+</div>
+<div class="overflow-x-auto custom-scrollbar flex-1">
+<table class="w-full text-left border-collapse min-w-[600px]">
+<thead>
+<tr class="bg-surface/50 text-text-secondary text-xs uppercase tracking-wider font-semibold border-b border-surface-divider">
+<th class="py-3 px-4 w-12 text-center">#</th>
+<th class="py-3 px-4">Tên sản phẩm</th>
+<th class="py-3 px-4">SKU</th>
+<th class="py-3 px-4">Số lượng bán</th>
+<th class="py-3 px-4 text-right">Doanh thu ₫</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-surface-divider">
+<!-- Row 1 -->
+<tr class="hover:bg-surface/30 transition-colors">
+<td class="py-3 px-4 text-center font-medium text-text-secondary">1</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-divider overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small thumbnail image of a minimalist, modern Vietnamese fashion t-shirt, clean studio lighting, high quality" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDH0yUVdsUNfEA5F7uVs3ImJd7O1BIobOMGfF32_6EWOP78teDvwk2XE3_PVT5ZcHkc9W1rRsRQxTvSR3rMPQr4ZDo_d3xQOKGmeUSpXCo8aDWPppxmV8LNsicQeW7FYWQyKDYF8YSLtHphLYq8jobvDBvmtduzzAAgQw-9L5txVyiV_9tERWCKnaxjUJyaLk92fxjv6ii6zjazlxLc5ysy5E5aG-HIcu7YGgQPvjvdFKG0yc_uyPhhu-yKkyoDDwSBLXSrJ8OcrDQ"/>
+</div>
+<span class="font-medium text-text-primary line-clamp-1">Áo Thun Basic Cotton Nam</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary tabular-nums">AT-001</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="tabular-nums font-medium w-8">342</span>
+<div class="w-24 h-1.5 bg-surface-divider rounded-full overflow-hidden">
+<div class="bg-brand h-full" style="width: 100%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right tabular-nums font-medium">85.500.000</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface/30 transition-colors">
+<td class="py-3 px-4 text-center font-medium text-text-secondary">2</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-divider overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small thumbnail image of a modern, stylish Vietnamese fashion hoodie, clean studio lighting, high quality" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoSxEGzAUe3lp26p8LPtg5C7tO_DGllyLhIfVvkrz_RsR0H49yVnPEyMdWS_W2dtaurEc_Rh2Onf37bIiHgvw8RbWCtz31mwmQiw-vQ1GokZnZqYFFXK6de5ezsvx_eU4yCNYmLQ8xdKhpBHsn2eq4HT2xWMyvHxpkG660pfDnum7fMoHZzhMaYE-PphwZXibIzC5uBKRefUwMqeAcrVwfzG0NjGUyCb_x7lxgLXFf9U47YTwBZ4g-W8D4AjfvTjZghL-58LSyxNQ"/>
+</div>
+<span class="font-medium text-text-primary line-clamp-1">Áo Khoác Hoodie Nam Nỉ Gân</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary tabular-nums">HD-042</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="tabular-nums font-medium w-8">215</span>
+<div class="w-24 h-1.5 bg-surface-divider rounded-full overflow-hidden">
+<div class="bg-brand h-full opacity-80" style="width: 62%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right tabular-nums font-medium">96.750.000</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface/30 transition-colors">
+<td class="py-3 px-4 text-center font-medium text-text-secondary">3</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-divider overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small thumbnail image of a modern Vietnamese fashion jeans, clean studio lighting, high quality" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe57FC235lyueakAtqFL5ZXG401iMsvT1awI34jfDqmHlBmnTSu4NxcquK0iZX5aWzNM7wzeCTdTO65pAcagRNqeYfbpocvTxUyEZZBwtv1c-LyQm37XZ7cPX2PYxKhIHjhU5hBtZ3SWusrTObF7IMgG85R0UgKiwfPJ6LdIBW4DeMBDLxwEPjCmWyptnNeb7gKuG2qWU3PVA3vskiwM6w2cVlHoSO0cQ7_7qte5hZnlxHPvM31gWLt9esCf1SMhCIIFb9HVHZQVw"/>
+</div>
+<span class="font-medium text-text-primary line-clamp-1">Quần Jeans Nam Ống Suông Trơn</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary tabular-nums">QJ-110</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="tabular-nums font-medium w-8">180</span>
+<div class="w-24 h-1.5 bg-surface-divider rounded-full overflow-hidden">
+<div class="bg-brand h-full opacity-60" style="width: 52%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right tabular-nums font-medium">63.000.000</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface/30 transition-colors">
+<td class="py-3 px-4 text-center font-medium text-text-secondary">4</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-divider overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small thumbnail image of a modern Vietnamese fashion polo shirt, clean studio lighting, high quality" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJDRW8JCwjiqsCCCaMvgNLh_vyqr7S1GN9x_riMTZTWhgS62Ieup1mI-HSllwSPk4YoR_Bt-DnvE6eP1g3ME6WW1H7nxEjYwZxpsnq96on_IXtL8CfD0lWYhQkc-u7gCPQozB-yzcZtj1pZACLsLiDAAb0CYIgmc797gD16YDOU1I8srJ3Abq5D2doWUaJqKN7G-P82291bFXp4DCXUbbtJ_xLDSwnuc7FQy5O3DcNG6He2MmkWnrU2490ZPQIFuRtuvGxttVp6kM"/>
+</div>
+<span class="font-medium text-text-primary line-clamp-1">Áo Polo Nam Form Regular</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary tabular-nums">PL-088</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="tabular-nums font-medium w-8">145</span>
+<div class="w-24 h-1.5 bg-surface-divider rounded-full overflow-hidden">
+<div class="bg-brand h-full opacity-40" style="width: 42%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right tabular-nums font-medium">40.600.000</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface/30 transition-colors">
+<td class="py-3 px-4 text-center font-medium text-text-secondary">5</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-divider overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A small thumbnail image of a modern Vietnamese fashion cap, clean studio lighting, high quality" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2gAgE0k179Av4aAAdEHgy-4XrPR_GQrg_WSroNlnRXdTDwKDz90nuRqSakvhs3fa0TuPa7KbjAggZe0K0PiJuZ8fISP5LqfDQD5pbivBIbwTkg6vv2rVTQCtXA_E1H6YBvSn4e_fWZrdMhZbCp-5dSGtKnBdzend2cHM14tlJOGXiZFDVWesvw1EsYZFl6aaIaHyWyPDy1DpcdwGyC0D6NUDQfPt-QUCB_LXAjGw2_W3hZeGG7ff1i7O1MvmyV3JU2Qf3MZQe4b0"/>
+</div>
+<span class="font-medium text-text-primary line-clamp-1">Mũ Lưỡi Trai Unisex Thêu Logo</span>
+</div>
+</td>
+<td class="py-3 px-4 text-text-secondary tabular-nums">ML-012</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="tabular-nums font-medium w-8">112</span>
+<div class="w-24 h-1.5 bg-surface-divider rounded-full overflow-hidden">
+<div class="bg-brand h-full opacity-30" style="width: 32%"></div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4 text-right tabular-nums font-medium">16.800.000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Empty State Example (Hidden by default, used for reference) -->
+<section class="hidden bg-surface-card rounded-card shadow-card border border-surface-border p-12 flex flex-col items-center justify-center text-center">
+<div class="w-32 h-32 mb-6 text-brand/20">
+<svg class="w-full h-full" fill="none" stroke="currentColor" stroke-width="1" viewbox="0 0 24 24">
+<path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h3 class="font-headline font-bold text-xl mb-2">Không có dữ liệu trong khoảng thời gian này</h3>
+<p class="text-text-secondary max-w-md mb-6">Vui lòng thử chọn một khoảng thời gian khác hoặc kiểm tra lại các bộ lọc của bạn.</p>
+<button class="bg-brand hover:bg-brand-hover text-white px-6 py-2.5 rounded-btn font-medium transition-colors">
+                    Chọn ngày khác
+                </button>
+</section>
+<!-- Bottom Padding for scrolling -->
+<div class="h-8"></div>
+</div>
+</main>
+</body></html>

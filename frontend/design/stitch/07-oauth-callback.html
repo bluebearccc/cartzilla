@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Đang đăng nhập - Cartzilla</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "brand-indigo": "#4F46E5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.5rem",
+                    "lg": "1rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Manrope", "sans-serif"
+                    ],
+                    "display": [
+                            "Manrope", "sans-serif"
+                    ],
+                    "body": [
+                            "Inter", "sans-serif"
+                    ],
+                    "label": [
+                            "Inter", "sans-serif"
+                    ]
+            },
+            "fontSize": {}
+    },
+        },
+      }
+    </script>
+<style>
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex items-center justify-center font-body antialiased selection:bg-indigo-100 selection:text-indigo-900">
+<!-- 
+        Navigation Shell Suppressed:
+        As per the Semantic Shell Mandate, the TopNavBar and Footer are omitted 
+        because this is a transient, transactional OAuth callback screen. 
+        The focus must remain entirely on the loading state.
+    -->
+<main class="fade-in flex flex-col items-center justify-center max-w-sm w-full px-6 text-center space-y-10">
+<!-- Brand Logo -->
+<div class="select-none">
+<h1 class="font-headline text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                Cartzilla<span class="text-indigo-600">.</span>
+</h1>
+</div>
+<!-- Loading Indicator Area -->
+<div class="flex flex-col items-center space-y-6">
+<!-- Smooth Spinner -->
+<div class="relative flex justify-center items-center w-14 h-14">
+<!-- Track -->
+<div class="absolute w-full h-full border-4 border-slate-100 rounded-full"></div>
+<!-- Spin -->
+<div class="absolute w-full h-full border-4 border-indigo-600 rounded-full border-t-transparent animate-spin" style="animation-duration: 1s;"></div>
+</div>
+<!-- Status Text -->
+<div class="space-y-2">
+<p class="font-medium text-slate-800 text-base md:text-lg">
+                    Đang đăng nhập với Google...
+                </p>
+<p class="text-sm text-slate-500">
+                    Vui lòng đợi trong giây lát
+                </p>
+</div>
+</div>
+</main>
+</body></html>

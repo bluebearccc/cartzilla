@@ -15,9 +15,18 @@ public class RabbitConfig {
     @Bean public TopicExchange paymentExchange() {
         return ExchangeBuilder.topicExchange(RabbitTopics.PAYMENT_EXCHANGE).durable(true).build();
     }
+    @Bean public TopicExchange orderExchange() {
+        return ExchangeBuilder.topicExchange(RabbitTopics.ORDER_EXCHANGE).durable(true).build();
+    }
     @Bean public Queue paymentProcessQueue() { return QueueBuilder.durable(RabbitTopics.Q_PAYMENT_PROCESS).build(); }
+    @Bean public Queue orderDeliveredPaymentQueue() {
+        return QueueBuilder.durable(RabbitTopics.Q_ORDER_DELIVERED_PAYMENT).build();
+    }
     @Bean public Binding bindProcess() {
         return BindingBuilder.bind(paymentProcessQueue()).to(paymentExchange()).with(RabbitTopics.RK_PAYMENT_PROCESS);
+    }
+    @Bean public Binding bindOrderDelivered() {
+        return BindingBuilder.bind(orderDeliveredPaymentQueue()).to(orderExchange()).with(RabbitTopics.RK_ORDER_DELIVERED);
     }
 
     @Bean public MessageConverter jsonConverter() { return new Jackson2JsonMessageConverter(); }

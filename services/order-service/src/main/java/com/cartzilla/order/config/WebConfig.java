@@ -21,23 +21,32 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new StaffRoleInterceptor())
+        registry.addInterceptor(new RoleInterceptor(Set.of("STAFF", "ADMIN"), "STAFF or ADMIN role required"))
                 .addPathPatterns("/api/staff/**");
+        registry.addInterceptor(new RoleInterceptor(Set.of("ADMIN"), "ADMIN role required"))
+                .addPathPatterns("/api/admin/**");
     }
 
-    static class StaffRoleInterceptor implements HandlerInterceptor {
-        private static final Set<String> ALLOWED = Set.of("STAFF", "ADMIN");
+    /** Defense-in-depth: kiểm tra X-User-Role do gateway inject. */
+    static class RoleInterceptor implements HandlerInterceptor {
+        private final Set<String> allowed;
+        private final String message;
+
+        RoleInterceptor(Set<String> allowed, String message) {
+            this.allowed = allowed;
+            this.message = message;
+        }
 
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                                  Object handler) throws Exception {
-            if (ALLOWED.contains(request.getHeader("X-User-Role"))) {
+            if (allowed.contains(request.getHeader("X-User-Role"))) {
                 return true;
             }
             response.setStatus(HttpStatus.FORBIDDEN.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"success\":false,\"message\":\"STAFF or ADMIN role required\","
+            response.getWriter().write("{\"success\":false,\"message\":\"" + message + "\","
                     + "\"data\":null,\"timestamp\":\"" + Instant.now() + "\"}");
             return false;
         }

@@ -1,13 +1,14 @@
 package com.cartzilla.order.infrastructure.saga;
 
 import com.cartzilla.events.RabbitTopics;
-import com.cartzilla.events.order.OrderEvents;
 import com.cartzilla.events.payment.PaymentEvents;
 import com.cartzilla.events.stock.StockEvents;
+import com.cartzilla.order.application.port.OrderEventPort;
 import com.cartzilla.order.domain.entity.Order;
 import com.cartzilla.order.domain.entity.SagaState;
 import com.cartzilla.order.domain.repository.OrderRepository;
 import com.cartzilla.order.domain.repository.SagaStateRepository;
+import com.cartzilla.order.domain.vo.PaymentMethod;
 import com.cartzilla.order.infrastructure.feign.UserFeignClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.util.List;
 
 /**
  * Saga orchestrator: RESERVE_STOCK → PROCESS_PAYMENT → DONE (+ compensate khi fail).
+ * COD: auto-process payment qua MQ. VNPAY: chờ payment.result từ VNPay callback (UC-07).
  */
 @Slf4j
 @Service
@@ -29,6 +31,7 @@ public class OrderSagaOrchestrator {
     private final OrderRepository orderRepository;
     private final SagaStateRepository sagaRepository;
     private final UserFeignClient userFeignClient;
+    private final OrderEventPort orderEventPort;
 
     /** Bước 1: khởi động saga sau khi tạo Order PENDING. */
     @Transactional
@@ -52,6 +55,13 @@ public class OrderSagaOrchestrator {
         }
         saga.advanceStep();
         sagaRepository.save(saga);
+
+        // VNPAY: dừng tại PROCESS_PAYMENT, chờ payment.result do VNPay callback publish (UC-07).
+        if (order.getPaymentMethod() == PaymentMethod.VNPAY) {
+            log.info("Saga order={} awaiting VNPay callback (PROCESS_PAYMENT)", order.getId());
+            return;
+        }
+        // COD: xử lý thanh toán đồng bộ qua MQ.
         rabbit.convertAndSend(RabbitTopics.PAYMENT_EXCHANGE, RabbitTopics.RK_PAYMENT_PROCESS,
                 new PaymentEvents.PaymentProcessEvent(order.getId(), order.getUserId(),
                         order.getTotalAmount(), order.getPaymentMethod().name()));
@@ -83,8 +93,7 @@ public class OrderSagaOrchestrator {
         orderRepository.save(order);
         saga.complete();
         sagaRepository.save(saga);
-        rabbit.convertAndSend(RabbitTopics.ORDER_EXCHANGE, RabbitTopics.RK_ORDER_CONFIRMED,
-                new OrderEvents.OrderConfirmedEvent(order.getId(), null));
+        orderEventPort.orderConfirmed(order);
         log.info("Saga completed order={}", order.getId());
     }
 
@@ -93,8 +102,7 @@ public class OrderSagaOrchestrator {
         sagaRepository.save(saga);
         order.cancel(reason, null); // changedBy null = system/saga (OSL-04)
         orderRepository.save(order);
-        rabbit.convertAndSend(RabbitTopics.ORDER_EXCHANGE, RabbitTopics.RK_ORDER_CANCELLED,
-                new OrderEvents.OrderCancelledEvent(order.getId(), reason, null));
+        orderEventPort.orderCancelled(order, reason);
         log.warn("Saga failed order={} reason={}", order.getId(), reason);
     }
 

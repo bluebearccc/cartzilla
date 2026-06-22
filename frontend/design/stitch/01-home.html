@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cartzilla - Mua sắm thời trang trực tuyến</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#F8FAFC',
+                            200: '#E2E8F0',
+                            300: '#CBD5E1',
+                            400: '#94A3B8',
+                            500: '#64748B',
+                            600: '#475569',
+                            800: '#1E293B',
+                            900: '#0F172A',
+                            950: '#020617',
+                        },
+                        indigo: {
+                            400: '#818CF8',
+                            600: '#4F46E5',
+                        },
+                        danger: {
+                            DEFAULT: '#DC2626',
+                            tint: '#FEE2E2',
+                        },
+                        success: {
+                            DEFAULT: '#16A34A',
+                            tint: '#DCFCE7',
+                        },
+                        warning: {
+                            DEFAULT: '#F59E0B',
+                            tint: '#FEF3C7',
+                        },
+                        info: {
+                            DEFAULT: '#0EA5E9',
+                            tint: '#E0F2FE',
+                        },
+                    },
+                    borderRadius: {
+                        "DEFAULT": "10px",
+                        "lg": "16px",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-body text-slate-900 pt-20">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-200">
+<div class="flex justify-between items-center h-20 px-4 md:px-12 max-w-7xl mx-auto w-full">
+<div class="flex items-center gap-8">
+<a class="font-headline text-2xl font-bold text-slate-900 dark:text-white" href="/">Cartzilla</a>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1 font-body text-sm active:scale-95 transition-all duration-200" href="/">Trang chủ</a>
+<a class="text-slate-600 hover:text-indigo-600 transition-colors font-body text-sm active:scale-95 transition-all duration-200" href="#">Sản phẩm</a>
+<a class="text-slate-600 hover:text-indigo-600 transition-colors font-body text-sm active:scale-95 transition-all duration-200" href="#">Bộ sưu tập</a>
+<a class="text-slate-600 hover:text-indigo-600 transition-colors font-body text-sm active:scale-95 transition-all duration-200" href="#">Giảm giá</a>
+<a class="text-slate-600 hover:text-indigo-600 transition-colors font-body text-sm active:scale-95 transition-all duration-200" href="#">Liên hệ</a>
+</nav>
+</div>
+<!-- Search Bar (Centered conceptually, placing left of actions here) -->
+<div class="hidden lg:flex flex-1 max-w-md mx-8 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-DEFAULT text-sm focus:ring-2 focus:ring-indigo-600 text-slate-900 placeholder:text-slate-500" placeholder="Tìm sản phẩm..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-slate-600 dark:text-slate-300">
+<button class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 active:scale-95 relative p-2">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 active:scale-95 relative p-2">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute top-0 right-0 bg-danger text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">3</span>
+</button>
+<button class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200 active:scale-95 relative p-2 hidden sm:block">
+<span class="material-symbols-outlined">person</span>
+</button>
+</div>
+</div>
+</header>
+<main>
+<!-- 1. HERO Carousel -->
+<section class="relative w-full max-w-7xl mx-auto md:px-12 mt-4 aspect-[16/9] md:aspect-[16/6] overflow-hidden rounded-none md:rounded-lg">
+<!-- Slide 1 -->
+<div class="absolute inset-0 w-full h-full">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A high-fashion editorial shot of a woman in a sleek modern minimalist beige trench coat walking down a sunlit city street. The lighting is crisp and bright, creating sharp shadows. The mood is chic and contemporary, fitting a high-end fashion e-commerce site with a clean, light-mode aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBUUaS7TY-3ejuveVT6lFt-TtxR8oZ8swydLPpFLfZ9mQ0Iu6Bms5xYsqnuo7NhyI5TzoFVnmDicNK9JmlhbTlwpHGV297TuNiBzkceN9WAaUnMVan_nQuSuQhxCM5UT2szGlHvyR4LdTim6_PcmpEGz6FmRURRddD8BPiPWFIes-fgbV8hwCBUNOUEZf85ZH_OUxYdvrvmTVV0tv5VDEVd8P9kZARzhEQDdCoGmjGNQiHZMwihTuJJiahIBBU-BvqnsIQFGhVragM')"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-slate-900/60 to-transparent"></div>
+<div class="absolute inset-0 flex flex-col justify-center px-8 md:px-16 w-full md:w-1/2 text-white">
+<span class="font-label text-sm uppercase tracking-wider mb-2">Bộ sưu tập mới</span>
+<h1 class="font-headline text-3xl md:text-5xl font-bold mb-4 leading-tight">Phong cách hiện đại</h1>
+<p class="font-body text-base md:text-lg text-slate-200 mb-8 max-w-md">Khám phá những thiết kế tinh tế nhất dành riêng cho mùa này.</p>
+<button class="bg-indigo-600 text-white px-8 py-3 rounded-DEFAULT font-medium hover:bg-indigo-700 transition-colors w-fit">Mua ngay</button>
+</div>
+</div>
+<!-- Arrows -->
+<button class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-2 rounded-full hidden md:block transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-2 rounded-full hidden md:block transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<!-- Dots -->
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+<div class="w-8 h-1.5 bg-white rounded-full"></div>
+<div class="w-2 h-1.5 bg-white/50 rounded-full cursor-pointer hover:bg-white/70"></div>
+<div class="w-2 h-1.5 bg-white/50 rounded-full cursor-pointer hover:bg-white/70"></div>
+</div>
+</section>
+<!-- 2. CATEGORY Shortcuts -->
+<section class="max-w-7xl mx-auto px-4 md:px-12 py-12">
+<div class="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar justify-between">
+<!-- Áo -->
+<a class="flex flex-col items-center gap-3 min-w-[80px] snap-center group" href="#">
+<div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-transparent group-hover:ring-indigo-600 transition-all p-1">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="A clean, studio flat-lay product photography shot of a neatly folded modern white t-shirt on a soft light grey background. Bright, even lighting. Minimalist fashion e-commerce style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDsR6FoIrmRh-pOefMB1hwxyw3NvCLrJvyKLvoOeEqUqSl7otbgJP1vpeH2C2-T9DadCviw3EHcBAD5d0e3juJMO04xpQ7tspm_Vv9mykymSidMz2Ad3P49G_nloOSdIwcErEOJbi_35xdQR_Mhs7UbSi8Ibe0LdakGhSDfiF41Gtl-4I9RyCvRSD0lwh55R6bD1iZlAWe_yMM7tqtD4UACVhhC7pBA-5JtQasOdZWmOXwUUQK7TKXjk7yE65yjojaKUpEbkPC1V2g')"></div>
+</div>
+<span class="font-label text-sm text-slate-900 font-medium group-hover:text-indigo-600">Áo</span>
+</a>
+<!-- Quần -->
+<a class="flex flex-col items-center gap-3 min-w-[80px] snap-center group" href="#">
+<div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-transparent group-hover:ring-indigo-600 transition-all p-1">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="A clean, studio flat-lay product photography shot of folded blue denim jeans on a soft light grey background. Bright, even lighting. Minimalist fashion e-commerce style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB0TEHFlFqBLLT2hHe7nWqkv5amDmvOsxQHHd0MoIX_UVdrOaKZvqMeSnI4Z_xUcjNetahqjYUon-BgJk-mZymWaPBmAYC8dSuX5ORFDg7DCP4EsbU2IE0u4G7Zwd7k7Ynu2O-Tzw-xIcU8PgsMXkBqFkKAoXEkxlTr86-aboGVHWiHfe00jm3lwudGcQ80gsl-JEeNacg_OunoQmgsSi2zKwQNIuhccK21ZynwgT6Bw7MF3EevDqjFjNCx_veSK5cu4H9vVBpcEsg')"></div>
+</div>
+<span class="font-label text-sm text-slate-900 font-medium group-hover:text-indigo-600">Quần</span>
+</a>
+<!-- Đầm -->
+<a class="flex flex-col items-center gap-3 min-w-[80px] snap-center group" href="#">
+<div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-transparent group-hover:ring-indigo-600 transition-all p-1">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="A clean, studio flat-lay product photography shot of an elegant silk summer dress on a soft light grey background. Bright, even lighting. Minimalist fashion e-commerce style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBcOlI4Umw_Z1feU_PV2xB0TbkY9SHXGQR7XPPO0CBA5PLHDyzHR2Dq1bcqi33B0kEKM7Xrxkk9r_rHtYSOFRHil8IzQeY4NKx6Ozj_DPSxhZddKWCv3F1gcPKjV5frSahBmRuZiu3DI05_yRqbG0yU6MASUjWm6n8jK_oBAh0mlbhMNPuBU-SQihDKbUUt1bkfUjROTrkpTFkz8HGvVARtbWHR1ENpwZmYm5ReXBPGvzPy0tE-XxxSTAppyqWjf1QYOUXTpr1ie9U')"></div>
+</div>
+<span class="font-label text-sm text-slate-900 font-medium group-hover:text-indigo-600">Đầm</span>
+</a>
+<!-- Giày -->
+<a class="flex flex-col items-center gap-3 min-w-[80px] snap-center group" href="#">
+<div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-transparent group-hover:ring-indigo-600 transition-all p-1">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="A clean, studio product photography shot of a pair of minimalist white leather sneakers on a soft light grey background. Bright, even lighting. Minimalist fashion e-commerce style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBK_t-P9WaGNVb85XT7plDldzn08nAVPHFLOAaPCWoqTmSvTwTveukuqf4Bv6remb_-IJNxIjDqog8iOanYk75dgHQpRmjte5flw28NVkyrm8NhooY4X2jSzcqvGAWHkDyNGnWdPCb5jMl31uI1HVdkMlVLDsmbh5l-nvIgvhwFFNsBjyXiQFlMxx3t5ZeoUViQ9r86p-OaGSqEWRGHmcmpl93rSv1-WiGMgeFUfC9UurFeZSbm3gYeh3MtpQmKtsRPaFEBUXggdcY')"></div>
+</div>
+<span class="font-label text-sm text-slate-900 font-medium group-hover:text-indigo-600">Giày</span>
+</a>
+<!-- Túi -->
+<a class="flex flex-col items-center gap-3 min-w-[80px] snap-center group" href="#">
+<div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-transparent group-hover:ring-indigo-600 transition-all p-1">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="A clean, studio product photography shot of a structured leather tote bag on a soft light grey background. Bright, even lighting. Minimalist fashion e-commerce style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCgBOoV8O3tz8h84Ajvdfoj-VRk2mUS1x3JlmhddRAlUMVJ9IlX1dQ9FNCzBC41FkWev1xArJJhDqqbGGi9QSgpkVJf-hrQ6J7MiKtxB4blVwvfhUt0V9nPCNhcnClo71-492GFBwERKNYDLzan6zDSEaKM1YBTGgQCkEfqH3ypBGjmE-2xDFXgENAqtu1YmnAz6kxIcWrBR6bV2piIyQcDj-j6GJk4K3EDhVSW1wEcOsk6BDKHjjuEtlhq5u8bNxAMtllEm9jm3aU')"></div>
+</div>
+<span class="font-label text-sm text-slate-900 font-medium group-hover:text-indigo-600">Túi</span>
+</a>
+<!-- Phụ kiện -->
+<a class="flex flex-col items-center gap-3 min-w-[80px] snap-center group" href="#">
+<div class="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-slate-100 ring-2 ring-transparent group-hover:ring-indigo-600 transition-all p-1">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="A clean, studio flat-lay product photography shot of elegant minimalist jewelry, including a necklace and rings, on a soft light grey background. Bright, even lighting. Minimalist fashion e-commerce style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCVB1T49F9TOA5H-WxZRZJn6gpMF_B9WzsXLXAiReTXTVFmk6SpJmb8gRp3PpCdt6kiXl2mr3wywmF3R3NkKW_msenePsJXrlYxIxA5zDUSGJoA2q9zzuvlw-vLEcKVrs6P_-IFX72dz5oYgrfKQJXRgBRk5rVrtVRzfLaSHiGuvF2RJpOkk5RQliR3j-D47L_WehgZHVU9kVkLQAKc5CUC7GUThsrr1GLKT1YmJOt5Gpp_eJWaAlH4UTZUMaAX0YQ-dTKAiFhhusY')"></div>
+</div>
+<span class="font-label text-sm text-slate-900 font-medium group-hover:text-indigo-600">Phụ kiện</span>
+</a>
+</div>
+</section>
+<!-- 3. SẢN PHẨM NỔI BẬT -->
+<section class="max-w-7xl mx-auto px-4 md:px-12 py-12">
+<div class="flex justify-between items-end mb-8">
+<h2 class="font-headline text-2xl font-bold text-slate-900 uppercase">SẢN PHẨM NỔI BẬT</h2>
+<a class="font-body text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1" href="#">Xem tất cả <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+<!-- Product 1 -->
+<div class="group bg-white rounded-lg p-3 md:p-4 shadow-card hover:-translate-y-1 transition-transform duration-300 relative">
+<div class="relative aspect-square rounded-DEFAULT overflow-hidden bg-slate-100 mb-4">
+<div class="w-full h-full bg-cover bg-center" data-alt="A crisp, well-lit studio shot of a modern oversized cotton button-up shirt in light blue. Minimalist white background, perfect for a high-end clothing store." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCaJidJfjyQgqZ46oYmAn7JasDSHh3Rr2PDw2SUjm_OhxPoVdg4SIQxrpbu15evj08iEdkSWyOVFHt76UTB5JX-UWV5RRaP-jbjaWgUNBJzGSPiJwQZI-mcbWBq3xzHgRunPWN-aeVDW6X1myggcgfmquoXQA3dbWuU1KnSQcSrEFRSz7_dWt1r6cXPuSFvymkoMSOOCoW2nVSRSQEJiHI3PAx7w1ffRKjIBATqoWzJPuvgsHuZoRf7cO6Rr7zVLZqW1vTg7e2D2nU')"></div>
+<span class="absolute top-2 left-2 bg-info-tint text-info px-2 py-1 rounded-DEFAULT text-xs font-bold uppercase tracking-wider">Mới</span>
+<button class="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur rounded-full text-slate-400 hover:text-danger transition-colors">
+<span class="material-symbols-outlined text-xl">favorite</span>
+</button>
+<!-- Hover Add to Cart -->
+<div class="absolute bottom-0 left-0 w-full p-2 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+<button class="w-full bg-indigo-600 text-white py-2 rounded-DEFAULT font-medium text-sm hover:bg-indigo-700">Thêm vào giỏ</button>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label text-[12px] text-slate-500">ZARA</span>
+<h3 class="font-body text-sm font-medium text-slate-900 line-clamp-2">Áo sơ mi Oxford dáng rộng màu xanh nhạt</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline font-bold text-slate-900">599.000 ₫</span>
+</div>
+<div class="flex gap-1 mt-2">
+<div class="w-3 h-3 rounded-full bg-blue-200 ring-1 ring-slate-200"></div>
+<div class="w-3 h-3 rounded-full bg-white ring-1 ring-slate-200"></div>
+</div>
+</div>
+</div>
+<!-- Product 2 (Discounted) -->
+<div class="group bg-white rounded-lg p-3 md:p-4 shadow-card hover:-translate-y-1 transition-transform duration-300 relative">
+<div class="relative aspect-square rounded-DEFAULT overflow-hidden bg-slate-100 mb-4">
+<div class="w-full h-full bg-cover bg-center" data-alt="A crisp, well-lit studio shot of a pleated midi skirt in beige. Minimalist white background, high-end fashion e-commerce style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB_MJzjr-gOcjwEsZIBHR24r3I55hxZ9rkoy0Hp6tRk0XUvPZ7DR_HzsKX17vco3O1A9Fga4lp0FwxKHfbku86SrfLh6WNT4tRm3FTnEEQeDT0AOZB7tg7hnKopZDIRO3PuUOySUPhSsUULokQ2XUTOaIN0EUmIf_jxy0iTjK7aQp8T-UeRC8m_S4Hr0I7rexl8iVwQUcht34c_c2yg7ZX9j2pYFzic01wklQabmwCN8eWESuIww4Y6pgDXMqwbZWiKz2-KgX3CRTc')"></div>
+<span class="absolute top-2 left-2 bg-danger-tint text-danger px-2 py-1 rounded-DEFAULT text-xs font-bold uppercase tracking-wider">-20%</span>
+<button class="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur rounded-full text-slate-400 hover:text-danger transition-colors">
+<span class="material-symbols-outlined text-xl">favorite</span>
+</button>
+<!-- Hover Add to Cart -->
+<div class="absolute bottom-0 left-0 w-full p-2 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+<button class="w-full bg-indigo-600 text-white py-2 rounded-DEFAULT font-medium text-sm hover:bg-indigo-700">Thêm vào giỏ</button>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label text-[12px] text-slate-500">MANGO</span>
+<h3 class="font-body text-sm font-medium text-slate-900 line-clamp-2">Chân váy xếp ly dáng dài màu kem</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline font-bold text-danger">799.000 ₫</span>
+<span class="font-body text-xs text-slate-400 line-through">999.000 ₫</span>
+</div>
+</div>
+</div>
+<!-- Product 3 (Out of stock) -->
+<div class="group bg-white rounded-lg p-3 md:p-4 shadow-card relative opacity-75">
+<div class="relative aspect-square rounded-DEFAULT overflow-hidden bg-slate-100 mb-4">
+<div class="w-full h-full bg-cover bg-center" data-alt="A crisp studio shot of a classic black leather crossbody bag. Minimalist white background, high-end fashion." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBiMFIc5Yg57XOxfinQpZoHah4JTiAAJPcxcpZ4tkTruCuVODkAnBkIebJGrIMSkBB-Osv7R2Qpk5rfNMrbKAsUwD5LFpIeIa7SboqKGugszO16DemgcYuVwLn6qINwSKMeszZVow29WR5OF6O-VMBavS_-YfQZvesopkGfHUUFtZ1jXRYRtuknKZ_xMrKbNdTSYmC4gZ2h-9L1mRak-99E7ywIgq4V5YTpjmguMDcVUnvKTXHnz7A_Pz5I2tCu2NegvsY-iSGGnIk')"></div>
+<div class="absolute inset-0 bg-white/50 flex items-center justify-center">
+<span class="bg-slate-800 text-white px-3 py-1 rounded-DEFAULT text-xs font-bold uppercase">Hết hàng</span>
+</div>
+<button class="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur rounded-full text-slate-400 hover:text-danger transition-colors">
+<span class="material-symbols-outlined text-xl">favorite</span>
+</button>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label text-[12px] text-slate-500">CHARLES &amp; KEITH</span>
+<h3 class="font-body text-sm font-medium text-slate-500 line-clamp-2">Túi đeo chéo da thật cổ điển màu đen</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline font-bold text-slate-500">1.250.000 ₫</span>
+</div>
+</div>
+</div>
+<!-- Skeleton Reference -->
+<div class="bg-white rounded-lg p-3 md:p-4 shadow-card animate-pulse">
+<div class="aspect-square rounded-DEFAULT bg-slate-200 mb-4"></div>
+<div class="flex flex-col gap-2">
+<div class="h-3 bg-slate-200 rounded w-1/4"></div>
+<div class="h-4 bg-slate-200 rounded w-3/4"></div>
+<div class="h-4 bg-slate-200 rounded w-1/2"></div>
+<div class="h-5 bg-slate-200 rounded w-1/3 mt-2"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-12 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flat no shadows cursor-pointer grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8 px-4 md:px-12 max-w-7xl mx-auto">
+<div class="col-span-1 lg:col-span-2">
+<h3 class="font-headline text-xl font-black text-slate-900 dark:text-white mb-4">Cartzilla</h3>
+<p class="font-body text-sm text-slate-500 dark:text-slate-400 mb-4">© 2024 Cartzilla. Tất cả quyền được bảo lưu.</p>
+<div class="flex gap-4">
+<!-- Social icons placeholder -->
+<span class="material-symbols-outlined text-slate-400 hover:text-indigo-600 transition-colors">language</span>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="font-headline font-bold text-slate-900 dark:text-white mb-2">Thông tin</h4>
+<a class="font-body text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform" href="#">Về chúng tôi</a>
+<a class="font-body text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform" href="#">Liên hệ</a>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="font-headline font-bold text-slate-900 dark:text-white mb-2">Chính sách</h4>
+<a class="font-body text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform" href="#">Chính sách đổi trả</a>
+<a class="font-body text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform" href="#">Chính sách vận chuyển</a>
+<a class="font-body text-sm text-slate-500 hover:text-indigo-600 hover:translate-x-1 transition-transform" href="#">Điều khoản dịch vụ</a>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="font-headline font-bold text-slate-900 dark:text-white mb-2">Thanh toán</h4>
+<div class="flex gap-2">
+<div class="w-10 h-6 bg-slate-200 rounded flex items-center justify-center text-[10px] font-bold text-slate-500">VNPay</div>
+<div class="w-10 h-6 bg-slate-200 rounded flex items-center justify-center text-[10px] font-bold text-slate-500">VISA</div>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

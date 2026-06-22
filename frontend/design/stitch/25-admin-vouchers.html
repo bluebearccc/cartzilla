@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cartzilla Admin - Quản lý Mã giảm giá</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        indigo: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                        success: {
+                            DEFAULT: '#16A34A',
+                            tint: '#DCFCE7'
+                        },
+                        warning: {
+                            DEFAULT: '#F59E0B',
+                            tint: '#FEF3C7'
+                        },
+                        danger: {
+                            DEFAULT: '#DC2626',
+                            tint: '#FEE2E2'
+                        },
+                        info: {
+                            DEFAULT: '#0EA5E9',
+                            tint: '#E0F2FE'
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px",
+                        "card": "16px",
+                        "input": "10px",
+                        "button": "10px"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for Drawer */
+        .drawer-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .drawer-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .drawer-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-body text-slate-900 antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar (From JSON) -->
+<nav class="bg-white dark:bg-slate-900 fixed left-0 top-0 h-screen w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full py-6 z-40">
+<!-- Brand Header -->
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white font-bold" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+</div>
+<div>
+<h1 class="font-headline text-xl font-bold text-slate-900 dark:text-white leading-tight">Cartzilla Admin</h1>
+<p class="text-xs text-slate-500 font-medium">Quản trị hệ thống</p>
+</div>
+</div>
+<!-- Main Nav -->
+<ul class="flex-1 px-4 space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Tổng quan
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                    Sản phẩm
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium" href="#">
+<span class="material-symbols-outlined">category</span>
+                    Danh mục
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+                    Đơn hàng
+                </a>
+</li>
+<!-- ACTIVE STATE -->
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 font-body text-sm font-medium opacity-90 scale-98 transition-all" href="#">
+<span class="material-symbols-outlined">confirmation_number</span>
+                    Mã giảm giá
+                </a>
+</li>
+</ul>
+<!-- Footer Nav -->
+<div class="px-4 mt-auto border-t border-slate-200 pt-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Cài đặt
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out font-body text-sm font-medium" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Đăng xuất
+            </a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-64 h-full relative">
+<!-- TopNavBar (From JSON) -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 w-full border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between px-8 h-16">
+<!-- Left: Navigation Links -->
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-headline text-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg px-2 py-1 transition-colors" href="#">Trang chủ</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-headline text-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg px-2 py-1 transition-colors" href="#">Báo cáo</a>
+</nav>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined text-slate-600 hover:text-slate-900 cursor-pointer p-2 rounded-full hover:bg-slate-100 transition-colors">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-danger rounded-full border-2 border-white"></span>
+</div>
+<span class="material-symbols-outlined text-slate-600 hover:text-slate-900 cursor-pointer p-2 rounded-full hover:bg-slate-100 transition-colors">account_circle</span>
+<button class="bg-indigo-600 text-white px-4 py-2 rounded-button font-medium text-sm hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2" onclick="toggleDrawer()">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Tạo mới
+                </button>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<main class="flex-1 overflow-y-auto p-8 relative">
+<!-- Page Header -->
+<div class="flex justify-between items-center mb-8">
+<div>
+<h2 class="text-3xl font-headline font-bold text-slate-900 tracking-tight">Mã giảm giá</h2>
+<p class="text-slate-500 text-sm mt-1">Quản lý và theo dõi các chương trình khuyến mãi.</p>
+</div>
+<button class="bg-indigo-600 text-white px-5 py-2.5 rounded-button font-medium text-sm hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-2" onclick="toggleDrawer()">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    Tạo voucher
+                </button>
+</div>
+<!-- Toolbar: Search & Filters -->
+<div class="bg-white p-4 rounded-card shadow-card mb-6 border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+<div class="relative w-full md:w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-input text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 text-slate-900" placeholder="Tìm mã..." type="text"/>
+</div>
+<div class="flex gap-3 w-full md:w-auto">
+<select class="w-full md:w-40 py-2.5 px-4 bg-slate-50 border border-slate-200 rounded-input text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer">
+<option value="">Trạng thái</option>
+<option value="active">Đang chạy</option>
+<option value="expired">Hết hạn</option>
+<option value="paused">Tạm dừng</option>
+</select>
+<select class="w-full md:w-48 py-2.5 px-4 bg-slate-50 border border-slate-200 rounded-input text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer">
+<option value="">Đối tượng</option>
+<option value="all">Tất cả</option>
+<option value="new">Khách hàng mới</option>
+<option value="vip">Thành viên VIP</option>
+</select>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-white rounded-card shadow-card border border-slate-200 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm whitespace-nowrap">
+<thead class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+<tr>
+<th class="px-6 py-4">Mã</th>
+<th class="px-6 py-4">Loại &amp; Giá trị</th>
+<th class="px-6 py-4">Đã dùng / Giới hạn</th>
+<th class="px-6 py-4">Hiệu lực</th>
+<th class="px-6 py-4">Đối tượng</th>
+<th class="px-6 py-4">Trạng thái</th>
+<th class="px-6 py-4 text-right">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/50 transition-colors group">
+<td class="px-6 py-4">
+<span class="font-mono font-semibold text-slate-900 bg-slate-100 px-2 py-1 rounded">TET2024</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-info-tint text-info text-xs font-medium border border-info/20">Phần trăm</span>
+<span class="font-semibold text-slate-900 tabular-nums">20%</span>
+</div>
+<div class="text-xs text-slate-500 mt-1">Tối đa 150.000 ₫</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-between text-xs mb-1 font-medium">
+<span class="text-indigo-600">45</span>
+<span class="text-slate-500">100</span>
+</div>
+<div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-indigo-500 rounded-full" style="width: 45%;"></div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-slate-900">20/01/2024</div>
+<div class="text-xs text-slate-500">đến 15/02/2024</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200">Tất cả</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span class="text-success font-medium">Đang chạy</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors" onclick="toggleDrawer()" title="Sửa">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-warning rounded-lg hover:bg-warning-tint transition-colors" title="Tạm dừng">
+<span class="material-symbols-outlined text-[20px]">pause_circle</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-danger rounded-lg hover:bg-danger-tint transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/50 transition-colors group">
+<td class="px-6 py-4">
+<span class="font-mono font-semibold text-slate-900 bg-slate-100 px-2 py-1 rounded">FREESHIP100</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded-full bg-success-tint text-success text-xs font-medium border border-success/20">Số tiền</span>
+<span class="font-semibold text-slate-900 tabular-nums">30.000 ₫</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-between text-xs mb-1 font-medium">
+<span class="text-indigo-600">80</span>
+<span class="text-slate-500">1000</span>
+</div>
+<div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-indigo-500 rounded-full" style="width: 8%;"></div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-slate-900">01/02/2024</div>
+<div class="text-xs text-slate-500">đến 28/02/2024</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200">Khách hàng mới</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-warning"></span>
+<span class="text-warning font-medium">Tạm dừng</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors" onclick="toggleDrawer()" title="Sửa">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-success rounded-lg hover:bg-success-tint transition-colors" title="Tiếp tục">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-danger rounded-lg hover:bg-danger-tint transition-colors" title="Xóa">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+<span class="text-sm text-slate-500">Hiển thị 1-2 của 24 mã</span>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 cursor-not-allowed">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-600 text-white font-medium text-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Empty State (Hidden by default, shown for demonstration if table was empty) -->
+<!--
+            <div class="bg-white rounded-card shadow-card border border-slate-200 p-12 flex flex-col items-center justify-center text-center">
+                <img src="https://lh3.googleusercontent.com/aida/AP1WRLvjbLN5jSpKeLLadE_YlW7mtSoGefS-n5jtflZF8F5SMS5h7lg9EzPn4gLk88yiThjNSC99jvsMnO17FRZUiQNmsUSjroyaSH_pW3kTHXKzGVhrk7Eko2WTl5xuUq23uMXUzVIpPlm7p1PY0QSis20Z_RvDGBhuDpYR-ASMmh60ffrEhgx7dSGu4k-k206zyIvLnNVfkNnnYdsdmPmpmcsJpIuWhCb9g_LkL62zH1HDaUqkcgMTihN6tAk" data-alt="Empty shopping cart illustration, minimalist vector style, soft pastel colors, clean lines, professional for fashion e-commerce. A simple shopping bag icon with a small sad face or a magnifying glass. White background." class="w-48 h-48 mb-6 opacity-80 mix-blend-multiply">
+                <h3 class="text-lg font-headline font-bold text-slate-900 mb-2">Chưa có mã giảm giá nào</h3>
+                <p class="text-slate-500 mb-6 max-w-sm">Tạo mã giảm giá đầu tiên để thu hút khách hàng và tăng doanh số bán hàng của bạn.</p>
+                <button class="bg-indigo-600 text-white px-5 py-2.5 rounded-button font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">add</span>
+                    Tạo voucher
+                </button>
+            </div>
+            -->
+</main>
+</div>
+<!-- Toast Notification (Warning) - Hidden initially -->
+<div class="fixed top-20 right-8 bg-white border-l-4 border-warning p-4 rounded-card shadow-lg flex items-start gap-3 w-80 transform translate-x-full transition-transform duration-300 z-50" id="warning-toast">
+<span class="material-symbols-outlined text-warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div>
+<h4 class="font-semibold text-slate-900 text-sm">Cảnh báo sửa đổi</h4>
+<p class="text-xs text-slate-500 mt-1">Không thể đổi code đã phát sinh lượt dùng.</p>
+</div>
+<button class="ml-auto text-slate-400 hover:text-slate-600" onclick="hideToast()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- DRAWER BACKDROP -->
+<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300" id="drawer-backdrop" onclick="toggleDrawer()"></div>
+<!-- CREATE/EDIT DRAWER -->
+<div class="fixed top-0 right-0 h-full w-[480px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col border-l border-slate-200" id="voucher-drawer">
+<!-- Drawer Header -->
+<div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+<div>
+<h3 class="font-headline text-lg font-bold text-slate-900">Tạo mã giảm giá mới</h3>
+<p class="text-xs text-slate-500">Thiết lập điều kiện và giới hạn cho voucher.</p>
+</div>
+<button class="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-200 rounded-full transition-colors" onclick="toggleDrawer()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Drawer Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8 drawer-scroll">
+<!-- Group 1: Mã & loại -->
+<section>
+<h4 class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2 uppercase tracking-wider text-xs">
+<span class="w-1.5 h-4 bg-indigo-600 rounded-full"></span>
+                    Mã &amp; loại giảm
+                </h4>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Mã voucher <span class="text-danger">*</span></label>
+<input class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-input text-sm font-mono uppercase focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:normal-case placeholder:text-slate-400" placeholder="VD: SUMMER24" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<label class="relative flex cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm focus:outline-none has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50 has-[:checked]:ring-1 has-[:checked]:ring-indigo-600">
+<input checked="" class="sr-only" name="discount_type" type="radio" value="percent"/>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-indigo-600 text-[20px]">percent</span>
+<span class="text-sm font-medium text-slate-900">Phần trăm</span>
+</div>
+</label>
+<label class="relative flex cursor-pointer rounded-lg border border-slate-200 bg-white p-3 shadow-sm focus:outline-none has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50 has-[:checked]:ring-1 has-[:checked]:ring-indigo-600">
+<input class="sr-only" name="discount_type" type="radio" value="fixed"/>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-600 text-[20px]">payments</span>
+<span class="text-sm font-medium text-slate-900">Số cố định</span>
+</div>
+</label>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Giá trị giảm <span class="text-danger">*</span></label>
+<div class="relative">
+<input class="w-full pl-4 pr-12 py-2.5 bg-white border border-slate-200 rounded-input text-sm tabular-nums focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="0" type="number"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-medium">%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Group 2: Điều kiện -->
+<section>
+<h4 class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2 uppercase tracking-wider text-xs">
+<span class="w-1.5 h-4 bg-info rounded-full"></span>
+                    Điều kiện áp dụng
+                </h4>
+<div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Giá trị đơn tối thiểu (₫)</label>
+<input class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-input text-sm tabular-nums focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="VD: 500.000" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Mức giảm tối đa (₫) <span class="text-slate-400 font-normal text-xs ml-1">(Bắt buộc nếu giảm theo %)</span></label>
+<input class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-input text-sm tabular-nums focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="VD: 150.000" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Tuổi tài khoản (ngày)</label>
+<input class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-input text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="Để trống nếu không yêu cầu" type="number"/>
+</div>
+</div>
+</section>
+<!-- Group 3: Giới hạn dùng -->
+<section>
+<h4 class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2 uppercase tracking-wider text-xs">
+<span class="w-1.5 h-4 bg-warning rounded-full"></span>
+                    Giới hạn dùng
+                </h4>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Tổng lượt dùng</label>
+<input class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-input text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="VD: 100" type="number"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Giới hạn/người</label>
+<input class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-input text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" type="number" value="1"/>
+</div>
+</div>
+</section>
+<!-- Group 4: Thời gian -->
+<section>
+<h4 class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2 uppercase tracking-wider text-xs">
+<span class="w-1.5 h-4 bg-success rounded-full"></span>
+                    Thời gian hiệu lực
+                </h4>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Bắt đầu <span class="text-danger">*</span></label>
+<input class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-input text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" type="datetime-local"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1">Kết thúc <span class="text-danger">*</span></label>
+<input class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-input text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" type="datetime-local"/>
+</div>
+</div>
+</section>
+<!-- Group 5: Đối tượng -->
+<section>
+<h4 class="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2 uppercase tracking-wider text-xs">
+<span class="w-1.5 h-4 bg-slate-800 rounded-full"></span>
+                    Đối tượng áp dụng
+                </h4>
+<div class="space-y-4">
+<select class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-input text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none">
+<option value="all">Tất cả khách hàng</option>
+<option value="new">Khách hàng mới</option>
+<option value="vip">Thành viên VIP</option>
+<option value="specific">Khách hàng cụ thể (SPECIFIC_USERS)</option>
+</select>
+<!-- Hidden by default, shown if SPECIFIC_USERS is selected -->
+<div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+<div class="relative mb-3">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Tìm tên, SĐT hoặc email..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-medium border border-indigo-100">
+                                Nguyễn Văn A
+                                <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-indigo-900">close</span>
+</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-medium border border-indigo-100">
+                                0987654321
+                                <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-indigo-900">close</span>
+</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Padding for scroll -->
+<div class="h-8"></div>
+</div>
+<!-- Drawer Footer -->
+<div class="border-t border-slate-200 bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<!-- Live Summary -->
+<div class="mb-4 px-3 py-2 bg-indigo-50/50 rounded-lg border border-indigo-100 flex items-start gap-2">
+<span class="material-symbols-outlined text-indigo-600 text-[18px] mt-0.5">info</span>
+<p class="text-sm text-indigo-900 font-medium leading-tight">
+                    Giảm 20% tối đa 150.000 ₫ cho đơn từ 500.000 ₫
+                </p>
+</div>
+<div class="flex items-center justify-end gap-3">
+<button class="px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-button transition-colors" onclick="toggleDrawer()">Hủy</button>
+<button class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-button shadow-sm transition-colors" onclick="saveAndShowToast()">Lưu</button>
+</div>
+</div>
+</div>
+<script>
+        function toggleDrawer() {
+            const drawer = document.getElementById('voucher-drawer');
+            const backdrop = document.getElementById('drawer-backdrop');
+            
+            if (drawer.classList.contains('translate-x-full')) {
+                // Open
+                drawer.classList.remove('translate-x-full');
+                backdrop.classList.remove('hidden');
+                // Small delay to allow display:block to apply before animating opacity
+                setTimeout(() => {
+                    backdrop.classList.remove('opacity-0');
+                    backdrop.classList.add('opacity-100');
+                }, 10);
+            } else {
+                // Close
+                drawer.classList.add('translate-x-full');
+                backdrop.classList.remove('opacity-100');
+                backdrop.classList.add('opacity-0');
+                setTimeout(() => {
+                    backdrop.classList.add('hidden');
+                }, 300); // match transition duration
+            }
+        }
+
+        function saveAndShowToast() {
+            toggleDrawer();
+            setTimeout(() => {
+                const toast = document.getElementById('warning-toast');
+                toast.classList.remove('translate-x-full');
+                
+                // Auto hide after 4s
+                setTimeout(hideToast, 4000);
+            }, 400);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('warning-toast');
+            toast.classList.add('translate-x-full');
+        }
+    </script>
+</body></html>

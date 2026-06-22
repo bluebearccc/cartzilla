@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cartzilla - Địa chỉ giao hàng</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        surface: {
+                            DEFAULT: "#F8FAFC",
+                            card: "#FFFFFF",
+                            border: "#E2E8F0",
+                            divider: "#EEF2F6"
+                        },
+                        text: {
+                            primary: "#0F172A",
+                            secondary: "#475569",
+                            muted: "#94A3B8"
+                        },
+                        brand: {
+                            DEFAULT: "#4F46E5",
+                            hover: "#4338CA",
+                            tint: "#EEF2FF"
+                        },
+                        semantic: {
+                            success: { DEFAULT: "#16A34A", tint: "#DCFCE7" },
+                            warning: { DEFAULT: "#F59E0B", tint: "#FEF3C7" },
+                            danger: { DEFAULT: "#DC2626", tint: "#FEE2E2" },
+                            info: { DEFAULT: "#0EA5E9", tint: "#E0F2FE" }
+                        }
+                    },
+                    borderRadius: {
+                        DEFAULT: "10px",
+                        lg: "16px",
+                        xl: "24px",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        4: "0.25rem",
+                        8: "0.5rem",
+                        12: "0.75rem",
+                        16: "1rem",
+                        24: "1.5rem",
+                        32: "2rem",
+                        48: "3rem"
+                    },
+                    fontFamily: {
+                        headline: ["Manrope", "sans-serif"],
+                        display: ["Manrope", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        h1: ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        h2: ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        h3: ["18px", { lineHeight: "28px", fontWeight: "600" }],
+                        body: ["14px", { lineHeight: "24px", fontWeight: "400" }],
+                        bodyLg: ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        caption: ["12px", { lineHeight: "16px", fontWeight: "400" }]
+                    },
+                    boxShadow: {
+                        card: "0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)"
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-surface text-text-primary font-body antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-white dark:bg-slate-900 font-body text-sm font-medium fixed top-0 w-full z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-center h-16 px-4 md:px-8 max-w-7xl mx-auto">
+<div class="flex items-center gap-6">
+<a class="text-2xl font-headline font-bold text-slate-900 dark:text-white" href="#">Cartzilla</a>
+<div class="hidden md:flex relative items-center">
+<span class="material-symbols-outlined absolute left-3 text-text-muted text-[20px]" data-icon="search">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface border border-surface-border rounded-DEFAULT text-body focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand w-64 transition-all" placeholder="Tìm sản phẩm..." type="text"/>
+</div>
+</div>
+<ul class="hidden md:flex gap-8">
+<li><a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Trang chủ</a></li>
+<li><a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Sản phẩm</a></li>
+<li><a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Bộ sưu tập</a></li>
+<li><a class="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all" href="#">Khuyến mãi</a></li>
+</ul>
+<div class="flex items-center gap-4 text-slate-600 dark:text-slate-400">
+<button aria-label="notifications" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-semantic-danger rounded-full border border-white"></span>
+</button>
+<button aria-label="shopping_cart" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all relative">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute -top-1 -right-2 bg-brand text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">3</span>
+</button>
+<button aria-label="account_circle" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors active:opacity-80 transition-all">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow pt-24 pb-12 px-4 md:px-8 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-8">
+<!-- SideNavBar -->
+<aside class="md:col-span-3">
+<div class="bg-white dark:bg-slate-900 font-body text-sm w-64 h-full rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col py-6 space-y-2 sticky top-24">
+<div class="px-6 pb-6 border-b border-surface-divider mb-4 flex items-center gap-4">
+<img alt="Avatar người dùng" class="w-12 h-12 rounded-full object-cover border border-surface-border" data-alt="A professional headshot of a young Vietnamese user, looking approachable and confident, set against a clean, modern white studio background with soft, even lighting to match the light-mode UI aesthetic. The mood is trustworthy and contemporary." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE5eTQX8Q2olFZmpJ3pqR5f-tX5tWy1pTKnJiJpEWN9x_dGIGwu9t6erBet627a6wzQnhvZa4XNpfSR-s2PVQDTup_zM6JusmvmYJcAmeoXlZIJiS96eyPXi6x_Ft4QWc_MoomkI22BYl9iv7cG-pZmVQ1YUohe7h6VwoSMGZsJNk8LlfqPazpEZaIpViAGEa0pU4FR7Y6lgnVHmyfftZEzPLP7KiBCyuHx4qrAU-ecVvkJGf9RGOZC2_8JJOvItwGMJ1c48wo30Q"/>
+<div>
+<h3 class="font-headline font-bold text-slate-900 text-[16px]">Nguyễn Văn A</h3>
+<p class="text-text-muted text-caption">Thành viên Vàng</p>
+</div>
+</div>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+                    Hồ sơ của tôi
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="package">package</span>
+                    Đơn hàng
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+                    Thông báo
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-600 font-semibold active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="location_on">location_on</span>
+                    Số địa chỉ
+                </a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-transform mt-auto" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+                    Đăng xuất
+                </a>
+</div>
+</aside>
+<!-- Addresses Content -->
+<div class="md:col-span-9 space-y-6">
+<div class="flex justify-between items-center bg-surface-card p-6 rounded-lg shadow-card border border-surface-border">
+<h1 class="text-h2 text-text-primary">Địa chỉ giao hàng</h1>
+<button class="bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-DEFAULT font-medium transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Thêm địa chỉ
+                </button>
+</div>
+<!-- Addresses Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Default Address Card -->
+<div class="bg-surface-card rounded-lg p-6 shadow-card border-2 border-brand/20 relative">
+<span class="absolute top-4 right-4 bg-brand-tint text-brand text-caption px-2 py-1 rounded-full font-medium">Mặc định</span>
+<div class="mb-4">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="font-bold text-text-primary">Nguyễn Văn A</h3>
+<span class="text-text-muted text-sm">|</span>
+<span class="text-text-secondary">0901234567</span>
+</div>
+<p class="text-text-secondary text-body mt-2">
+                            123 Đường Lê Lợi, Phường Bến Thành<br/>
+                            Quận 1, TP. Hồ Chí Minh
+                        </p>
+</div>
+<div class="flex items-center gap-4 border-t border-surface-divider pt-4 mt-auto">
+<button class="text-brand hover:text-brand-hover text-sm font-medium transition-colors">Sửa</button>
+</div>
+</div>
+<!-- Secondary Address Card -->
+<div class="bg-surface-card rounded-lg p-6 shadow-card border border-surface-border flex flex-col">
+<div class="mb-4">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="font-bold text-text-primary">Nguyễn Văn A</h3>
+<span class="text-text-muted text-sm">|</span>
+<span class="text-text-secondary">0901234567</span>
+</div>
+<p class="text-text-secondary text-body mt-2">
+                            456 Tòa nhà Bitexco, số 2 Hải Triều, Phường Bến Nghé<br/>
+                            Quận 1, TP. Hồ Chí Minh
+                        </p>
+</div>
+<div class="flex items-center gap-4 border-t border-surface-divider pt-4 mt-auto">
+<button class="text-brand hover:text-brand-hover text-sm font-medium transition-colors">Sửa</button>
+<span class="text-text-muted text-sm">|</span>
+<button class="text-brand hover:text-brand-hover text-sm font-medium transition-colors">Đặt làm mặc định</button>
+<span class="text-text-muted text-sm">|</span>
+<button class="text-semantic-danger hover:text-red-700 text-sm font-medium transition-colors">Xóa</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 dark:bg-slate-950 font-body text-sm leading-6 w-full mt-auto border-t border-slate-200 dark:border-slate-800">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-4 md:px-8 py-12 max-w-7xl mx-auto">
+<div class="col-span-1 md:col-span-1">
+<a class="text-xl font-headline font-bold text-slate-900 dark:text-white mb-4 block" href="#">Cartzilla</a>
+<p class="text-slate-500 dark:text-slate-400 mb-6">Nền tảng thương mại điện tử thời trang hiện đại dành cho người Việt.</p>
+<p class="text-slate-500 dark:text-slate-400">© 2024 Cartzilla. Tất cả quyền được bảo lưu.</p>
+</div>
+<div class="col-span-1">
+<h4 class="text-slate-900 dark:text-white font-semibold mb-4">Về chúng tôi</h4>
+<ul class="space-y-2">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Giới thiệu</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Liên hệ</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h4 class="text-slate-900 dark:text-white font-semibold mb-4">Hỗ trợ khách hàng</h4>
+<ul class="space-y-2">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Hướng dẫn chọn size</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Điều khoản dịch vụ</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer" href="#">Chính sách bảo mật</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h4 class="text-slate-900 dark:text-white font-semibold mb-4">Thanh toán an toàn</h4>
+<div class="flex gap-2">
+<div class="w-12 h-8 bg-surface-border rounded flex items-center justify-center text-xs text-text-muted">VNPay</div>
+<div class="w-12 h-8 bg-surface-border rounded flex items-center justify-center text-xs text-text-muted">Momo</div>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

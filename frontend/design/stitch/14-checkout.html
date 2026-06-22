@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thanh toán | Cartzilla</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                        indigo: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        green: {
+                            600: '#16a34a',
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.625rem", // 10px inputs/buttons
+                        "lg": "0.625rem",
+                        "xl": "1rem", // 16px cards
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'card': '0 1px 2px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.04)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for cleaner look if needed, but standard is fine */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Custom radio button styling */
+        .custom-radio:checked + div {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .custom-radio:checked + div .radio-inner {
+            border-color: #4f46e5;
+        }
+        .custom-radio:checked + div .radio-inner::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-body antialiased min-h-screen flex flex-col">
+<!-- Minimal Checkout Header (Transactional Context Override) -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+<div class="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+<a class="text-2xl font-headline font-bold text-slate-900 flex items-center gap-2" href="#">
+                Cartzilla
+            </a>
+<a class="text-sm font-medium text-slate-600 hover:text-indigo-600 flex items-center gap-1 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                Quay lại giỏ hàng
+            </a>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow py-10 px-4 md:px-8 max-w-7xl mx-auto w-full">
+<div class="mb-8">
+<h1 class="text-3xl md:text-4xl font-headline font-bold text-slate-900">Thanh toán</h1>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+<!-- LEFT COLUMN: Checkout Steps (2/3 width) -->
+<div class="lg:col-span-8 space-y-8">
+<!-- Step 1: Shipping Address -->
+<section class="bg-white rounded-xl shadow-card border border-slate-200 p-6">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-xl font-headline font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-indigo-600">location_on</span>
+                            Địa chỉ giao hàng
+                        </h2>
+<button class="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            Thêm địa chỉ mới
+                        </button>
+</div>
+<div class="space-y-4">
+<!-- Default Address Card -->
+<label class="block cursor-pointer relative">
+<input checked="" class="custom-radio sr-only" name="shipping_address" type="radio" value="default"/>
+<div class="border-2 rounded-xl p-4 transition-all duration-200 hover:border-indigo-300">
+<div class="flex items-start gap-4">
+<div class="radio-inner mt-1 w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center relative transition-colors">
+<div class="w-2.5 h-2.5 rounded-full bg-indigo-600 opacity-0 transform scale-50 transition-all duration-200 content-[''] absolute"></div>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-3 mb-1">
+<span class="font-bold text-slate-900">Nguyễn Văn A</span>
+<span class="text-slate-500 tabular-nums">090 123 4567</span>
+<span class="bg-slate-200 text-slate-700 text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">Mặc định</span>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed">
+                                            Tầng 5, Tòa nhà Bitexco Financial Tower<br/>
+                                            Số 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh
+                                        </p>
+</div>
+<button class="text-slate-400 hover:text-indigo-600 p-1 transition-colors" type="button">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+</label>
+<!-- Secondary Address Card -->
+<label class="block cursor-pointer relative">
+<input class="custom-radio sr-only" name="shipping_address" type="radio" value="home2"/>
+<div class="border-2 border-slate-200 bg-white rounded-xl p-4 transition-all duration-200 hover:border-indigo-300">
+<div class="flex items-start gap-4">
+<div class="radio-inner mt-1 w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 flex items-center justify-center relative transition-colors">
+<div class="w-2.5 h-2.5 rounded-full bg-indigo-600 opacity-0 transform scale-50 transition-all duration-200 content-[''] absolute"></div>
+</div>
+<div class="flex-grow">
+<div class="flex items-center gap-3 mb-1">
+<span class="font-bold text-slate-900">Nguyễn Văn A</span>
+<span class="text-slate-500 tabular-nums">090 123 4567</span>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed">
+                                            123 Đường Nguyễn Trãi<br/>
+                                            Phường Bến Thành, Quận 1, TP. Hồ Chí Minh
+                                        </p>
+</div>
+</div>
+</div>
+</label>
+</div>
+</section>
+<!-- Step 2: Payment Method -->
+<section class="bg-white rounded-xl shadow-card border border-slate-200 p-6">
+<h2 class="text-xl font-headline font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-indigo-600">account_balance_wallet</span>
+                        Phương thức thanh toán
+                    </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- COD -->
+<label class="block cursor-pointer relative">
+<input checked="" class="custom-radio sr-only" name="payment_method" type="radio" value="cod"/>
+<div class="border-2 rounded-xl p-5 h-full transition-all duration-200 flex flex-col items-center justify-center text-center gap-3 hover:border-indigo-300">
+<div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-700">
+<span class="material-symbols-outlined text-[28px]">payments</span>
+</div>
+<div>
+<span class="block font-bold text-slate-900">COD</span>
+<span class="block text-xs text-slate-500 mt-1">Thanh toán khi nhận hàng</span>
+</div>
+</div>
+</label>
+<!-- VNPay -->
+<label class="block cursor-pointer relative">
+<input class="custom-radio sr-only" name="payment_method" type="radio" value="vnpay"/>
+<div class="border-2 border-slate-200 bg-white rounded-xl p-5 h-full transition-all duration-200 flex flex-col items-center justify-center text-center gap-3 hover:border-indigo-300">
+<div class="w-12 h-12 bg-[#E0F2FE] rounded-full flex items-center justify-center text-[#0EA5E9]">
+<span class="material-symbols-outlined text-[28px]">qr_code_2</span>
+</div>
+<div>
+<span class="block font-bold text-slate-900">VNPay</span>
+<span class="block text-xs text-slate-500 mt-1">Thẻ / ATM / QR Code</span>
+</div>
+</div>
+</label>
+</div>
+</section>
+<!-- Step 3: Additional Info -->
+<section class="bg-white rounded-xl shadow-card border border-slate-200 p-6">
+<div class="space-y-6">
+<!-- Discount Code -->
+<div>
+<label class="block text-sm font-bold text-slate-900 mb-2" for="discount_code">Mã giảm giá</label>
+<div class="flex gap-2">
+<div class="relative flex-grow">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">local_offer</span>
+<input class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg text-sm shadow-sm focus:ring-indigo-600 focus:border-indigo-600 uppercase font-medium text-slate-900" id="discount_code" placeholder="Nhập mã giảm giá" type="text" value="WELCOME20"/>
+</div>
+<button class="bg-slate-900 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm whitespace-nowrap" type="button">
+                                    Áp dụng
+                                </button>
+</div>
+<!-- Success Message -->
+<p class="mt-2 text-sm text-green-600 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                Áp dụng WELCOME20: −150.000 ₫
+                            </p>
+</div>
+<!-- Order Notes -->
+<div>
+<label class="block text-sm font-bold text-slate-900 mb-2" for="order_notes">Ghi chú đơn hàng <span class="text-slate-400 font-normal">(Tùy chọn)</span></label>
+<textarea class="block w-full border border-slate-300 rounded-lg text-sm shadow-sm focus:ring-indigo-600 focus:border-indigo-600 p-3" id="order_notes" placeholder="Giao hàng trong giờ hành chính..." rows="3"></textarea>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT COLUMN: Sticky Order Summary (1/3 width) -->
+<div class="lg:col-span-4">
+<div class="bg-white rounded-xl shadow-card border border-slate-200 p-6 sticky top-24">
+<h2 class="text-lg font-headline font-bold text-slate-900 mb-5 border-b border-slate-200 pb-4 uppercase tracking-wide">
+                        Đơn hàng của bạn
+                    </h2>
+<!-- Product List -->
+<div class="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
+<!-- Item 1 -->
+<div class="flex gap-4 items-center">
+<div class="w-16 h-16 rounded-lg bg-slate-100 flex-shrink-0 border border-slate-200 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A clean, flat lay product shot of a high-quality minimalist white cotton t-shirt with subtle branding, laid out on a light grey studio background. Bright, even lighting. Modern fashion aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcxiAHZe_6wfvWoCtFDRFWzEnb9YjGCe6A4gL0OcxY9VOq-2ApB-35nRT1dHj2p5hTSIrtwexqahrG5aC3lvejFEnw3yReLLDKnN_05KZG3x882KDzHpV8D9EfprkRGInCsCrjeT9bK_Nm-LH9E_MB1u089yXntvQx8sQ1GS-wD9uJMBP-6Li_urN9lB7HE-1mqFSQo6-rjINY-hJnDTZ9zvu387E5S7sHGgUARkRcGplkdcBadfHxbqKFw_w7UlIlkQ7Z6ktWmjg"/>
+<div class="absolute -top-2 -right-2 bg-slate-900 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full z-10 border-2 border-white shadow-sm">
+                                    2
+                                </div>
+</div>
+<div class="flex-grow">
+<h3 class="text-sm font-medium text-slate-900 line-clamp-2">Áo thun Basic Cotton Essential</h3>
+<p class="text-xs text-slate-500 mt-1">Màu: Trắng, Size: L</p>
+</div>
+<div class="text-right flex-shrink-0">
+<p class="text-sm font-medium text-slate-900 tabular-nums">500.000 ₫</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex gap-4 items-center">
+<div class="w-16 h-16 rounded-lg bg-slate-100 flex-shrink-0 border border-slate-200 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A sleek, modern pair of urban sneakers in black and white colors, photographed in a dynamic 3/4 angle on a minimalist studio backdrop. Soft shadows, crisp details, highlighting the texture of the materials." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzUGEa6spdIn80yC8pCkH_sKFxN3C5z0sm5wg5cxRq3rcf5eLvp3I5WUhWiV-Frha9vrC3PU9xEJs32-IiZOtHhJ-Y7xUoeZ-wKTLy6zTO-wQpkgL47qakCuzhJCy8yQ384b_uIsAHfLRkBugvlsWblNhdXa2A176HS4qR_FaOeB4x4GtldOqFzKCVnMFhsnI32tZDH_-HNMGwW_L2oruLeNTCVHabRXuRtku_OeeSZY7PgA_MteRo8-e7_u2xMFkoLapCdTFhUUs"/>
+<div class="absolute -top-2 -right-2 bg-slate-900 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full z-10 border-2 border-white shadow-sm">
+                                    1
+                                </div>
+</div>
+<div class="flex-grow">
+<h3 class="text-sm font-medium text-slate-900 line-clamp-2">Giày Sneaker Urban Runner</h3>
+<p class="text-xs text-slate-500 mt-1">Màu: Đen/Trắng, Size: 42</p>
+</div>
+<div class="text-right flex-shrink-0">
+<p class="text-sm font-medium text-slate-900 tabular-nums">900.000 ₫</p>
+</div>
+</div>
+</div>
+<!-- Price Breakdown -->
+<div class="border-t border-slate-200 pt-4 space-y-3 mb-6">
+<div class="flex justify-between items-center text-sm text-slate-600">
+<span>Tạm tính</span>
+<span class="font-medium text-slate-900 tabular-nums">1.400.000 ₫</span>
+</div>
+<div class="flex justify-between items-center text-sm text-green-600">
+<span>Giảm giá (WELCOME20)</span>
+<span class="font-medium tabular-nums">−150.000 ₫</span>
+</div>
+<div class="flex justify-between items-center text-sm text-slate-600">
+<span>Phí vận chuyển</span>
+<span class="font-medium text-slate-500 uppercase text-xs tracking-wider">Miễn phí</span>
+</div>
+</div>
+<div class="border-t border-slate-200 pt-4 mb-6 flex justify-between items-end">
+<span class="text-base font-bold text-slate-900">Tổng cộng</span>
+<div class="text-right">
+<span class="text-2xl font-headline font-extrabold text-indigo-600 tabular-nums">1.250.000 ₫</span>
+<span class="block text-[10px] text-slate-400 mt-1 uppercase tracking-wider">Đã bao gồm VAT</span>
+</div>
+</div>
+<!-- Main Action -->
+<button class="w-full bg-indigo-600 text-white rounded-lg py-3.5 px-4 font-bold text-base hover:bg-indigo-700 active:scale-[0.98] transition-all duration-200 shadow-sm flex items-center justify-center gap-2 relative overflow-hidden group" id="btn-place-order">
+<!-- Default State -->
+<span class="btn-text flex items-center gap-2">
+                            Đặt hàng
+                            <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</span>
+<!-- Loading State (Hidden by default) -->
+<span class="btn-loading hidden items-center gap-2">
+<span class="material-symbols-outlined spinner text-[20px]">progress_activity</span>
+                            Đang tạo đơn...
+                        </span>
+</button>
+<!-- Trust Indicators -->
+<div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-500">
+<span class="material-symbols-outlined text-[16px] text-green-600">lock</span>
+<span>Thông tin của bạn được bảo mật.</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Minimal Footer -->
+<footer class="bg-slate-50 border-t border-slate-200 py-8 mt-auto">
+<div class="max-w-7xl mx-auto px-4 md:px-8 text-center text-sm text-slate-500 font-body">
+            © 2024 Cartzilla. Tất cả quyền được bảo lưu.
+        </div>
+</footer>
+<script>
+        // Simple script to demonstrate the loading state transition as requested
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('btn-place-order');
+            const textSpan = btn.querySelector('.btn-text');
+            const loadingSpan = btn.querySelector('.btn-loading');
+
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent actual submission
+                
+                // Disable button
+                btn.disabled = true;
+                btn.classList.add('opacity-90', 'cursor-not-allowed');
+                btn.classList.remove('hover:bg-indigo-700', 'active:scale-[0.98]');
+                
+                // Swap text
+                textSpan.classList.add('hidden');
+                loadingSpan.classList.remove('hidden');
+                loadingSpan.classList.add('flex');
+
+                // Simulate network request then reset (optional, just for demo)
+                setTimeout(() => {
+                    // In a real app, this redirects to success page. 
+                    // Here we just reset after 3 seconds to allow re-testing.
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-90', 'cursor-not-allowed');
+                    btn.classList.add('hover:bg-indigo-700', 'active:scale-[0.98]');
+                    textSpan.classList.remove('hidden');
+                    loadingSpan.classList.add('hidden');
+                    loadingSpan.classList.remove('flex');
+                }, 3000);
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cartzilla - Quản lý đơn hàng</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#EEF2FF',
+                            100: '#E0E7FF',
+                            200: '#C7D2FE',
+                            300: '#A5B4FC',
+                            400: '#818CF8',
+                            500: '#6366F1',
+                            600: '#4F46E5', // Brand Indigo
+                            700: '#4338CA',
+                            800: '#3730A3',
+                            900: '#312E81',
+                        },
+                        success: {
+                            100: '#DCFCE7',
+                            600: '#16A34A',
+                        },
+                        warning: {
+                            100: '#FEF3C7',
+                            500: '#F59E0B',
+                        },
+                        danger: {
+                            100: '#FEE2E2',
+                            600: '#DC2626',
+                        },
+                        info: {
+                            100: '#E0F2FE',
+                            500: '#0EA5E9',
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.625rem", // inputs/buttons 10px
+                        "lg": "1rem", // cards 16px
+                        "xl": "1.5rem",
+                        "full": "9999px" // pills
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'card-sm': '0 1px 2px rgba(15,23,42,.06)',
+                        'card-lg': '0 8px 24px rgba(15,23,42,.04)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for table */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #F8FAFC; 
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #CBD5E1; 
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8; 
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-body antialiased flex h-screen overflow-hidden">
+<!-- Sidebar (Staff Nav) -->
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 z-20 shadow-card-sm hidden md:flex">
+<!-- Logo -->
+<div class="h-16 flex items-center px-6 border-b border-slate-200">
+<span class="font-headline font-bold text-2xl tracking-tight text-slate-900">Cartzilla<span class="text-primary-600">.</span></span>
+<span class="ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wider">Staff</span>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto py-6 px-4 flex flex-col space-y-1.5">
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-slate-400 group-hover:text-slate-600 transition-colors">dashboard</span>
+<span class="font-medium text-sm">Tổng quan</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-slate-400 group-hover:text-slate-600 transition-colors">inventory_2</span>
+<span class="font-medium text-sm">Sản phẩm</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center px-3 py-2.5 rounded-lg bg-primary-50 text-primary-600 font-semibold border-l-4 border-primary-600 shadow-sm relative -ml-[1px]" href="#">
+<span class="material-symbols-outlined mr-3 text-primary-600" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="text-sm">Đơn hàng</span>
+<span class="ml-auto bg-primary-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">12</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-slate-400 group-hover:text-slate-600 transition-colors">group</span>
+<span class="font-medium text-sm">Khách hàng</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-slate-400 group-hover:text-slate-600 transition-colors">local_offer</span>
+<span class="font-medium text-sm">Khuyến mãi</span>
+</a>
+<a class="flex items-center px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-slate-400 group-hover:text-slate-600 transition-colors">settings</span>
+<span class="font-medium text-sm">Cài đặt</span>
+</a>
+</nav>
+<!-- User bottom -->
+<div class="p-4 border-t border-slate-200">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 border border-slate-300">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of a young Vietnamese woman, softly lit office background, neutral expression, high resolution, corporate style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOpXWAdmmfcF8lbk3AvpYZID-yd6Ip3u3Lif7OBzZz3DXB6FJORPflSDk0oj3F3XxHTbGLNaI9HF_fuDvqvnwEhDNzZKy0nFT9-bcCL92tMcvJnqbdxRRi6l0oXSfoAFkeTRF_Udqxigdm7wD6t27F_WHRT4yxOJs04IRgm0NFlH_1cBaOTtKr4i3YOjN1wPlrnHTYetlzprqROO3_mB7ucp7TLCMtbgYIc8YrBirUphUrXNbU-loRSPDcdwfIXsI_XCoVjARFKoQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium text-slate-900 truncate">Trần Thị B.</p>
+<p class="text-xs text-slate-500 truncate">Quản trị viên</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+<!-- Top Bar -->
+<header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 flex-shrink-0 shadow-sm z-20">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-slate-500 hover:text-slate-900">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<h1 class="text-xl font-headline font-bold text-slate-900">Quản lý đơn hàng</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2.5 w-2 h-2 bg-danger-600 rounded-full ring-2 ring-white"></span>
+</button>
+<button class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Tạo đơn mới
+                </button>
+</div>
+</header>
+<!-- Scrollable Area -->
+<div class="flex-1 overflow-auto p-4 md:p-6 lg:p-8 space-y-6">
+<!-- Toolbar / Filter Bar -->
+<div class="bg-white rounded-lg shadow-card-sm border border-slate-200 p-4">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<!-- Filters Left -->
+<div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+<!-- Search -->
+<div class="relative w-full md:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded text-sm text-slate-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder-slate-400 transition-shadow" placeholder="Tìm mã đơn hàng..." type="text"/>
+</div>
+<!-- Status Dropdown -->
+<div class="relative w-full md:w-48">
+<select class="w-full pl-3 pr-8 py-2 border border-slate-300 rounded text-sm text-slate-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white cursor-pointer">
+<option value="">Trạng thái: Tất cả</option>
+<option value="pending">Chờ xác nhận</option>
+<option value="processing">Đang xử lý</option>
+<option value="shipping">Đang giao</option>
+<option value="delivered">Đã giao</option>
+<option value="cancelled">Đã hủy</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+<!-- Payment Dropdown -->
+<div class="relative w-full md:w-48">
+<select class="w-full pl-3 pr-8 py-2 border border-slate-300 rounded text-sm text-slate-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none bg-white cursor-pointer">
+<option value="">Thanh toán: Tất cả</option>
+<option value="cod">COD</option>
+<option value="vnpay">VNPay</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+<!-- Date Picker Mock -->
+<div class="relative w-full md:w-56">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">calendar_today</span>
+<input class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded text-sm text-slate-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder-slate-400 bg-white cursor-pointer" placeholder="Từ ngày – Đến ngày" readonly="" type="text"/>
+</div>
+<!-- Clear Filter -->
+<button class="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors px-2 py-2 whitespace-nowrap">
+                            Xóa lọc
+                        </button>
+</div>
+<!-- Results Count Right -->
+<div class="text-sm text-slate-500 whitespace-nowrap flex-shrink-0">
+                        Hiển thị <span class="font-medium text-slate-900">20</span> / 154 đơn hàng
+                    </div>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-white rounded-lg shadow-card-lg border border-slate-200 overflow-hidden flex flex-col">
+<div class="table-container overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[1000px]">
+<thead class="bg-slate-50 sticky top-0 z-10">
+<tr>
+<th class="w-12 p-4 border-b border-slate-200">
+<input class="rounded text-primary-600 focus:ring-primary-500 border-slate-300 w-4 h-4 cursor-pointer" type="checkbox"/>
+</th>
+<th class="p-4 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider cursor-pointer group hover:bg-slate-100 transition-colors">
+<div class="flex items-center gap-1">
+                                        Mã đơn
+                                        <span class="material-symbols-outlined text-[16px] text-slate-400 group-hover:text-slate-600">arrow_downward</span>
+</div>
+</th>
+<th class="p-4 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">Khách hàng</th>
+<th class="p-4 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider cursor-pointer group hover:bg-slate-100 transition-colors">
+<div class="flex items-center gap-1">
+                                        Ngày tạo
+                                        <span class="material-symbols-outlined text-[16px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">swap_vert</span>
+</div>
+</th>
+<th class="p-4 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">Phương thức</th>
+<th class="p-4 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">Trạng thái</th>
+<th class="p-4 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">Thanh toán</th>
+<th class="p-4 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider text-right cursor-pointer group hover:bg-slate-100 transition-colors">
+<div class="flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-[16px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">swap_vert</span>
+                                        Tổng tiền
+                                    </div>
+</th>
+<th class="w-16 p-4 border-b border-slate-200 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Thao tác</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 bg-white">
+<!-- Row 1: Warning / PENDING -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="p-4">
+<input class="rounded text-primary-600 focus:ring-primary-500 border-slate-300 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="p-4 font-medium text-slate-900 text-sm">#CZ-12345</td>
+<td class="p-4 text-slate-600 text-sm">USR-8821</td>
+<td class="p-4 text-slate-500 text-sm">24/05/2024 14:30</td>
+<td class="p-4 text-slate-600 text-sm font-medium">COD</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-warning-100 text-warning-500">
+                                        Chờ xác nhận
+                                    </span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                        Chưa thanh toán
+                                    </span>
+</td>
+<td class="p-4 text-right text-sm font-medium text-slate-900 tabular-nums">1.250.000 ₫</td>
+<td class="p-4 text-center">
+<button class="text-slate-400 hover:text-primary-600 transition-colors p-1 rounded-full hover:bg-primary-50">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Info / SHIPPING -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="p-4">
+<input class="rounded text-primary-600 focus:ring-primary-500 border-slate-300 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="p-4 font-medium text-slate-900 text-sm">#CZ-12344</td>
+<td class="p-4 text-slate-600 text-sm">USR-7652</td>
+<td class="p-4 text-slate-500 text-sm">24/05/2024 10:15</td>
+<td class="p-4 text-slate-600 text-sm font-medium">VNPay</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-info-100 text-info-500">
+                                        Đang giao
+                                    </span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-600">
+<span class="w-1.5 h-1.5 rounded-full bg-success-500"></span>
+                                        Đã thanh toán
+                                    </span>
+</td>
+<td class="p-4 text-right text-sm font-medium text-slate-900 tabular-nums">850.000 ₫</td>
+<td class="p-4 text-center">
+<button class="text-slate-400 hover:text-primary-600 transition-colors p-1 rounded-full hover:bg-primary-50">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Success / DELIVERED -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="p-4">
+<input class="rounded text-primary-600 focus:ring-primary-500 border-slate-300 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="p-4 font-medium text-slate-900 text-sm">#CZ-12340</td>
+<td class="p-4 text-slate-600 text-sm">USR-1102</td>
+<td class="p-4 text-slate-500 text-sm">22/05/2024 09:00</td>
+<td class="p-4 text-slate-600 text-sm font-medium">COD</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success-100 text-success-600">
+                                        Đã giao
+                                    </span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-600">
+<span class="w-1.5 h-1.5 rounded-full bg-success-500"></span>
+                                        Đã thanh toán
+                                    </span>
+</td>
+<td class="p-4 text-right text-sm font-medium text-slate-900 tabular-nums">2.100.000 ₫</td>
+<td class="p-4 text-center">
+<button class="text-slate-400 hover:text-primary-600 transition-colors p-1 rounded-full hover:bg-primary-50">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Danger / CANCELLED -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="p-4">
+<input class="rounded text-primary-600 focus:ring-primary-500 border-slate-300 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="p-4 font-medium text-slate-900 text-sm opacity-70">#CZ-12338</td>
+<td class="p-4 text-slate-600 text-sm opacity-70">USR-9941</td>
+<td class="p-4 text-slate-500 text-sm opacity-70">21/05/2024 16:45</td>
+<td class="p-4 text-slate-600 text-sm font-medium opacity-70">VNPay</td>
+<td class="p-4 opacity-90">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-danger-100 text-danger-600">
+                                        Đã hủy
+                                    </span>
+</td>
+<td class="p-4 opacity-90">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                        Đã hoàn tiền
+                                    </span>
+</td>
+<td class="p-4 text-right text-sm font-medium text-slate-900 tabular-nums opacity-70">450.000 ₫</td>
+<td class="p-4 text-center">
+<button class="text-slate-400 hover:text-primary-600 transition-colors p-1 rounded-full hover:bg-primary-50">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Processing -->
+<tr class="hover:bg-slate-50 transition-colors group">
+<td class="p-4">
+<input class="rounded text-primary-600 focus:ring-primary-500 border-slate-300 w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="p-4 font-medium text-slate-900 text-sm">#CZ-12335</td>
+<td class="p-4 text-slate-600 text-sm">USR-2234</td>
+<td class="p-4 text-slate-500 text-sm">20/05/2024 11:20</td>
+<td class="p-4 text-slate-600 text-sm font-medium">COD</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-600 border border-primary-100">
+                                        Đang xử lý
+                                    </span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                        Chưa thanh toán
+                                    </span>
+</td>
+<td class="p-4 text-right text-sm font-medium text-slate-900 tabular-nums">3.400.000 ₫</td>
+<td class="p-4 text-center">
+<button class="text-slate-400 hover:text-primary-600 transition-colors p-1 rounded-full hover:bg-primary-50">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer Pagination -->
+<div class="bg-white border-t border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="text-sm text-slate-500">Hiển thị</span>
+<select class="border border-slate-300 rounded text-sm py-1 pl-2 pr-6 text-slate-700 focus:ring-primary-500 focus:border-primary-500 bg-white">
+<option>10</option>
+<option selected="">20</option>
+<option>50</option>
+</select>
+<span class="text-sm text-slate-500">/ trang</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium bg-primary-50 text-primary-600 border border-primary-200">1</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">2</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">3</button>
+<span class="text-slate-400 px-1">...</span>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">8</button>
+<button class="p-1 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- REFERENCE STATES (Visually hidden but present in DOM per instructions) -->
+<!-- Empty State Reference -->
+<div class="hidden border border-dashed border-slate-300 rounded-lg p-12 text-center bg-slate-50">
+<span class="material-symbols-outlined text-4xl text-slate-300 mb-3 block">search_off</span>
+<h3 class="text-base font-medium text-slate-900 mb-1">Không có đơn hàng khớp bộ lọc</h3>
+<p class="text-sm text-slate-500 mb-4">Vui lòng thử lại với các tiêu chí tìm kiếm khác hoặc xóa bộ lọc.</p>
+<button class="text-primary-600 font-medium text-sm hover:underline">Xóa tất cả bộ lọc</button>
+</div>
+<!-- Loading State Reference (Skeleton) -->
+<div class="hidden bg-white rounded-lg shadow-card-lg border border-slate-200 overflow-hidden">
+<div class="p-4 border-b border-slate-100 flex gap-4 animate-pulse">
+<div class="h-4 bg-slate-200 rounded w-1/4"></div>
+<div class="h-4 bg-slate-200 rounded w-1/4"></div>
+<div class="h-4 bg-slate-200 rounded w-1/2"></div>
+</div>
+<div class="p-4 border-b border-slate-100 flex gap-4 animate-pulse">
+<div class="h-4 bg-slate-200 rounded w-1/4"></div>
+<div class="h-4 bg-slate-200 rounded w-1/4"></div>
+<div class="h-4 bg-slate-200 rounded w-1/2"></div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

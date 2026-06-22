@@ -38,7 +38,19 @@ spring:
             - id: order-service
               uri: lb://ORDER-SERVICE
               predicates:
-                - Path=/api/orders/**,/api/staff/orders/**
+                - Path=/api/orders/**,/api/staff/orders/**,/api/admin/reports/**
+              filters:
+                - JwtAuth
+            - id: notification-service
+              uri: lb://NOTIFICATION-SERVICE
+              predicates:
+                - Path=/api/notifications/**
+              filters:
+                - JwtAuth
+            - id: payment-service-protected
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payments/vnpay/create
               filters:
                 - JwtAuth
             - id: payment-service
