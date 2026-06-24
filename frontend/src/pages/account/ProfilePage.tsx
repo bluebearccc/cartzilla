@@ -15,14 +15,22 @@ import { ApiError } from '@/types/api';
 
 const profileSchema = z.object({
   fullName: z.string().min(1, 'Vui lòng nhập họ tên'),
-  phone: z.string().max(20).optional().or(z.literal('')),
+  phone: z
+    .string()
+    .regex(/^$|^0\d{9}$/, 'Số điện thoại phải gồm 10 chữ số bắt đầu bằng 0')
+    .optional()
+    .or(z.literal('')),
 });
 type ProfileForm = z.infer<typeof profileSchema>;
 
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Nhập mật khẩu hiện tại'),
-    newPassword: z.string().min(6, 'Tối thiểu 6 ký tự'),
+    newPassword: z
+      .string()
+      .min(8, 'Tối thiểu 8 ký tự')
+      .regex(/[a-zA-Z]/, 'Cần có chữ cái')
+      .regex(/[0-9]/, 'Cần có chữ số'),
     confirm: z.string(),
   })
   .refine((d) => d.newPassword === d.confirm, { path: ['confirm'], message: 'Xác nhận không khớp' });

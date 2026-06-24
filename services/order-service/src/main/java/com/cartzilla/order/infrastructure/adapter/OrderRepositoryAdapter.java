@@ -33,6 +33,20 @@ public class OrderRepositoryAdapter implements OrderRepository, SagaStateReposit
         return orderJpa.findAll(OrderSpecifications.from(criteria), pageable);
     }
 
+    @Override
+    public com.cartzilla.order.domain.vo.UserOrderStats getUserOrderStats(UUID userId, UUID excludeOrderId) {
+        long nonCancelledCount = orderJpa.countNonCancelledOrders(userId, excludeOrderId);
+        List<Object[]> completedStats = orderJpa.getCompletedOrderStats(userId, excludeOrderId);
+        long completedCount = 0;
+        java.math.BigDecimal totalSpent = java.math.BigDecimal.ZERO;
+        if (completedStats != null && !completedStats.isEmpty() && completedStats.get(0) != null) {
+            Object[] row = completedStats.get(0);
+            completedCount = ((Number) row[0]).longValue();
+            totalSpent = (java.math.BigDecimal) row[1];
+        }
+        return new com.cartzilla.order.domain.vo.UserOrderStats(nonCancelledCount, completedCount, totalSpent);
+    }
+
     @Override public SagaState save(SagaState saga) { return sagaJpa.save(saga); }
     @Override public Optional<SagaState> findByOrderId(UUID orderId) { return sagaJpa.findByOrderId(orderId); }
 }

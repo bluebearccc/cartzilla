@@ -146,7 +146,6 @@ staff order workflow, **notification in-app API** (`GET /api/notifications`,
 `PUT /api/notifications/{id}/read`) + email log, và **admin reports** (`/api/admin/reports/*`).
 Build: `mvn clean install` xanh, 95 unit test pass.
 
-> **Lưu ý chạy:** chưa có `Dockerfile` cho các service nên `docker compose up --build`
-> (phần build service) sẽ lỗi — chạy hạ tầng bằng docker rồi khởi động service bằng
-> `mvn -pl services/<svc> spring-boot:run` như mô tả ở trên. Frontend React ngoài phạm vi backend.
+> **Lưu ý chạy:** Toàn bộ các service Backend và cả Giao diện Frontend React hiện tại đã được đóng gói hoàn chỉnh bằng Dockerfile.
+> Bạn chỉ cần chạy `mvn clean package -DskipTests` để tạo file jar, sau đó chạy `docker compose up -d --build` để khởi động đồng bộ toàn bộ hệ thống (giao diện mở tại http://localhost:5173).
 ```

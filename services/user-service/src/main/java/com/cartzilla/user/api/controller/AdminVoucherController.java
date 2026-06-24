@@ -14,6 +14,8 @@ import com.cartzilla.user.application.usecase.GetVoucherUseCase;
 import com.cartzilla.user.application.usecase.ListVouchersUseCase;
 import com.cartzilla.user.application.usecase.RemoveVoucherAllowedUserUseCase;
 import com.cartzilla.user.application.usecase.UpdateVoucherUseCase;
+import com.cartzilla.user.application.usecase.ListVoucherAllowedUsersUseCase;
+import com.cartzilla.user.domain.repository.UserRepository;
 import com.cartzilla.web.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,8 @@ public class AdminVoucherController {
     private final DeleteVoucherUseCase deleteVoucherUseCase;
     private final AddVoucherAllowedUserUseCase addVoucherAllowedUserUseCase;
     private final RemoveVoucherAllowedUserUseCase removeVoucherAllowedUserUseCase;
+    private final ListVoucherAllowedUsersUseCase listVoucherAllowedUsersUseCase;
+    private final UserRepository userRepository;
 
     @GetMapping
     public ApiResponse<List<VoucherResponse>> list(@RequestHeader("X-User-Id") UUID adminUserId) {
@@ -89,6 +93,14 @@ public class AdminVoucherController {
         return ApiResponse.ok("Voucher deleted", null);
     }
 
+    @GetMapping("/{id}/allowed-users")
+    public ApiResponse<List<AllowedUserResponse>> listAllowedUsers(
+            @RequestHeader("X-User-Id") UUID adminUserId,
+            @PathVariable UUID id) {
+        ensureAdminUseCase.execute(adminUserId);
+        return ApiResponse.ok(listVoucherAllowedUsersUseCase.execute(id));
+    }
+
     @PostMapping("/{id}/allowed-users")
     public ResponseEntity<ApiResponse<AllowedUserResponse>> addAllowedUser(
             @RequestHeader("X-User-Id") UUID adminUserId,
@@ -96,8 +108,11 @@ public class AdminVoucherController {
             @Valid @RequestBody AddAllowedUserRequest request) {
         ensureAdminUseCase.execute(adminUserId);
         var allowedUser = addVoucherAllowedUserUseCase.execute(id, request.userId());
+        var user = userRepository.findById(request.userId()).orElse(null);
+        String email = user != null ? user.getEmail() : "";
+        String fullName = user != null ? user.getFullName() : "";
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Allowed user added", AllowedUserResponse.from(allowedUser)));
+                .body(ApiResponse.ok("Allowed user added", AllowedUserResponse.from(allowedUser, email, fullName)));
     }
 
     @DeleteMapping("/{id}/allowed-users/{userId}")

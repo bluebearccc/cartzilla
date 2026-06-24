@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CenteredAuthLayout } from '@/components/layout/AuthLayout';
 import { Spinner } from '@/components/ui/Spinner';
 import { Icon } from '@/components/ui/Icon';
@@ -7,29 +7,53 @@ import { authApi } from '@/services/auth';
 import { useAuth } from '@/store/auth';
 
 export function OAuthCallbackPage() {
-  const [params] = useSearchParams();
   const navigate = useNavigate();
   const { setSessionFromTokens } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const ran = useRef(false);
 
   useEffect(() => {
-    if (ran.current) return;
-    ran.current = true;
-    const code = params.get('code');
-    const state = params.get('state');
-    if (!code || !state) {
-      setError('Thiếu thông tin xác thực từ Google.');
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // Check if tokens are already passed in the URL (directly redirected from backend after exchange)
+    const token = searchParams.get('accessToken');
+    const refreshToken = searchParams.get('refreshToken');
+    const email = searchParams.get('email');
+    const role = searchParams.get('role');
+
+    if (token && refreshToken && email && role) {
+      const session = setSessionFromTokens({
+        accessToken: token,
+        refreshToken,
+        email,
+        role: role as any,
+      });
+      navigate(session.role === 'STAFF' || session.role === 'ADMIN' ? '/staff/orders' : '/', { replace: true });
       return;
     }
-    authApi
-      .oauthCallback('google', code, state)
-      .then((res) => {
-        const session = setSessionFromTokens(res);
-        navigate(session.role === 'STAFF' || session.role === 'ADMIN' ? '/staff/orders' : '/', { replace: true });
-      })
-      .catch(() => setError('Đăng nhập Google thất bại. Vui lòng thử lại.'));
-  }, [params, navigate, setSessionFromTokens]);
+
+    // Check if we have the authorization code to exchange
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+
+    if (code && state) {
+      if (ran.current) return;
+      ran.current = true;
+      authApi
+        .oauthCallback('google', code, state)
+        .then((res) => {
+          const session = setSessionFromTokens(res);
+          navigate(session.role === 'STAFF' || session.role === 'ADMIN' ? '/staff/orders' : '/', { replace: true });
+        })
+        .catch(() => setError('Đăng nhập Google thất bại. Vui lòng thử lại.'));
+      return;
+    }
+
+    // If neither tokens nor code are present, it's an invalid callback request
+    if (!searchParams.has('accessToken') && !searchParams.has('code')) {
+      setError('Thiếu thông tin xác thực từ Google.');
+    }
+  }, [navigate, setSessionFromTokens]);
 
   return (
     <CenteredAuthLayout>

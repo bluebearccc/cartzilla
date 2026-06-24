@@ -4,6 +4,7 @@ import com.cartzilla.user.application.command.AddressCommand;
 import com.cartzilla.user.domain.entity.Address;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ public class AddressDtos {
 
     public record CreateAddressRequest(
             @NotBlank @Size(max = 100) String fullName,
-            @NotBlank @Size(max = 20) String phone,
+            @NotBlank @Pattern(regexp = "^0\\d{9}$", message = "Phone number must be exactly 10 digits starting with 0") @Size(max = 20) String phone,
             @NotBlank @Size(max = 255) String street,
             @NotBlank @Size(max = 100) String district,
             @NotBlank @Size(max = 100) String city,
@@ -24,7 +25,7 @@ public class AddressDtos {
 
     public record UpdateAddressRequest(
             @NotBlank @Size(max = 100) String fullName,
-            @NotBlank @Size(max = 20) String phone,
+            @NotBlank @Pattern(regexp = "^0\\d{9}$", message = "Phone number must be exactly 10 digits starting with 0") @Size(max = 20) String phone,
             @NotBlank @Size(max = 255) String street,
             @NotBlank @Size(max = 100) String district,
             @NotBlank @Size(max = 100) String city,

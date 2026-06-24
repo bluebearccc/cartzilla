@@ -111,6 +111,10 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
+    environment:
+      MH_OUTGOING_SMTP: /app/outgoing-smtp.json
+    volumes:
+      - ./infra/mailhog/outgoing-smtp.json:/app/outgoing-smtp.json
     networks: [ cartzilla-net ]
 
   # Infra
@@ -151,8 +155,8 @@ services:
       RESET_PASSWORD_BASE_URL: ${RESET_PASSWORD_BASE_URL:-http://localhost:5173/reset-password}
       VERIFY_EMAIL_BASE_URL: ${VERIFY_EMAIL_BASE_URL:-http://localhost:5173/verify-email}
       VERIFY_EMAIL_TTL_SECONDS: ${VERIFY_EMAIL_TTL_SECONDS:-86400}
-      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
-      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-689804866163-apbool4p0qfq9nqkb56opn4epafi0vbq.apps.googleusercontent.com}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-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}
       GOOGLE_OAUTH_REDIRECT_URI: ${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:8080/api/oauth/google/callback}
       OAUTH_STATE_TTL_SECONDS: ${OAUTH_STATE_TTL_SECONDS:-600}
     depends_on:
@@ -247,6 +251,8 @@ services:
       MAIL_FROM: ${MAIL_FROM:-no-reply@cartzilla.local}
       MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
       MAIL_SMTP_STARTTLS_ENABLE: ${MAIL_SMTP_STARTTLS_ENABLE:-false}
+      APP_GMAIL_USERNAME: ${MAIL_USERNAME:-thesondayne@gmail.com}
+      APP_GMAIL_PASSWORD: ${MAIL_PASSWORD:-ecgeltooxxdhhvmt}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
       postgres-notif:
@@ -276,4 +282,17 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
       - grafana-data:/var/lib/grafana
+    networks: [ cartzilla-net ]
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_TARGET: http://api-gateway:8080
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api-gateway
     networks: [ cartzilla-net ]

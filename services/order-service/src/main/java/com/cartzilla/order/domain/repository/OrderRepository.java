@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.cartzilla.order.domain.vo.UserOrderStats;
+
 public interface OrderRepository {
     Order save(Order order);
     Optional<Order> findById(UUID id);
@@ -15,4 +17,6 @@ public interface OrderRepository {
 
     /** F10: staff list + filter (status/payment/date) có phân trang. */
     Page<Order> search(OrderSearchCriteria criteria, Pageable pageable);
+
+    UserOrderStats getUserOrderStats(UUID userId, UUID excludeOrderId);
 }

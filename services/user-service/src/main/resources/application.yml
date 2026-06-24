@@ -30,6 +30,7 @@ jwt:
   refresh-ttl-ms: 604800000
 
 app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
   reset-password:
     base-url: ${RESET_PASSWORD_BASE_URL:http://localhost:5173/reset-password}
   verify-email:

@@ -134,6 +134,11 @@ class AdminUserUseCaseTest {
         }
 
         @Override
+        public Optional<User> findByPhone(String phone) {
+            return users.stream().filter(user -> phone.equals(user.getPhone())).findFirst();
+        }
+
+        @Override
         public Page<User> search(UserSearchCriteria criteria, org.springframework.data.domain.Pageable pageable) {
             List<User> filtered = users.stream()
                     .filter(user -> criteria.keyword() == null
