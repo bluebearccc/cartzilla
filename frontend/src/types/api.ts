@@ -7,16 +7,6 @@ export interface ApiEnvelope<T> {
   timestamp: string;
 }
 
-export interface Page<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number; // current page index (0-based)
-  size: number;
-  first: boolean;
-  last: boolean;
-}
-
 export type Role = 'CUSTOMER' | 'STAFF' | 'ADMIN';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DELIVERED' | 'CANCELLED';

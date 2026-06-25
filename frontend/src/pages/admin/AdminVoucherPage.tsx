@@ -100,7 +100,7 @@ export function AdminVoucherPage() {
     queryFn: () => adminUserApi.list({ q: userSearch, limit: 10 }),
     enabled: !!userSearch && form.audienceType === 'SPECIFIC_USERS',
   });
-  const searchedUsers = searchUsersRes?.content || [];
+  const searchedUsers = searchUsersRes?.items || [];
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-vouchers'] });
 

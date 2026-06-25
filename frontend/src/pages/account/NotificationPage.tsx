@@ -33,7 +33,7 @@ export function NotificationPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
-  const items = data?.content ?? [];
+  const items = data?.items ?? [];
   const filtered = filter === 'unread' ? items.filter((n) => n.status === 'UNREAD') : items;
   const unreadCount = items.filter((n) => n.status === 'UNREAD').length;
 

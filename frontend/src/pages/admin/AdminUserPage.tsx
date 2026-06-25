@@ -37,7 +37,7 @@ export function AdminUserPage() {
     onError: (e) => { toast.error(e instanceof ApiError ? e.message : 'Thất bại'); setConfirm(null); },
   });
 
-  const users = data?.content ?? [];
+  const users = data?.items ?? [];
 
   return (
     <div className="space-y-5">
@@ -54,7 +54,7 @@ export function AdminUserPage() {
           <option value="STAFF">STAFF</option>
           <option value="ADMIN">ADMIN</option>
         </select>
-        <span className="ml-auto text-sm text-ink-muted">{data?.totalElements ?? 0} người dùng</span>
+        <span className="ml-auto text-sm text-ink-muted">{data?.totalItems ?? 0} người dùng</span>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-white">
