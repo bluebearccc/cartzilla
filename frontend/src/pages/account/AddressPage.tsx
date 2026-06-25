@@ -17,7 +17,10 @@ import type { Address } from '@/types/user';
 
 const schema = z.object({
   fullName: z.string().min(1, 'Nhập họ tên'),
-  phone: z.string().min(1, 'Nhập số điện thoại'),
+  phone: z
+    .string()
+    .min(1, 'Nhập số điện thoại')
+    .regex(/^0\d{9}$/, 'Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0'),
   street: z.string().min(1, 'Nhập địa chỉ'),
   district: z.string().min(1, 'Nhập quận/huyện'),
   city: z.string().min(1, 'Nhập tỉnh/thành phố'),
@@ -122,7 +125,7 @@ export function AddressPage() {
       >
         <form onSubmit={form.handleSubmit((d) => saveMut.mutate(d))} className="space-y-4">
           <Input label="Họ và tên" error={form.formState.errors.fullName?.message} {...form.register('fullName')} />
-          <Input label="Số điện thoại" error={form.formState.errors.phone?.message} {...form.register('phone')} />
+          <Input label="Số điện thoại" placeholder="09xxxxxxxx" error={form.formState.errors.phone?.message} {...form.register('phone')} />
           <Input label="Địa chỉ (đường/số nhà)" error={form.formState.errors.street?.message} {...form.register('street')} />
           <div className="grid grid-cols-2 gap-3">
             <Input label="Quận/Huyện" error={form.formState.errors.district?.message} {...form.register('district')} />

@@ -20,14 +20,44 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
+import com.cartzilla.user.infrastructure.feign.OrderFeignClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.UUID;
+
 @Service
-@RequiredArgsConstructor
 public class ValidateVoucherUseCase {
 
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
     private final VoucherUsageRepository usageRepository;
     private final VoucherAllowedUserRepository allowedUserRepository;
+    private final OrderFeignClient orderFeignClient;
+
+    public ValidateVoucherUseCase(
+            VoucherRepository voucherRepository,
+            UserRepository userRepository,
+            VoucherUsageRepository usageRepository,
+            VoucherAllowedUserRepository allowedUserRepository) {
+        this.voucherRepository = voucherRepository;
+        this.userRepository = userRepository;
+        this.usageRepository = usageRepository;
+        this.allowedUserRepository = allowedUserRepository;
+        this.orderFeignClient = null;
+    }
+
+    @Autowired
+    public ValidateVoucherUseCase(
+            VoucherRepository voucherRepository,
+            UserRepository userRepository,
+            VoucherUsageRepository usageRepository,
+            VoucherAllowedUserRepository allowedUserRepository,
+            OrderFeignClient orderFeignClient) {
+        this.voucherRepository = voucherRepository;
+        this.userRepository = userRepository;
+        this.usageRepository = usageRepository;
+        this.allowedUserRepository = allowedUserRepository;
+        this.orderFeignClient = orderFeignClient;
+    }
 
     public record Result(String code, BigDecimal discountAmount,
                          String discountType, boolean valid, String message) {}
@@ -47,6 +77,10 @@ public class ValidateVoucherUseCase {
     }
 
     void validateEligibility(Voucher voucher, User user, BigDecimal subtotal) {
+        validateEligibility(voucher, user, subtotal, null);
+    }
+
+    void validateEligibility(Voucher voucher, User user, BigDecimal subtotal, UUID excludeOrderId) {
         subtotal = requireSubtotal(subtotal);
         Instant now = Instant.now();
         if (!voucher.isRedeemable(now)) {
@@ -56,10 +90,10 @@ public class ValidateVoucherUseCase {
             throw new UnprocessableEntityException("Order subtotal " + subtotal
                     + " < minOrderAmount " + voucher.getMinOrderAmount() + " (V-04)");
         }
-        validateSupportedEligibilityRules(voucher);
+        validateSupportedEligibilityRules(voucher, user, excludeOrderId);
         validateAccountAge(voucher, user, now);
         validatePerUserLimit(voucher, user);
-        validateAudience(voucher, user);
+        validateAudience(voucher, user, excludeOrderId);
     }
 
     BigDecimal calculateDiscount(Voucher voucher, BigDecimal subtotal) {
@@ -100,21 +134,45 @@ public class ValidateVoucherUseCase {
         }
     }
 
-    private void validateSupportedEligibilityRules(Voucher voucher) {
+    private void validateSupportedEligibilityRules(Voucher voucher, User user, UUID excludeOrderId) {
         if (voucher.isFirstOrderOnly()
                 || voucher.getMinCompletedOrders() > 0
                 || voucher.getMinTotalSpent().compareTo(BigDecimal.ZERO) > 0) {
-            throw new UnprocessableEntityException(
-                    "Voucher order-history eligibility requires order-service user stats integration");
+            
+            if (orderFeignClient == null) {
+                throw new UnprocessableEntityException(
+                        "Voucher order-history eligibility requires order-service user stats integration");
+            }
+
+            OrderFeignClient.UserOrderStatsDto stats;
+            try {
+                var response = orderFeignClient.getUserOrderStats(user.getId(), excludeOrderId);
+                if (response == null || !response.success() || response.data() == null) {
+                    throw new UnprocessableEntityException("Cannot fetch user order stats from order-service");
+                }
+                stats = response.data();
+            } catch (Exception ex) {
+                throw new UnprocessableEntityException("order-service communication failure: " + ex.getMessage());
+            }
+
+            if (voucher.isFirstOrderOnly() && stats.nonCancelledOrdersCount() > 0) {
+                throw new UnprocessableEntityException("Voucher is only valid for the first order");
+            }
+
+            if (voucher.getMinCompletedOrders() > 0 && stats.completedOrdersCount() < voucher.getMinCompletedOrders()) {
+                throw new UnprocessableEntityException("Voucher requires at least "
+                        + voucher.getMinCompletedOrders() + " completed orders. Current: " + stats.completedOrdersCount());
+            }
+
+            if (voucher.getMinTotalSpent().compareTo(BigDecimal.ZERO) > 0 
+                    && stats.totalSpent().compareTo(voucher.getMinTotalSpent()) < 0) {
+                throw new UnprocessableEntityException("Voucher requires total spent of at least "
+                        + voucher.getMinTotalSpent() + ". Current: " + stats.totalSpent());
+            }
         }
     }
 
-    /**
-     * BR-V14: enforce audience. SPECIFIC_USERS kiểm tra allow-list; ALL_USERS hợp lệ.
-     * NEW_CUSTOMER/LOYAL_CUSTOMER phụ thuộc order-history stats (chưa tích hợp order-service)
-     * nên từ chối tường minh thay vì để hành vi sai âm thầm (trước đây LOYAL_CUSTOMER lọt mọi user).
-     */
-    private void validateAudience(Voucher voucher, User user) {
+    private void validateAudience(Voucher voucher, User user, UUID excludeOrderId) {
         switch (voucher.getAudienceType()) {
             case ALL_USERS -> { /* hợp lệ với mọi user */ }
             case SPECIFIC_USERS -> {
@@ -122,9 +180,32 @@ public class ValidateVoucherUseCase {
                     throw new UnprocessableEntityException("Voucher audience mismatch: SPECIFIC_USERS");
                 }
             }
-            case NEW_CUSTOMER, LOYAL_CUSTOMER -> throw new UnprocessableEntityException(
-                    "Voucher audience " + voucher.getAudienceType()
-                            + " requires order-history integration and is not supported yet");
+            case NEW_CUSTOMER -> {
+                if (orderFeignClient == null) {
+                    throw new UnprocessableEntityException("Voucher audience NEW_CUSTOMER requires order-history integration");
+                }
+                try {
+                    var response = orderFeignClient.getUserOrderStats(user.getId(), excludeOrderId);
+                    if (response == null || !response.success() || response.data() == null || response.data().nonCancelledOrdersCount() > 0) {
+                        throw new UnprocessableEntityException("Voucher is only valid for NEW_CUSTOMER (no past orders)");
+                    }
+                } catch (Exception e) {
+                    throw new UnprocessableEntityException("order-service communication failure: " + e.getMessage());
+                }
+            }
+            case LOYAL_CUSTOMER -> {
+                if (orderFeignClient == null) {
+                    throw new UnprocessableEntityException("Voucher audience LOYAL_CUSTOMER requires order-history integration");
+                }
+                try {
+                    var response = orderFeignClient.getUserOrderStats(user.getId(), excludeOrderId);
+                    if (response == null || !response.success() || response.data() == null || response.data().completedOrdersCount() < 3) {
+                        throw new UnprocessableEntityException("Voucher is only valid for LOYAL_CUSTOMER (at least 3 completed orders)");
+                    }
+                } catch (Exception e) {
+                    throw new UnprocessableEntityException("order-service communication failure: " + e.getMessage());
+                }
+            }
         }
     }
 

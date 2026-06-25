@@ -28,6 +28,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.cartzilla.user.infrastructure.feign.OrderFeignClient;
+import com.cartzilla.web.response.ApiResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -133,6 +135,197 @@ class VoucherUseCaseTest {
         assertEquals(1, usageRepository.countByVoucherIdAndUserId(voucher.getId(), user.getId()));
         assertEquals(1, voucherRepository.findById(voucher.getId()).orElseThrow().getUsedCount());
         assertTrue(second.idempotent());
+    }
+
+    @Test
+    void validateVoucher_orderHistoryDependentRules_success() {
+        User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
+        setCreatedAt(user, Instant.now().minus(40, ChronoUnit.DAYS));
+        
+        Voucher voucher = voucherRepository.save(Voucher.create(
+                "VIPVOUCHER",
+                DiscountType.FIXED_AMOUNT,
+                new BigDecimal("50000"),
+                null,
+                BigDecimal.ZERO,
+                10,
+                Instant.now().minus(1, ChronoUnit.DAYS),
+                Instant.now().plus(30, ChronoUnit.DAYS),
+                0,
+                1,
+                VoucherAudienceType.ALL_USERS,
+                false,
+                2,
+                new BigDecimal("200000")
+        ));
+
+        OrderFeignClient mockClient = (userId, excludeOrderId) -> 
+            ApiResponse.ok(
+                new OrderFeignClient.UserOrderStatsDto(3, 3, new BigDecimal("300000"))
+            );
+
+        ValidateVoucherUseCase useCase = new ValidateVoucherUseCase(
+                voucherRepository, userRepository, usageRepository, allowedUserRepository, mockClient);
+
+        var result = useCase.execute(new VoucherCommand.Validate("VIPVOUCHER", user.getId(), new BigDecimal("100000")));
+        assertTrue(result.valid());
+    }
+
+    @Test
+    void validateVoucher_orderHistoryDependentRules_failsWhenInsufficientSpent() {
+        User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
+        setCreatedAt(user, Instant.now().minus(40, ChronoUnit.DAYS));
+        
+        Voucher voucher = voucherRepository.save(Voucher.create(
+                "VIPVOUCHER2",
+                DiscountType.FIXED_AMOUNT,
+                new BigDecimal("50000"),
+                null,
+                BigDecimal.ZERO,
+                10,
+                Instant.now().minus(1, ChronoUnit.DAYS),
+                Instant.now().plus(30, ChronoUnit.DAYS),
+                0,
+                1,
+                VoucherAudienceType.ALL_USERS,
+                false,
+                2,
+                new BigDecimal("200000")
+        ));
+
+        OrderFeignClient mockClient = (userId, excludeOrderId) -> 
+            ApiResponse.ok(
+                new OrderFeignClient.UserOrderStatsDto(3, 3, new BigDecimal("150000"))
+            );
+
+        ValidateVoucherUseCase useCase = new ValidateVoucherUseCase(
+                voucherRepository, userRepository, usageRepository, allowedUserRepository, mockClient);
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> useCase.execute(
+                new VoucherCommand.Validate("VIPVOUCHER2", user.getId(), new BigDecimal("100000"))));
+        assertTrue(ex.getMessage().contains("total spent"));
+    }
+
+    @Test
+    void validateVoucher_firstOrderOnly_failsWhenHasPastOrders() {
+        User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
+        setCreatedAt(user, Instant.now().minus(40, ChronoUnit.DAYS));
+        
+        Voucher voucher = voucherRepository.save(Voucher.create(
+                "FIRSTONLY",
+                DiscountType.FIXED_AMOUNT,
+                new BigDecimal("50000"),
+                null,
+                BigDecimal.ZERO,
+                10,
+                Instant.now().minus(1, ChronoUnit.DAYS),
+                Instant.now().plus(30, ChronoUnit.DAYS),
+                0,
+                1,
+                VoucherAudienceType.ALL_USERS,
+                true,
+                0,
+                BigDecimal.ZERO
+        ));
+
+        OrderFeignClient mockClient = (userId, excludeOrderId) -> 
+            ApiResponse.ok(
+                new OrderFeignClient.UserOrderStatsDto(1, 1, new BigDecimal("100000"))
+            );
+
+        ValidateVoucherUseCase useCase = new ValidateVoucherUseCase(
+                voucherRepository, userRepository, usageRepository, allowedUserRepository, mockClient);
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> useCase.execute(
+                new VoucherCommand.Validate("FIRSTONLY", user.getId(), new BigDecimal("100000"))));
+        assertTrue(ex.getMessage().contains("first order"));
+    }
+
+    @Test
+    void validateVoucher_audienceLoyalCustomer_success() {
+        User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
+        setCreatedAt(user, Instant.now().minus(40, ChronoUnit.DAYS));
+        
+        Voucher voucher = voucherRepository.save(voucher("LOYALVOUCHER", DiscountType.FIXED_AMOUNT, "50000", null,
+                VoucherAudienceType.LOYAL_CUSTOMER, 0, 10, 1));
+
+        OrderFeignClient mockClient = (userId, excludeOrderId) -> 
+            ApiResponse.ok(
+                new OrderFeignClient.UserOrderStatsDto(3, 3, new BigDecimal("300000"))
+            );
+
+        ValidateVoucherUseCase useCase = new ValidateVoucherUseCase(
+                voucherRepository, userRepository, usageRepository, allowedUserRepository, mockClient);
+
+        var result = useCase.execute(new VoucherCommand.Validate("LOYALVOUCHER", user.getId(), new BigDecimal("100000")));
+        assertTrue(result.valid());
+    }
+
+    @Test
+    void validateVoucher_audienceNewCustomer_failsWhenNotNew() {
+        User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
+        setCreatedAt(user, Instant.now().minus(40, ChronoUnit.DAYS));
+        
+        Voucher voucher = voucherRepository.save(voucher("NEWVOUCHER", DiscountType.FIXED_AMOUNT, "50000", null,
+                VoucherAudienceType.NEW_CUSTOMER, 0, 10, 1));
+
+        OrderFeignClient mockClient = (userId, excludeOrderId) -> 
+            ApiResponse.ok(
+                new OrderFeignClient.UserOrderStatsDto(1, 0, new BigDecimal("100000"))
+            );
+
+        ValidateVoucherUseCase useCase = new ValidateVoucherUseCase(
+                voucherRepository, userRepository, usageRepository, allowedUserRepository, mockClient);
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> useCase.execute(
+                new VoucherCommand.Validate("NEWVOUCHER", user.getId(), new BigDecimal("100000"))));
+        assertTrue(ex.getMessage().contains("NEW_CUSTOMER"));
+    }
+
+    @Test
+    void redeemVoucher_firstOrderOnly_successBecauseCurrentOrderIdIsExcluded() {
+        User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
+        setCreatedAt(user, Instant.now().minus(40, ChronoUnit.DAYS));
+        
+        Voucher voucher = voucherRepository.save(Voucher.create(
+                "FIRSTONLYREDEEM",
+                DiscountType.FIXED_AMOUNT,
+                new BigDecimal("50000"),
+                null,
+                BigDecimal.ZERO,
+                10,
+                Instant.now().minus(1, ChronoUnit.DAYS),
+                Instant.now().plus(30, ChronoUnit.DAYS),
+                0,
+                1,
+                VoucherAudienceType.ALL_USERS,
+                true,
+                0,
+                BigDecimal.ZERO
+        ));
+
+        UUID currentOrderId = UUID.randomUUID();
+
+        OrderFeignClient mockClient = (userId, excludeOrderId) -> {
+            if (currentOrderId.equals(excludeOrderId)) {
+                return ApiResponse.ok(
+                    new OrderFeignClient.UserOrderStatsDto(0, 0, BigDecimal.ZERO)
+                );
+            } else {
+                return ApiResponse.ok(
+                    new OrderFeignClient.UserOrderStatsDto(1, 1, new BigDecimal("100000"))
+                );
+            }
+        };
+
+        RedeemVoucherUseCase useCase = new RedeemVoucherUseCase(
+                voucherRepository, userRepository, usageRepository, allowedUserRepository, mockClient);
+
+        var result = useCase.execute(new VoucherCommand.Redeem(
+                "FIRSTONLYREDEEM", user.getId(), currentOrderId, new BigDecimal("100000")));
+        
+        assertNotNull(result.usageId());
+        assertEquals("FIRSTONLYREDEEM", result.code());
     }
 
     @Test
@@ -262,6 +455,11 @@ class VoucherUseCaseTest {
         @Override
         public boolean existsByEmail(String email) {
             return findByEmail(email).isPresent();
+        }
+
+        @Override
+        public Optional<User> findByPhone(String phone) {
+            return users.stream().filter(user -> phone.equals(user.getPhone())).findFirst();
         }
 
         @Override

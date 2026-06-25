@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,17 @@ export function LoginPage() {
   const toast = useToast();
   const [formError, setFormError] = useState<string | null>(null);
   const [unverified, setUnverified] = useState<string | null>(null);
+
+  // Đọc ?error= từ URL khi backend redirect về sau OAuth thất bại
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const oauthError = params.get('error');
+    if (oauthError) {
+      setFormError(oauthError);
+      // Xóa khỏi URL để không hiện lại khi reload
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),

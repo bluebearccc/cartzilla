@@ -66,4 +66,21 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID>,
     List<Object[]> topProducts(@Param("statuses") Collection<OrderStatus> statuses,
                                @Param("from") Instant from, @Param("to") Instant to,
                                Pageable pageable);
+
+    @Query("""
+            select count(o) from Order o
+            where o.userId = :userId
+              and o.status <> 'CANCELLED'
+              and (:excludeOrderId is null or o.id <> :excludeOrderId)
+            """)
+    long countNonCancelledOrders(@Param("userId") UUID userId, @Param("excludeOrderId") UUID excludeOrderId);
+
+    @Query("""
+            select count(o), coalesce(sum(o.totalAmount), 0)
+            from Order o
+            where o.userId = :userId
+              and o.status = 'DELIVERED'
+              and (:excludeOrderId is null or o.id <> :excludeOrderId)
+            """)
+    List<Object[]> getCompletedOrderStats(@Param("userId") UUID userId, @Param("excludeOrderId") UUID excludeOrderId);
 }

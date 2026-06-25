@@ -66,6 +66,37 @@ class ProfileUseCaseTest {
     }
 
     @Test
+    void updateProfile_rejectsDuplicatePhone() {
+        User user1 = userRepository.save(User.createCustomer("user1@example.com", "hash", "User 1"));
+        user1.updateProfile("User 1", "0900000000");
+        userRepository.save(user1);
+
+        User user2 = userRepository.save(User.createCustomer("user2@example.com", "hash", "User 2"));
+        UpdateProfileUseCase useCase = new UpdateProfileUseCase(userRepository);
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> useCase.execute(
+                user2.getId(),
+                new UserCommand.UpdateProfile("User 2 Updated", "0900000000")));
+        assertEquals("Số điện thoại đã được sử dụng", ex.getMessage());
+    }
+
+    @Test
+    void updateProfile_allowsSamePhoneForSelf() {
+        User user = userRepository.save(User.createCustomer("customer@example.com", "hash", "Customer"));
+        user.updateProfile("Customer", "0900000000");
+        userRepository.save(user);
+
+        UpdateProfileUseCase useCase = new UpdateProfileUseCase(userRepository);
+
+        User updated = useCase.execute(user.getId(), new UserCommand.UpdateProfile(
+                "Customer Updated",
+                "0900000000"));
+
+        assertEquals("Customer Updated", updated.getFullName());
+        assertEquals("0900000000", updated.getPhone());
+    }
+
+    @Test
     void changePasswordRequiresCurrentPasswordAndRevokesRefreshTokens() {
         User user = userRepository.save(User.createCustomer(
                 "customer@example.com", "encoded:oldpass", "Customer"));
@@ -117,6 +148,11 @@ class ProfileUseCaseTest {
         @Override
         public boolean existsByEmail(String email) {
             return findByEmail(email).isPresent();
+        }
+
+        @Override
+        public Optional<User> findByPhone(String phone) {
+            return users.stream().filter(user -> phone.equals(user.getPhone())).findFirst();
         }
 
         @Override

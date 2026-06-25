@@ -25,6 +25,7 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override public Optional<User> findById(UUID id) { return jpa.findById(id); }
     @Override public Optional<User> findByEmail(String email) { return jpa.findByEmail(email); }
     @Override public boolean existsByEmail(String email) { return jpa.existsByEmail(email); }
+    @Override public Optional<User> findByPhone(String phone) { return jpa.findByPhone(phone); }
     @Override public Page<User> search(UserSearchCriteria criteria, Pageable pageable) {
         return jpa.findAll(UserSpecifications.from(criteria), pageable);
     }

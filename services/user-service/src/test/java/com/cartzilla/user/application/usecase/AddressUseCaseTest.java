@@ -240,6 +240,11 @@ class AddressUseCaseTest {
         }
 
         @Override
+        public Optional<User> findByPhone(String phone) {
+            return users.stream().filter(user -> phone.equals(user.getPhone())).findFirst();
+        }
+
+        @Override
         public Page<User> search(UserSearchCriteria criteria, Pageable pageable) {
             List<User> filtered = users.stream()
                     .filter(user -> criteria.normalizedKeyword() == null

@@ -4,6 +4,7 @@ import com.cartzilla.user.application.command.AuthCommand;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 /** Request/Response DTO cho auth (kèm map sang command). */
 public class AuthDtos {
@@ -11,7 +12,7 @@ public class AuthDtos {
 
     public record RegisterRequest(
             @Email @NotBlank String email,
-            @NotBlank @Size(min = 6) String password,
+            @NotBlank @Size(min = 8) @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[0-9]).*$", message = "Password must contain at least one letter and one number") String password,
             @NotBlank String fullName) {
         public AuthCommand.Register toCommand() {
             return new AuthCommand.Register(email, password, fullName);
@@ -32,7 +33,7 @@ public class AuthDtos {
 
     public record ResetPasswordRequest(
             @NotBlank String token,
-            @NotBlank @Size(min = 6) String newPassword) {}
+            @NotBlank @Size(min = 8) @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[0-9]).*$", message = "Password must contain at least one letter and one number") String newPassword) {}
 
     public record VerifyEmailRequest(@NotBlank String token) {}
 

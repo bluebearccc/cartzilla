@@ -13,7 +13,11 @@ import { ApiError } from '@/types/api';
 
 const schema = z
   .object({
-    password: z.string().min(8, 'Tối thiểu 8 ký tự').regex(/[0-9]/, 'Cần có chữ số'),
+    password: z
+      .string()
+      .min(8, 'Tối thiểu 8 ký tự')
+      .regex(/[a-zA-Z]/, 'Cần có chữ cái')
+      .regex(/[0-9]/, 'Cần có chữ số'),
     confirm: z.string(),
   })
   .refine((d) => d.password === d.confirm, { path: ['confirm'], message: 'Mật khẩu xác nhận không khớp' });

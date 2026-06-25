@@ -10,21 +10,48 @@ import com.cartzilla.user.domain.exception.UnprocessableEntityException;
 import com.cartzilla.user.domain.repository.VoucherRepository;
 import com.cartzilla.user.domain.repository.VoucherUsageRepository;
 import com.cartzilla.web.exception.BusinessException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.cartzilla.user.infrastructure.feign.OrderFeignClient;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class RedeemVoucherUseCase {
 
     private final VoucherRepository voucherRepository;
     private final UserRepository userRepository;
     private final VoucherUsageRepository usageRepository;
     private final VoucherAllowedUserRepository allowedUserRepository;
+    private final OrderFeignClient orderFeignClient;
+
+    public RedeemVoucherUseCase(
+            VoucherRepository voucherRepository,
+            UserRepository userRepository,
+            VoucherUsageRepository usageRepository,
+            VoucherAllowedUserRepository allowedUserRepository) {
+        this.voucherRepository = voucherRepository;
+        this.userRepository = userRepository;
+        this.usageRepository = usageRepository;
+        this.allowedUserRepository = allowedUserRepository;
+        this.orderFeignClient = null;
+    }
+
+    @Autowired
+    public RedeemVoucherUseCase(
+            VoucherRepository voucherRepository,
+            UserRepository userRepository,
+            VoucherUsageRepository usageRepository,
+            VoucherAllowedUserRepository allowedUserRepository,
+            OrderFeignClient orderFeignClient) {
+        this.voucherRepository = voucherRepository;
+        this.userRepository = userRepository;
+        this.usageRepository = usageRepository;
+        this.allowedUserRepository = allowedUserRepository;
+        this.orderFeignClient = orderFeignClient;
+    }
 
     public record Result(UUID usageId, String code, BigDecimal discountAmount, boolean idempotent) {}
 
@@ -46,8 +73,8 @@ public class RedeemVoucherUseCase {
         }
 
         ValidateVoucherUseCase validator = new ValidateVoucherUseCase(
-                voucherRepository, userRepository, usageRepository, allowedUserRepository);
-        validator.validateEligibility(voucher, user, command.orderSubtotal());
+                voucherRepository, userRepository, usageRepository, allowedUserRepository, orderFeignClient);
+        validator.validateEligibility(voucher, user, command.orderSubtotal(), command.orderId());
         BigDecimal discount = validator.calculateDiscount(voucher, command.orderSubtotal());
 
         // BR-V05: ghi VoucherUsage trước (unique (voucherId, orderId) đảm bảo idempotent),

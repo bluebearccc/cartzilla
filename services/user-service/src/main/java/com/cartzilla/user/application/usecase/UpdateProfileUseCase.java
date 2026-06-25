@@ -21,6 +21,17 @@ public class UpdateProfileUseCase {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException("User not found: " + userId));
         user.requireActive();
+
+        String newPhone = command.phone();
+        if (newPhone != null && !newPhone.isBlank()) {
+            String trimmedPhone = newPhone.trim();
+            userRepository.findByPhone(trimmedPhone).ifPresent(existingUser -> {
+                if (!existingUser.getId().equals(userId)) {
+                    throw new BusinessException("Số điện thoại đã được sử dụng");
+                }
+            });
+        }
+
         user.updateProfile(command.fullName(), command.phone());
         return userRepository.save(user);
     }

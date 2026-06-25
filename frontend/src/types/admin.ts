@@ -57,6 +57,14 @@ export interface VoucherInput {
   active?: boolean;
 }
 
+export interface VoucherAllowedUser {
+  id?: string;
+  voucherId?: string;
+  userId: string;
+  email?: string;
+  fullName?: string;
+}
+
 export interface CategoryInput {
   name: string;
   slug?: string;

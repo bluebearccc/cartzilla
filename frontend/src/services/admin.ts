@@ -10,6 +10,7 @@ import type {
   VendorInput,
   Voucher,
   VoucherInput,
+  VoucherAllowedUser,
 } from '@/types/admin';
 
 interface AdminProductQuery {
@@ -89,6 +90,9 @@ export const adminVoucherApi = {
   create: (body: VoucherInput) => api.post<Voucher>('/admin/vouchers', body),
   update: (id: string, body: VoucherInput) => api.put<Voucher>(`/admin/vouchers/${id}`, body),
   remove: (id: string) => api.del<void>(`/admin/vouchers/${id}`),
+  listAllowedUsers: (id: string) => api.get<VoucherAllowedUser[]>(`/admin/vouchers/${id}/allowed-users`),
+  addAllowedUser: (id: string, userId: string) => api.post<VoucherAllowedUser>(`/admin/vouchers/${id}/allowed-users`, { userId }),
+  removeAllowedUser: (id: string, userId: string) => api.del<void>(`/admin/vouchers/${id}/allowed-users/${userId}`),
 };
 
 interface AdminUserQuery {

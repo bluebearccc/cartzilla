@@ -133,12 +133,14 @@ public class VoucherDtos {
         }
     }
 
-    public record AllowedUserResponse(UUID id, UUID voucherId, UUID userId) {
-        public static AllowedUserResponse from(VoucherAllowedUser allowedUser) {
+    public record AllowedUserResponse(UUID id, UUID voucherId, UUID userId, String email, String fullName) {
+        public static AllowedUserResponse from(VoucherAllowedUser allowedUser, String email, String fullName) {
             return new AllowedUserResponse(
                     allowedUser.getId(),
                     allowedUser.getVoucherId(),
-                    allowedUser.getUserId());
+                    allowedUser.getUserId(),
+                    email,
+                    fullName);
         }
     }
 
