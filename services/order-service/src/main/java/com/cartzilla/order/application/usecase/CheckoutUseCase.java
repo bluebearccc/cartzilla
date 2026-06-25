@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -33,19 +34,27 @@ public class CheckoutUseCase {
         validateCheckout(cmd);
         validateShippingAddress(cmd.shippingAddress());
 
+        // SECURITY (chống thao túng giá): KHÔNG tin unitPrice/name client gửi — luôn dựng lại
+        // từng line từ snapshot product-service theo sku + quantity (giá, tồn kho, trạng thái thật).
         var items = cmd.lines().stream()
+                .map(line -> toSnapshotLine(new OrderCommand.SkuLine(line.sku(), line.quantity())))
                 .map(this::toOrderItem)
                 .toList();
 
+        return createOrder(cmd.userId(), items, cmd.shippingAddress(),
+                parsePaymentMethod(cmd.paymentMethod()), cmd.voucherCode());
+    }
+
+    /** Tạo order + snapshot discount voucher + khởi động saga. Dùng chung cho cả 2 luồng checkout. */
+    private UUID createOrder(UUID userId, List<OrderItem> items, String shippingAddress,
+                            PaymentMethod paymentMethod, String voucherCode) {
         BigDecimal subtotal = items.stream()
                 .map(OrderItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         // F14/BR-V10/BR-V13: validate-preview voucher (không tăng usedCount) rồi snapshot discount vào order
-        BigDecimal discount = resolveVoucherDiscount(cmd.userId(), cmd.voucherCode(), subtotal);
+        BigDecimal discount = resolveVoucherDiscount(userId, voucherCode, subtotal);
 
-        Order order = Order.create(cmd.userId(), parsePaymentMethod(cmd.paymentMethod()),
-                cmd.shippingAddress(), items, discount, cmd.voucherCode(), null);
-
+        Order order = Order.create(userId, paymentMethod, shippingAddress, items, discount, voucherCode, null);
         Order saved = orderRepository.save(order);
         sagaOrchestrator.start(saved);
         return saved.getId();
@@ -85,13 +94,13 @@ public class CheckoutUseCase {
         validateCheckoutBySku(cmd);
         validateShippingAddress(cmd.shippingAddress());
 
-        OrderCommand.Checkout checkout = new OrderCommand.Checkout(
-                cmd.userId(),
-                cmd.lines().stream().map(this::toSnapshotLine).toList(),
-                cmd.shippingAddress(),
-                cmd.paymentMethod().name(),
-                cmd.voucherCode());
-        return execute(checkout);
+        var items = cmd.lines().stream()
+                .map(this::toSnapshotLine)
+                .map(this::toOrderItem)
+                .toList();
+
+        return createOrder(cmd.userId(), items, cmd.shippingAddress(),
+                cmd.paymentMethod(), cmd.voucherCode());
     }
 
     private OrderCommand.Line toSnapshotLine(OrderCommand.SkuLine line) {
