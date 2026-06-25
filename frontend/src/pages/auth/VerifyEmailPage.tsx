@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CenteredAuthLayout } from '@/components/layout/AuthLayout';
 import { Button } from '@/components/ui/Button';
@@ -16,9 +16,14 @@ export function VerifyEmailPage() {
   const [state, setState] = useState<State>(token ? 'verifying' : 'failed');
   const [email, setEmail] = useState('');
   const toast = useToast();
+  const ran = useRef(false);
 
   useEffect(() => {
     if (!token) return;
+    // Token là single-use. React StrictMode (dev) chạy effect 2 lần → lần 2 sẽ thấy token
+    // "đã dùng" và báo lỗi sai. Guard để chỉ gọi verify đúng 1 lần.
+    if (ran.current) return;
+    ran.current = true;
     authApi
       .verifyEmail(token)
       .then(() => setState('success'))

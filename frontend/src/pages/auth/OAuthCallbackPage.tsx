@@ -14,12 +14,13 @@ export function OAuthCallbackPage() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
+    // Backend redirects with tokens in the URL fragment (#) so they never hit server logs.
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
-    // Check if tokens are already passed in the URL (directly redirected from backend after exchange)
-    const token = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
-    const email = searchParams.get('email');
-    const role = searchParams.get('role');
+    const token = hashParams.get('accessToken');
+    const refreshToken = hashParams.get('refreshToken');
+    const email = hashParams.get('email');
+    const role = hashParams.get('role');
 
     if (token && refreshToken && email && role) {
       const session = setSessionFromTokens({
@@ -28,6 +29,8 @@ export function OAuthCallbackPage() {
         email,
         role: role as any,
       });
+      // Strip the tokens from the address bar once consumed.
+      window.history.replaceState(null, '', window.location.pathname);
       navigate(session.role === 'STAFF' || session.role === 'ADMIN' ? '/staff/orders' : '/', { replace: true });
       return;
     }
@@ -49,8 +52,8 @@ export function OAuthCallbackPage() {
       return;
     }
 
-    // If neither tokens nor code are present, it's an invalid callback request
-    if (!searchParams.has('accessToken') && !searchParams.has('code')) {
+    // If neither tokens (in fragment) nor code are present, it's an invalid callback request
+    if (!token && !searchParams.has('code')) {
       setError('Thiếu thông tin xác thực từ Google.');
     }
   }, [navigate, setSessionFromTokens]);
