@@ -1,11 +1,11 @@
 import type { AudienceType, DiscountType, Role, VendorType } from './api';
 
-/** user-service paginated envelope (Spring-style): content + totalElements. */
+/** user-service paginated envelope (unified): items + totalItems. */
 export interface SpringPage<T> {
-  content: T[];
+  items: T[];
   page: number;
   size: number;
-  totalElements: number;
+  totalItems: number;
   totalPages: number;
 }
 

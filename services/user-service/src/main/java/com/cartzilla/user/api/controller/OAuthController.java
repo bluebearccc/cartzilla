@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 @RestController
@@ -50,14 +52,14 @@ public class OAuthController {
             var result = completeOAuthLoginUseCase.execute(parseProvider(provider), code, state);
 
             if (isBrowser) {
-                String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth/callback")
-                        .queryParam("accessToken", result.accessToken())
-                        .queryParam("refreshToken", result.refreshToken())
-                        .queryParam("email", result.email())
-                        .queryParam("role", result.role())
-                        .build().toUriString();
+                // SECURITY: đưa token vào URL fragment (#) thay vì query (?). Fragment KHÔNG
+                // được gửi lên server → không lọt vào access log / header Referer của bên thứ ba.
+                String fragment = "accessToken=" + enc(result.accessToken())
+                        + "&refreshToken=" + enc(result.refreshToken())
+                        + "&email=" + enc(result.email())
+                        + "&role=" + enc(result.role());
                 return ResponseEntity.status(HttpStatus.FOUND)
-                        .header("Location", redirectUrl)
+                        .header("Location", frontendUrl + "/oauth/callback#" + fragment)
                         .build();
             }
 
@@ -87,5 +89,9 @@ public class OAuthController {
         } catch (IllegalArgumentException e) {
             throw new BusinessException("Unsupported OAuth provider: " + provider);
         }
+    }
+
+    private static String enc(String v) {
+        return URLEncoder.encode(v == null ? "" : v, StandardCharsets.UTF_8);
     }
 }

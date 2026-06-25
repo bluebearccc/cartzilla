@@ -13,9 +13,10 @@ export interface NotificationItem {
 }
 
 export interface NotificationPage {
-  content: NotificationItem[];
+  items: NotificationItem[];
   page: number;
   size: number;
-  totalElements: number;
+  totalItems: number;
   totalPages: number;
+  unreadCount: number;
 }

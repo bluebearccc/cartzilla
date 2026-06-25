@@ -11,10 +11,13 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 public class VnpayProperties {
-    private String tmnCode = "CARTZILLA";
-    private String hashSecret = "CARTZILLAVNPAYHASHSECRET1234567890";
+    private String tmnCode = "37VHZ9M4";
+    private String hashSecret = "PIZOFTDNPFSBDEU44PQCSUW8OFVLIMQL";
     private String payUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+    /** VNPay redirect trình duyệt về đây (backend) để verify + settle, sau đó redirect tiếp về SPA. */
     private String returnUrl = "http://localhost:8080/api/payments/vnpay/callback";
+    /** Trang kết quả của SPA — backend 302 redirect khách về đây sau khi settle. */
+    private String frontendReturnUrl = "http://localhost:5173/payment/result";
     private String version = "2.1.0";
     private String command = "pay";
     private String orderType = "other";

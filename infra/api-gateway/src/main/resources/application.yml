@@ -47,16 +47,20 @@ spring:
                 - Path=/api/notifications/**
               filters:
                 - JwtAuth
-            - id: payment-service-protected
+            # Callback VNPay redirect trình duyệt về (KHÔNG có JWT) — phải đứng trước
+            # route catch-all bên dưới để khớp đầu tiên và bỏ qua JwtAuth.
+            - id: payment-service-callback
               uri: lb://PAYMENT-SERVICE
               predicates:
-                - Path=/api/payments/vnpay/create
-              filters:
-                - JwtAuth
+                - Path=/api/payments/vnpay/callback
+            # Mọi endpoint payment còn lại (create, tra cứu trạng thái, refund) đều cần JWT:
+            # gateway inject X-User-Id/X-User-Role để service enforce ownership + role.
             - id: payment-service
               uri: lb://PAYMENT-SERVICE
               predicates:
                 - Path=/api/payments/**
+              filters:
+                - JwtAuth
           globalcors:
             cors-configurations:
               '[/**]':

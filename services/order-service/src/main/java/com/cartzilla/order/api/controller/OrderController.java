@@ -29,14 +29,23 @@ public class OrderController {
     private final SagaStateRepository sagaStateRepository;
 
     @PostMapping("/checkout")
-    public ApiResponse<UUID> checkout(@RequestBody OrderCommand.Checkout cmd) {
-        return ApiResponse.ok("Order created and Saga started", checkoutUseCase.execute(cmd));
+    public ApiResponse<UUID> checkout(@RequestHeader("X-User-Id") UUID userId,
+                                      @RequestBody OrderCommand.Checkout cmd) {
+        // SECURITY: userId luôn lấy từ X-User-Id (gateway inject), bỏ qua userId client gửi trong body.
+        OrderCommand.Checkout secured = new OrderCommand.Checkout(
+                userId, cmd.lines(), cmd.shippingAddress(), cmd.paymentMethod(), cmd.voucherCode());
+        return ApiResponse.ok("Order created and Saga started", checkoutUseCase.execute(secured));
     }
 
     @PostMapping("/checkout/by-sku")
     public ApiResponse<OrderDtos.CheckoutResponse> checkoutBySku(
+            @RequestHeader("X-User-Id") UUID userId,
             @Valid @RequestBody OrderDtos.CheckoutBySkuRequest request) {
-        UUID orderId = checkoutUseCase.executeFromSkus(request.toCommand());
+        // SECURITY: userId luôn lấy từ X-User-Id, bỏ qua userId client gửi trong body.
+        OrderCommand.CheckoutBySku cmd = request.toCommand();
+        OrderCommand.CheckoutBySku secured = new OrderCommand.CheckoutBySku(
+                userId, cmd.lines(), cmd.shippingAddress(), cmd.paymentMethod(), cmd.voucherCode());
+        UUID orderId = checkoutUseCase.executeFromSkus(secured);
         Order order = getOrder(orderId);
         return ApiResponse.ok("Order created and Saga started", OrderDtos.CheckoutResponse.from(
                 order, sagaStateRepository.findByOrderId(orderId).orElse(null)));

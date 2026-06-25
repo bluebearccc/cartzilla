@@ -34,10 +34,10 @@ public final class NotificationDtos {
     }
 
     public record NotificationPage(
-            List<NotificationResponse> content,
+            List<NotificationResponse> items,
             int page,
             int size,
-            long totalElements,
+            long totalItems,
             int totalPages,
             long unreadCount) {
 

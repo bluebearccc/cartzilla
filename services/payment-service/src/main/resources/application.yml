@@ -25,10 +25,11 @@ payment:
   always-fail: ${ALWAYS_FAIL:false}   # bật true để demo saga rollback
 
 vnpay:
-  tmn-code: ${VNPAY_TMN_CODE:CARTZILLA}
-  hash-secret: ${VNPAY_HASH_SECRET:CARTZILLAVNPAYHASHSECRET1234567890}
+  tmn-code: ${VNPAY_TMN_CODE:37VHZ9M4}
+  hash-secret: ${VNPAY_HASH_SECRET:PIZOFTDNPFSBDEU44PQCSUW8OFVLIMQL}
   pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
   return-url: ${VNPAY_RETURN_URL:http://localhost:8080/api/payments/vnpay/callback}
+  frontend-return-url: ${VNPAY_FRONTEND_RETURN_URL:http://localhost:5173/payment/result}
   version: 2.1.0
   command: pay
   order-type: other
