@@ -19,5 +19,5 @@ public interface OrderFeignClient {
     @GetMapping("/api/internal/orders/{orderId}/payment-info")
     ApiResponse<OrderPaymentInfo> getPaymentInfo(@PathVariable UUID orderId);
 
-    record OrderPaymentInfo(UUID orderId, UUID userId, String paymentMethod, BigDecimal amount) {}
+    record OrderPaymentInfo(UUID orderId, UUID userId, String paymentMethod, BigDecimal amount, String status) {}
 }
