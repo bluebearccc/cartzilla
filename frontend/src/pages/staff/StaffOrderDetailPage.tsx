@@ -49,7 +49,11 @@ export function StaffOrderDetailPage() {
   }
 
   const ship = parseShipping(order.shippingAddress);
-  const transitions = nextStatuses(order.status);
+  // Đơn VNPay chưa thanh toán chỉ CONFIRMED qua payment callback → staff không xác nhận tay.
+  const vnpayUnpaid = order.paymentMethod === 'VNPAY' && order.paymentStatus !== 'PAID';
+  const transitions = nextStatuses(order.status).filter(
+    (s) => !(s === 'CONFIRMED' && vnpayUnpaid),
+  );
   const submit = () => {
     if (target === 'CANCELLED' && !reason.trim()) {
       toast.error('Vui lòng nhập lý do hủy');
@@ -158,6 +162,9 @@ export function StaffOrderDetailPage() {
                 )}
                 {order.paymentMethod === 'COD' && (
                   <p className="text-xs text-ink-muted">Khi chuyển "Đã giao", thanh toán COD sẽ tự động chuyển "Đã thanh toán".</p>
+                )}
+                {order.status === 'PENDING' && vnpayUnpaid && (
+                  <p className="text-xs text-ink-muted">Đơn VNPay đang chờ khách thanh toán — sẽ tự xác nhận khi thanh toán thành công. Chỉ có thể hủy.</p>
                 )}
                 <Button fullWidth disabled={!target} loading={mut.isPending} onClick={submit}>Cập nhật</Button>
               </div>
