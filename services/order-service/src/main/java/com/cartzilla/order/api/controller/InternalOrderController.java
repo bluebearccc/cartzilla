@@ -48,7 +48,8 @@ public class InternalOrderController {
         return ApiResponse.ok(new OrderPaymentInfoResponse(
                 order.getId(), order.getUserId(),
                 order.getPaymentMethod() == null ? null : order.getPaymentMethod().name(),
-                order.getTotalAmount()));
+                order.getTotalAmount(),
+                order.getStatus() == null ? null : order.getStatus().name()));
     }
 
     public record UserOrderStatsResponse(
@@ -61,6 +62,7 @@ public class InternalOrderController {
             UUID orderId,
             UUID userId,
             String paymentMethod,
-            BigDecimal amount
+            BigDecimal amount,
+            String status
     ) {}
 }

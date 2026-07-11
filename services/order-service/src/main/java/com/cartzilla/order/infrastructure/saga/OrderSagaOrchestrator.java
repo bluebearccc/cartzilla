@@ -8,7 +8,10 @@ import com.cartzilla.order.domain.entity.Order;
 import com.cartzilla.order.domain.entity.SagaState;
 import com.cartzilla.order.domain.repository.OrderRepository;
 import com.cartzilla.order.domain.repository.SagaStateRepository;
+import com.cartzilla.order.domain.vo.OrderStatus;
 import com.cartzilla.order.domain.vo.PaymentMethod;
+import com.cartzilla.order.domain.vo.SagaStatus;
+import com.cartzilla.order.domain.vo.SagaStep;
 import com.cartzilla.order.infrastructure.feign.UserFeignClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,10 +40,7 @@ public class OrderSagaOrchestrator {
     @Transactional
     public void start(Order order) {
         sagaRepository.save(SagaState.start(order.getId()));
-        List<StockEvents.Item> items = order.getItems().stream()
-                .map(i -> new StockEvents.Item(i.getSku(), i.getQuantity())).toList();
-        rabbit.convertAndSend(RabbitTopics.STOCK_EXCHANGE, RabbitTopics.RK_STOCK_RESERVE,
-                new StockEvents.StockReserveEvent(order.getId(), items));
+        publishStockReserve(order);
         log.info("Saga started order={}", order.getId());
     }
 
@@ -49,6 +49,20 @@ public class OrderSagaOrchestrator {
     public void onStockReserved(StockEvents.StockReservedEvent event) {
         SagaState saga = sagaRepository.findByOrderId(event.orderId()).orElseThrow();
         Order order = orderRepository.findById(event.orderId()).orElseThrow();
+        // Idempotency: duplicate event hoặc saga đã đóng → bỏ qua, không xử lý lại.
+        if (saga.getStatus() != SagaStatus.IN_PROGRESS) {
+            log.warn("Ignore stock.reserved for closed saga order={}", event.orderId());
+            return;
+        }
+        // Đơn đã bị hủy trong lúc chờ reserve (customer cancel) → trả kho ngay nếu đã trừ.
+        if (order.getStatus() != OrderStatus.PENDING) {
+            if (event.success()) publishStockRelease(order);
+            saga.fail("Order no longer PENDING when stock reserved: " + order.getStatus());
+            sagaRepository.save(saga);
+            log.warn("Saga order={} closed — order already {} at stock.reserved",
+                    order.getId(), order.getStatus());
+            return;
+        }
         if (!event.success()) {
             fail(saga, order, "Hết hàng: " + event.failedSku());
             return;
@@ -72,20 +86,28 @@ public class OrderSagaOrchestrator {
     public void onPaymentResult(PaymentEvents.PaymentResultEvent event) {
         SagaState saga = sagaRepository.findByOrderId(event.orderId()).orElseThrow();
         Order order = orderRepository.findById(event.orderId()).orElseThrow();
+        // Idempotency: duplicate payment.result hoặc saga đã đóng → bỏ qua.
+        if (saga.getStatus() != SagaStatus.IN_PROGRESS) {
+            log.warn("Ignore payment.result for closed saga order={}", event.orderId());
+            return;
+        }
+        // Đơn đã bị hủy trước khi có kết quả thanh toán → trả kho, không confirm.
+        if (order.getStatus() != OrderStatus.PENDING) {
+            publishStockRelease(order);
+            saga.fail("Order no longer PENDING when payment settled: " + order.getStatus());
+            sagaRepository.save(saga);
+            log.warn("Saga order={} closed — order already {} at payment.result",
+                    order.getId(), order.getStatus());
+            return;
+        }
         if (!event.success()) {
             // compensate: trả kho
-            List<StockEvents.Item> items = order.getItems().stream()
-                    .map(i -> new StockEvents.Item(i.getSku(), i.getQuantity())).toList();
-            rabbit.convertAndSend(RabbitTopics.STOCK_EXCHANGE, RabbitTopics.RK_STOCK_RELEASE,
-                    new StockEvents.StockReleaseEvent(order.getId(), items));
+            publishStockRelease(order);
             fail(saga, order, "Thanh toán thất bại");
             return;
         }
         if (!redeemVoucherIfNeeded(order)) {
-            List<StockEvents.Item> items = order.getItems().stream()
-                    .map(i -> new StockEvents.Item(i.getSku(), i.getQuantity())).toList();
-            rabbit.convertAndSend(RabbitTopics.STOCK_EXCHANGE, RabbitTopics.RK_STOCK_RELEASE,
-                    new StockEvents.StockReleaseEvent(order.getId(), items));
+            publishStockRelease(order);
             fail(saga, order, "Cannot redeem voucher");
             return;
         }
@@ -97,13 +119,48 @@ public class OrderSagaOrchestrator {
         log.info("Saga completed order={}", order.getId());
     }
 
+    /**
+     * Compensation khi customer hủy đơn PENDING (F09/SRS §2.3): nếu saga đã vượt qua
+     * bước RESERVE_STOCK thì kho đã bị trừ → publish stock.release, rồi đóng saga.
+     * Trường hợp saga còn ở RESERVE_STOCK, onStockReserved sẽ tự trả kho khi thấy đơn đã hủy.
+     */
+    @Transactional
+    public void compensateCustomerCancel(Order order, String reason) {
+        SagaState saga = sagaRepository.findByOrderId(order.getId()).orElse(null);
+        if (saga == null || saga.getStatus() != SagaStatus.IN_PROGRESS) return;
+        if (saga.getCurrentStep() != SagaStep.RESERVE_STOCK) {
+            publishStockRelease(order);
+        }
+        saga.fail("Customer cancelled: " + reason);
+        sagaRepository.save(saga);
+        log.info("Saga order={} closed by customer cancel, stock compensated", order.getId());
+    }
+
     private void fail(SagaState saga, Order order, String reason) {
         saga.fail(reason);
         sagaRepository.save(saga);
-        order.cancel(reason, null); // changedBy null = system/saga (OSL-04)
-        orderRepository.save(order);
-        orderEventPort.orderCancelled(order, reason);
+        // Đơn có thể đã CANCELLED bởi luồng khác — cancel() sẽ throw ở terminal state.
+        if (order.getStatus() == OrderStatus.PENDING || order.getStatus() == OrderStatus.CONFIRMED) {
+            order.cancel(reason, null); // changedBy null = system/saga (OSL-04)
+            orderRepository.save(order);
+            orderEventPort.orderCancelled(order, reason);
+        }
         log.warn("Saga failed order={} reason={}", order.getId(), reason);
+    }
+
+    private void publishStockReserve(Order order) {
+        rabbit.convertAndSend(RabbitTopics.STOCK_EXCHANGE, RabbitTopics.RK_STOCK_RESERVE,
+                new StockEvents.StockReserveEvent(order.getId(), toItems(order)));
+    }
+
+    private void publishStockRelease(Order order) {
+        rabbit.convertAndSend(RabbitTopics.STOCK_EXCHANGE, RabbitTopics.RK_STOCK_RELEASE,
+                new StockEvents.StockReleaseEvent(order.getId(), toItems(order)));
+    }
+
+    private static List<StockEvents.Item> toItems(Order order) {
+        return order.getItems().stream()
+                .map(i -> new StockEvents.Item(i.getSku(), i.getQuantity())).toList();
     }
 
     private boolean redeemVoucherIfNeeded(Order order) {

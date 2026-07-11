@@ -3,6 +3,7 @@ package com.cartzilla.order.application.usecase;
 import com.cartzilla.order.application.command.OrderCommand;
 import com.cartzilla.order.domain.entity.Order;
 import com.cartzilla.order.domain.entity.OrderItem;
+import com.cartzilla.order.domain.repository.CartRepository;
 import com.cartzilla.order.domain.repository.OrderRepository;
 import com.cartzilla.order.domain.vo.PaymentMethod;
 import com.cartzilla.order.infrastructure.feign.ProductFeignClient;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class CheckoutUseCase {
 
     private final OrderRepository orderRepository;
+    private final CartRepository cartRepository;
     private final OrderSagaOrchestrator sagaOrchestrator;
     private final ProductFeignClient productFeignClient;
     private final UserFeignClient userFeignClient;
@@ -57,7 +59,15 @@ public class CheckoutUseCase {
         Order order = Order.create(userId, paymentMethod, shippingAddress, items, discount, voucherCode, null);
         Order saved = orderRepository.save(order);
         sagaOrchestrator.start(saved);
+        // F05/BR-O01: các dòng giỏ đã đặt phải được xóa khỏi cart sau khi tạo order,
+        // tránh khách đặt trùng lại chính các sản phẩm vừa mua.
+        clearOrderedCartLines(userId, items);
         return saved.getId();
+    }
+
+    private void clearOrderedCartLines(UUID userId, List<OrderItem> items) {
+        items.forEach(item -> cartRepository.findByUserIdAndSku(userId, item.getSku())
+                .ifPresent(cartRepository::remove));
     }
 
     /**

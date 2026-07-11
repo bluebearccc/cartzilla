@@ -1,6 +1,7 @@
 package com.cartzilla.order.application.usecase;
 
 import com.cartzilla.order.application.command.OrderCommand;
+import com.cartzilla.order.domain.repository.CartRepository;
 import com.cartzilla.order.domain.repository.OrderRepository;
 import com.cartzilla.order.domain.vo.PaymentMethod;
 import com.cartzilla.order.infrastructure.feign.ProductFeignClient;
@@ -26,11 +27,13 @@ import static org.mockito.Mockito.when;
 class CheckoutUseCaseTest {
 
     private final OrderRepository orderRepository = mock(OrderRepository.class);
+    private final CartRepository cartRepository = mock(CartRepository.class);
     private final OrderSagaOrchestrator sagaOrchestrator = mock(OrderSagaOrchestrator.class);
     private final ProductFeignClient productFeignClient = mock(ProductFeignClient.class);
     private final UserFeignClient userFeignClient = mock(UserFeignClient.class);
     private final CheckoutUseCase useCase = new CheckoutUseCase(
             orderRepository,
+            cartRepository,
             sagaOrchestrator,
             productFeignClient,
             userFeignClient,

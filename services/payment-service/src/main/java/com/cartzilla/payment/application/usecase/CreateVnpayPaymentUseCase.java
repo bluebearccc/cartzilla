@@ -35,15 +35,22 @@ public class CreateVnpayPaymentUseCase {
     public Result execute(UUID orderId, UUID userId, BigDecimal clientAmount, String orderInfo, String ipAddr) {
         if (orderId == null) throw new BusinessException("orderId is required");
 
-        Payment payment = paymentRepository.findByOrderId(orderId).orElse(null);
-        if (payment == null) {
-            OrderFeignClient.OrderPaymentInfo info = resolveOrderInfo(orderId, userId);
+        // Luôn xác thực với order-service: ownership, phương thức, và đơn còn chờ thanh toán.
+        // Chặn trường hợp khách mở lại URL cũ để trả tiền cho đơn đã hủy/đã xác nhận.
+        OrderFeignClient.OrderPaymentInfo info = resolveOrderInfo(orderId, userId);
+        if (!"VNPAY".equalsIgnoreCase(info.paymentMethod())) {
             // Phương thức thanh toán chốt tại lúc đặt hàng: đơn COD KHÔNG được trả VNPay.
             // Muốn đổi kiểu thanh toán thì phải hủy đơn và đặt lại.
-            if (!"VNPAY".equalsIgnoreCase(info.paymentMethod())) {
-                throw new BusinessException("Đơn hàng này đã chọn thanh toán " + info.paymentMethod()
-                        + ". Muốn thanh toán bằng VNPay, vui lòng hủy đơn và đặt lại.");
-            }
+            throw new BusinessException("Đơn hàng này đã chọn thanh toán " + info.paymentMethod()
+                    + ". Muốn thanh toán bằng VNPay, vui lòng hủy đơn và đặt lại.");
+        }
+        if (info.status() != null && !"PENDING".equalsIgnoreCase(info.status())) {
+            throw new BusinessException("Đơn hàng đang ở trạng thái " + info.status()
+                    + ", không thể thanh toán VNPay nữa.");
+        }
+
+        Payment payment = paymentRepository.findByOrderId(orderId).orElse(null);
+        if (payment == null) {
             // SECURITY: amount = tổng đơn thật từ order-service, bỏ qua clientAmount.
             payment = Payment.create(orderId, userId, PaymentMethod.VNPAY, info.amount());
             payment.attachVnpayRef(generateTxnRef());

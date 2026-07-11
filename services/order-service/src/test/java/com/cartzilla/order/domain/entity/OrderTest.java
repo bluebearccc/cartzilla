@@ -48,7 +48,8 @@ class OrderTest {
         UUID staff = UUID.randomUUID();
         o.confirm(staff);
         assertEquals(OrderStatus.CONFIRMED, o.getStatus());
-        assertEquals(PaymentStatus.PAID, o.getPaymentStatus());
+        // BR-PY07: COD giữ PENDING khi CONFIRMED, chỉ PAID khi DELIVERED
+        assertEquals(PaymentStatus.PENDING, o.getPaymentStatus());
         assertNotNull(o.getConfirmedAt());
 
         o.ship(staff);
@@ -59,6 +60,17 @@ class OrderTest {
         assertEquals(PaymentStatus.PAID, o.getPaymentStatus()); // COD delivered → PAID
 
         assertEquals(3, o.getStatusLogs().size()); // OA-08 append-only
+    }
+
+    @Test
+    void confirm_vnpayOrder_marksPaid_BRPY07() {
+        OrderItem item = OrderItem.create(UUID.randomUUID(), "SKU-1", "Áo", null,
+                "M", "Đen", new BigDecimal("100000"), 1);
+        Order o = Order.create(UUID.randomUUID(), PaymentMethod.VNPAY, ADDR,
+                List.of(item), BigDecimal.ZERO, null, null);
+        // Saga chỉ confirm đơn VNPay sau callback success → PAID ngay tại confirm
+        o.confirm(null);
+        assertEquals(PaymentStatus.PAID, o.getPaymentStatus());
     }
 
     @Test

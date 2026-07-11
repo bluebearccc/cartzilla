@@ -141,7 +141,9 @@ public class Order extends BaseEntity {
             throw new BusinessException("confirmedAt cannot be before createdAt (OA-05)");
         this.confirmedAt = now;
         transitionTo(OrderStatus.CONFIRMED, changedBy, "Order confirmed");
-        this.paymentStatus = PaymentStatus.PAID;
+        // BR-PY07: VNPay confirm chỉ xảy ra sau callback success → PAID.
+        // COD giữ PENDING đến khi DELIVERED (deliver() mới chuyển PAID).
+        if (paymentMethod == PaymentMethod.VNPAY) this.paymentStatus = PaymentStatus.PAID;
     }
 
     /** OA-S2: CONFIRMED → SHIPPING (STAFF/ADMIN only — role check ở application layer) */

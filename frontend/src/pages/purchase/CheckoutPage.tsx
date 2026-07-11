@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { useCart } from '@/store/cart';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CART_QUERY_KEY, useCart } from '@/store/cart';
 import { userApi } from '@/services/user';
 import { orderApi } from '@/services/order';
 import { voucherApi } from '@/services/payment';
@@ -19,6 +19,7 @@ import { cn } from '@/lib/cn';
 export function CheckoutPage() {
   const navigate = useNavigate();
   const toast = useToast();
+  const qc = useQueryClient();
   const { cart, isLoading } = useCart();
   const { data: addresses } = useQuery({ queryKey: ['addresses'], queryFn: userApi.listAddresses });
 
@@ -94,8 +95,10 @@ export function CheckoutPage() {
         paymentMethod: method,
         voucherCode: voucher?.valid ? voucher.code : null,
       });
+      // Server đã xóa các dòng giỏ vừa đặt — refetch để badge/cart cập nhật ngay.
+      qc.invalidateQueries({ queryKey: CART_QUERY_KEY });
       if (method === 'VNPAY') {
-        navigate(`/checkout/payment?orderId=${orderId}&amount=${total}`);
+        navigate(`/checkout/payment?orderId=${orderId}`);
       } else {
         toast.success('Đặt hàng thành công');
         navigate(`/orders/${orderId}`);

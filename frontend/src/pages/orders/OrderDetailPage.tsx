@@ -54,6 +54,9 @@ export function OrderDetailPage() {
   const ship = parseShipping(order.shippingAddress);
   const cancelled = order.status === 'CANCELLED';
   const currentStepIdx = TIMELINE.findIndex((t) => t.status === order.status);
+  // Đơn VNPay đặt xong nhưng khách chưa/bỏ dở thanh toán → cho thanh toán lại.
+  const awaitingVnpay =
+    order.status === 'PENDING' && order.paymentMethod === 'VNPAY' && order.paymentStatus === 'PENDING';
 
   const submitCancel = () => {
     if (!reason.trim()) {
@@ -77,10 +80,24 @@ export function OrderDetailPage() {
           <OrderStatusChip status={order.status} />
           <span className="text-sm text-ink-muted">{formatDateTime(order.createdAt)}</span>
         </div>
-        {order.status === 'PENDING' && (
-          <Button variant="danger" onClick={() => setCancelOpen(true)}>Hủy đơn</Button>
-        )}
+        <div className="flex items-center gap-2">
+          {awaitingVnpay && (
+            <Link to={`/checkout/payment?orderId=${order.id}`}>
+              <Button>Thanh toán VNPay</Button>
+            </Link>
+          )}
+          {order.status === 'PENDING' && (
+            <Button variant="danger" onClick={() => setCancelOpen(true)}>Hủy đơn</Button>
+          )}
+        </div>
       </div>
+
+      {awaitingVnpay && (
+        <div className="flex items-center gap-3 rounded-lg bg-warning-tint px-4 py-3 text-sm text-warning">
+          <Icon name="schedule" />
+          <p>Đơn hàng đang chờ thanh toán VNPay. Vui lòng hoàn tất thanh toán để đơn được xác nhận.</p>
+        </div>
+      )}
 
       {/* Timeline */}
       <Card>
