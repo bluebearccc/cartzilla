@@ -17,20 +17,20 @@ export function OAuthCallbackPage() {
     // Backend redirects with tokens in the URL fragment (#) so they never hit server logs.
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
-    const token = hashParams.get('accessToken');
-    const refreshToken = hashParams.get('refreshToken');
-    const email = hashParams.get('email');
-    const role = hashParams.get('role');
+    const token = hashParams.get('accessToken') || searchParams.get('accessToken');
+    const refreshToken = hashParams.get('refreshToken') || searchParams.get('refreshToken');
+    const email = hashParams.get('email') || searchParams.get('email');
+    const role = hashParams.get('role') || searchParams.get('role');
 
     if (token && refreshToken && email && role) {
+      if (ran.current) return;
+      ran.current = true;
       const session = setSessionFromTokens({
         accessToken: token,
         refreshToken,
         email,
         role: role as any,
       });
-      // Strip the tokens from the address bar once consumed.
-      window.history.replaceState(null, '', window.location.pathname);
       navigate(session.role === 'STAFF' || session.role === 'ADMIN' ? '/staff/orders' : '/', { replace: true });
       return;
     }
@@ -49,6 +49,13 @@ export function OAuthCallbackPage() {
           navigate(session.role === 'STAFF' || session.role === 'ADMIN' ? '/staff/orders' : '/', { replace: true });
         })
         .catch(() => setError('Đăng nhập Google thất bại. Vui lòng thử lại.'));
+      return;
+    }
+
+    // Check for explicit error from Google (e.g. access_denied)
+    const oauthError = searchParams.get('error');
+    if (oauthError) {
+      setError(`Lỗi từ Google: ${oauthError}`);
       return;
     }
 
