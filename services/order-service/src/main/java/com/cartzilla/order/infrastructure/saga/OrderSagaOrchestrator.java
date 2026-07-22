@@ -25,7 +25,8 @@ import java.util.List;
 
 /**
  * Saga orchestrator: RESERVE_STOCK → PROCESS_PAYMENT → DONE (+ compensate khi fail).
- * COD: auto-process payment qua MQ. VNPAY: chờ payment.result từ VNPay callback (UC-07).
+ * COD: auto-process payment qua MQ, nhưng đơn GIỮ PENDING — staff xác nhận thủ công (UC-04).
+ * VNPAY: chờ payment.result từ VNPay callback (UC-07), thanh toán thành công → auto CONFIRMED.
  */
 @Slf4j
 @Service
@@ -126,6 +127,15 @@ public class OrderSagaOrchestrator {
             fail(saga, order, "Cannot redeem voucher");
             return;
         }
+        // COD: kho đã giữ + payment COD đã tạo, nhưng đơn KHÔNG tự xác nhận.
+        // Đơn ở lại PENDING chờ staff xác nhận thủ công (UC-04) — chỉ VNPAY mới auto-confirm
+        // vì khách đã trả tiền thật.
+        if (order.getPaymentMethod() == PaymentMethod.COD) {
+            saga.complete();
+            sagaRepository.save(saga);
+            log.info("Saga completed order={} — COD giữ PENDING chờ staff xác nhận", order.getId());
+            return;
+        }
         order.confirm(null); // changedBy null = system/saga (OSL-04)
         orderRepository.save(order);
         saga.complete();
@@ -138,18 +148,22 @@ public class OrderSagaOrchestrator {
      * Compensation khi customer hủy đơn PENDING (F09/SRS §2.3): nếu saga đã vượt qua
      * bước RESERVE_STOCK thì kho đã bị trừ → publish stock.release, rồi đóng saga.
      * Trường hợp saga còn ở RESERVE_STOCK, onStockReserved sẽ tự trả kho khi thấy đơn đã hủy.
+     * Đơn COD PENDING có saga đã COMPLETED (kho đã giữ, voucher đã redeem) — vẫn phải compensate.
      */
     @Transactional
     public void compensateCustomerCancel(Order order, String reason) {
         SagaState saga = sagaRepository.findByOrderId(order.getId()).orElse(null);
-        if (saga == null || saga.getStatus() != SagaStatus.IN_PROGRESS) return;
+        // Chưa start hoặc đã compensate rồi (FAILED) → không làm gì.
+        if (saga == null || saga.getStatus() == SagaStatus.FAILED) return;
         afterCommit(() -> publishStockRelease(order));
         afterCommit(() -> releaseVoucherIfNeeded(order));
         if (order.getPaymentMethod() == PaymentMethod.VNPAY && order.getPaymentStatus() == com.cartzilla.order.domain.vo.PaymentStatus.PAID) {
             afterCommit(() -> publishPaymentRefund(order, "Customer cancelled: " + reason));
         }
-        saga.fail("Customer cancelled: " + reason);
-        sagaRepository.save(saga);
+        if (saga.getStatus() == SagaStatus.IN_PROGRESS) {
+            saga.fail("Customer cancelled: " + reason);
+            sagaRepository.save(saga);
+        }
         log.info("Saga order={} closed by customer cancel, stock compensated", order.getId());
     }
 

@@ -12,8 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * F08 — UC-07 COD qua Saga: tạo Payment COD trạng thái PENDING (BR-PY01) và báo success
- * để order chuyển CONFIRMED (COD accepted — BR-O09). Payment chỉ chuyển PAID khi order
- * DELIVERED (BR-PY07, xử lý ở MarkCodPaidUseCase). Idempotent theo orderId khi Saga retry.
+ * để Saga đóng thành công (COD accepted). Đơn KHÔNG tự chuyển CONFIRMED — giữ PENDING chờ
+ * staff xác nhận (UC-04). Payment chỉ chuyển PAID khi order DELIVERED (BR-PY07,
+ * xử lý ở MarkCodPaidUseCase). Idempotent theo orderId khi Saga retry.
  */
 @Service
 @RequiredArgsConstructor
@@ -37,7 +38,7 @@ public class ProcessPaymentUseCase {
             return new PaymentEvents.PaymentResultEvent(event.orderId(), false, null);
         }
 
-        // COD: giữ PENDING; Saga xác nhận đơn (COD accepted).
+        // COD: payment giữ PENDING; Saga đóng nhưng đơn vẫn PENDING chờ staff xác nhận.
         paymentRepository.save(payment);
         return new PaymentEvents.PaymentResultEvent(event.orderId(), true, "COD-" + payment.getOrderId());
     }
