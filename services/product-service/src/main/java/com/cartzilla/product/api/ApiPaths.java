@@ -10,5 +10,6 @@ public final class ApiPaths {
     public static final String ADMIN_PRODUCTS    = "/api/admin/products";
     public static final String ADMIN_CATEGORIES  = "/api/admin/categories";
     public static final String ADMIN_VENDORS     = "/api/admin/vendors";
+    public static final String ADMIN_MEDIA       = "/api/admin/media";
     public static final String INTERNAL_PRODUCTS = "/api/internal/products";
 }

@@ -28,7 +28,7 @@ spring:
             - id: product-service-admin
               uri: lb://PRODUCT-SERVICE
               predicates:
-                - Path=/api/admin/products,/api/admin/products/**,/api/admin/categories,/api/admin/categories/**,/api/admin/vendors,/api/admin/vendors/**
+                - Path=/api/admin/products,/api/admin/products/**,/api/admin/categories,/api/admin/categories/**,/api/admin/vendors,/api/admin/vendors/**,/api/admin/media,/api/admin/media/**
               filters:
                 - JwtAuth
             - id: product-service

@@ -181,6 +181,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       RABBITMQ_HOST: rabbitmq
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-demo}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-123456789012345}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-demo_secret}
     depends_on:
       postgres-product:
         condition: service_healthy

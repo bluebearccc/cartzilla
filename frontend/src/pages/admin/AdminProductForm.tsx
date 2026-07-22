@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminProductApi, type CreateProductPayload, type ImagePayload, type VariantPayload } from '@/services/admin';
 import { catalogApi } from '@/services/catalog';
 import { Card } from '@/components/ui/Card';
@@ -29,6 +29,7 @@ export function AdminProductForm() {
   const isEdit = !!id;
   const navigate = useNavigate();
   const toast = useToast();
+  const qc = useQueryClient();
 
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: catalogApi.getCategories });
   const { data: vendors } = useQuery({ queryKey: ['vendors'], queryFn: catalogApi.getVendors });
@@ -49,6 +50,7 @@ export function AdminProductForm() {
   const [images, setImages] = useState<ImagePayload[]>([]);
   const [imageUrl, setImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (existing) {
@@ -59,7 +61,7 @@ export function AdminProductForm() {
       setDescription(existing.description ?? '');
       setBasePrice(existing.basePrice);
       setVariants(existing.variants.map((v) => ({ sku: v.sku, size: v.size ?? '', color: v.color ?? '', colorHex: v.colorHex ?? '#000000', price: v.price, stock: v.stock })));
-      setImages(existing.images.map((im) => ({ imageUrl: im.imageUrl, altText: im.altText ?? '', isPrimary: im.isPrimary, sortOrder: im.sortOrder })));
+      setImages(existing.images.map((im) => ({ id: im.id, imageUrl: im.imageUrl, altText: im.altText ?? '', isPrimary: im.isPrimary, sortOrder: im.sortOrder })));
     }
   }, [existing]);
 
@@ -81,6 +83,29 @@ export function AdminProductForm() {
     if (!imageUrl.trim()) return;
     setImages((ims) => [...ims, { imageUrl: imageUrl.trim(), altText: name, isPrimary: ims.length === 0, sortOrder: ims.length }]);
     setImageUrl('');
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const res = await adminProductApi.uploadImage(file);
+        setImages((ims) => [
+          ...ims,
+          { imageUrl: res.url, altText: name || file.name, isPrimary: ims.length === 0, sortOrder: ims.length },
+        ]);
+      }
+      toast.success('Đã tải ảnh lên Cloudinary');
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'Upload ảnh thất bại');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
   const setPrimary = (i: number) => setImages((ims) => ims.map((im, idx) => ({ ...im, isPrimary: idx === i })));
   const removeImage = (i: number) => setImages((ims) => ims.filter((_, idx) => idx !== i).map((im, idx) => ({ ...im, sortOrder: idx })));
@@ -107,9 +132,42 @@ export function AdminProductForm() {
           categoryId, vendorId: vendorId || null, name, slug, description,
           basePrice: payload.basePrice, active: true,
         });
+
+        // Sync deleted images
+        if (existing?.images) {
+          const currentIds = new Set(images.map((im) => im.id).filter(Boolean));
+          for (const origImg of existing.images) {
+            if (!currentIds.has(origImg.id)) {
+              await adminProductApi.deleteImage(id!, origImg.id);
+            }
+          }
+        }
+
+        // Add new images or update primary status
+        for (const img of images) {
+          if (!img.id) {
+            await adminProductApi.addImage(id!, {
+              imageUrl: img.imageUrl,
+              altText: img.altText,
+              isPrimary: img.isPrimary,
+              sortOrder: img.sortOrder,
+            });
+          } else if (img.isPrimary) {
+            const orig = existing?.images.find((o) => o.id === img.id);
+            if (orig && !orig.isPrimary) {
+              await adminProductApi.setPrimaryImage(id!, img.id);
+            }
+          }
+        }
+
+        await qc.invalidateQueries({ queryKey: ['admin-product', id] });
+        await qc.invalidateQueries({ queryKey: ['admin-products'] });
+        await qc.invalidateQueries({ queryKey: ['products'] });
         toast.success('Đã cập nhật sản phẩm');
       } else {
         await adminProductApi.create(payload);
+        await qc.invalidateQueries({ queryKey: ['admin-products'] });
+        await qc.invalidateQueries({ queryKey: ['products'] });
         toast.success('Đã tạo sản phẩm');
       }
       navigate('/admin/products');
@@ -178,22 +236,39 @@ export function AdminProductForm() {
           </Card>
 
           <Card title="Hình ảnh">
-            <div className="flex gap-2">
-              <Input placeholder="Dán URL ảnh..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-              <Button variant="secondary" onClick={addImage}>Thêm ảnh</Button>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
-              {images.map((im, i) => (
-                <div key={i} className={`relative overflow-hidden rounded-lg border-2 ${im.isPrimary ? 'border-brand' : 'border-border'}`}>
-                  <img src={im.imageUrl} alt="" className="aspect-square w-full object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-ink/60 px-1.5 py-1">
-                    <label className="flex items-center gap-1 text-[11px] text-white">
-                      <input type="radio" name="primary" checked={im.isPrimary} onChange={() => setPrimary(i)} /> Chính
-                    </label>
-                    <button onClick={() => removeImage(i)} className="text-white hover:text-danger"><Icon name="close" className="text-[16px]" /></button>
-                  </div>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-black px-3.5 py-2 text-sm font-medium text-white hover:bg-black/80 transition-colors shadow-sm">
+                  <Icon name="upload" className="text-[18px]" />
+                  {uploading ? 'Đang tải lên...' : 'Tải ảnh từ máy'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={uploading}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+                <span className="text-xs text-ink-muted">hoặc</span>
+                <div className="flex flex-1 gap-2 min-w-[240px]">
+                  <Input placeholder="Dán URL ảnh..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+                  <Button variant="secondary" onClick={addImage}>Thêm link</Button>
                 </div>
-              ))}
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {images.map((im, i) => (
+                  <div key={i} className={`relative overflow-hidden rounded-lg border-2 ${im.isPrimary ? 'border-brand' : 'border-border'}`}>
+                    <img src={im.imageUrl} alt="" className="aspect-square w-full object-cover" />
+                    <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-ink/60 px-1.5 py-1">
+                      <label className="flex items-center gap-1 text-[11px] text-white">
+                        <input type="radio" name="primary" checked={im.isPrimary} onChange={() => setPrimary(i)} /> Chính
+                      </label>
+                      <button onClick={() => removeImage(i)} className="text-white hover:text-danger"><Icon name="close" className="text-[16px]" /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </Card>
         </div>

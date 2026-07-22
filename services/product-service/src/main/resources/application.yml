@@ -43,3 +43,8 @@ management:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:demo}
+  api-key: ${CLOUDINARY_API_KEY:123456789012345}
+  api-secret: ${CLOUDINARY_API_SECRET:demo_secret}

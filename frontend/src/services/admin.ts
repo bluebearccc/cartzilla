@@ -39,6 +39,7 @@ export interface VariantPayload {
   stock: number;
 }
 export interface ImagePayload {
+  id?: string;
   imageUrl: string;
   altText?: string;
   isPrimary: boolean;
@@ -68,6 +69,13 @@ export const adminProductApi = {
   addImage: (id: string, body: ImagePayload) => api.post<ProductDetail>(`/admin/products/${id}/images`, body),
   setPrimaryImage: (id: string, imageId: string) => api.put<ProductDetail>(`/admin/products/${id}/images/${imageId}/primary`),
   deleteImage: (id: string, imageId: string) => api.del<ProductDetail>(`/admin/products/${id}/images/${imageId}`),
+  uploadImage: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<{ url: string; publicId: string }>('/admin/media/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 export const adminCategoryApi = {
