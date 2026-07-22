@@ -3,9 +3,9 @@
     "name": "gmail",
     "host": "smtp.gmail.com",
     "port": "587",
-    "email": "thesondayne@gmail.com",
-    "username": "thesondayne@gmail.com",
-    "password": "ecgeltooxxdhhvmt",
+    "email": "",
+    "username": "",
+    "password": "",
     "mechanism": "PLAIN"
   }
 }

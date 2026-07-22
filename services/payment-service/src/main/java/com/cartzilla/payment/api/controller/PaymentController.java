@@ -72,6 +72,26 @@ public class PaymentController {
     }
 
     /**
+     * VNPay server-to-server IPN. This endpoint must be configured in the VNPay merchant portal;
+     * it deliberately returns the provider's JSON acknowledgement instead of a browser redirect.
+     */
+    @RequestMapping(value = "/vnpay/ipn", method = {RequestMethod.GET, RequestMethod.POST})
+    public Map<String, String> vnpayIpn(@RequestParam Map<String, String> params) {
+        try {
+            VnpayCallbackUseCase.Result result = vnpayCallbackUseCase.execute(params);
+            if (result.idempotent() || result.success()
+                    || (result.payment() != null && !"04".equals(result.code()))) {
+                return Map.of("RspCode", "00", "Message", result.message());
+            }
+            return Map.of("RspCode", result.code() == null ? "99" : result.code(), "Message", result.message());
+        } catch (NoSuchElementException ex) {
+            return Map.of("RspCode", "01", "Message", "Order not found");
+        } catch (Exception ex) {
+            return Map.of("RspCode", "99", "Message", "Internal error");
+        }
+    }
+
+    /**
      * GET /api/payments/{orderId} — trạng thái payment + audit transactions.
      * Chỉ chủ đơn (X-User-Id khớp payment.userId) hoặc STAFF/ADMIN mới xem được,
      * tránh lộ số tiền/mã giao dịch của đơn người khác qua orderId.

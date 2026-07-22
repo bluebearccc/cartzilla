@@ -3,6 +3,7 @@ package com.cartzilla.payment.domain.entity;
 import com.cartzilla.payment.domain.vo.PaymentMethod;
 import com.cartzilla.payment.domain.vo.PaymentStatus;
 import com.cartzilla.payment.domain.vo.TransactionType;
+import com.cartzilla.payment.domain.vo.TransactionStatus;
 import com.cartzilla.web.base.BaseEntity;
 import com.cartzilla.web.exception.BusinessException;
 import jakarta.persistence.*;
@@ -83,7 +84,8 @@ public class Payment extends BaseEntity {
         p.method = method;
         p.amount = amount;
         p.status = PaymentStatus.PENDING;
-        p.addTransaction(TransactionType.INIT, amount, null, null);
+        p.addTransaction(TransactionType.INIT, amount, null,
+                TransactionStatus.PENDING, null, null);
         return p;
     }
 
@@ -98,19 +100,33 @@ public class Payment extends BaseEntity {
         if (getCreatedAt() != null && now.isBefore(getCreatedAt()))
             throw new BusinessException("paidAt cannot be before createdAt (PYA-04/BR-G06)");
         this.paidAt = now;
-        addTransaction(TransactionType.PAY, amount, txnRef, "SUCCESS");
+        addTransaction(TransactionType.PAY, amount, txnRef,
+                TransactionStatus.SUCCESS, null, null);
     }
 
     public void markFailed(String errorMessage) {
         this.status = PaymentStatus.FAILED;
-        addTransaction(TransactionType.CALLBACK, amount, null, "FAILED: " + errorMessage);
+        addTransaction(TransactionType.CALLBACK, amount, null,
+                TransactionStatus.FAILED, "PAYMENT_FAILED", errorMessage);
     }
 
     public void markRefunded(String txnRef) {
+        if (status == PaymentStatus.REFUNDED) return; // retry-safe compensation
         if (status != PaymentStatus.PAID)
             throw new BusinessException("Can only refund a PAID payment");
         this.status = PaymentStatus.REFUNDED;
-        addTransaction(TransactionType.REFUND, amount, txnRef, "REFUNDED");
+        addTransaction(TransactionType.REFUND, amount, txnRef,
+                TransactionStatus.SUCCESS, null, null);
+    }
+
+    /** Provider transaction number used by VNPay Query/Refund. */
+    public String latestProviderTxnRef() {
+        return transactions.stream()
+                .filter(t -> t.getTransactionType() == TransactionType.PAY
+                        && t.getStatus() == TransactionStatus.SUCCESS)
+                .reduce((first, second) -> second)
+                .map(PaymentTransaction::getProviderTxnRef)
+                .orElse(null);
     }
 
     /** VNPAY: gắn mã giao dịch của ta (vnp_TxnRef) khi khởi tạo redirect (PYA-05). */
@@ -118,6 +134,17 @@ public class Payment extends BaseEntity {
         if (method != PaymentMethod.VNPAY)
             throw new BusinessException("attachVnpayRef chỉ áp dụng cho VNPAY");
         this.vnpayTxnRef = ourTxnRef;
+    }
+
+    /** Start a fresh VNPay attempt after a failed/cancelled provider flow. */
+    public void prepareVnpayRetry(String ourTxnRef) {
+        if (method != PaymentMethod.VNPAY || status != PaymentStatus.FAILED)
+            throw new BusinessException("Only a FAILED VNPay payment can be retried");
+        this.status = PaymentStatus.PENDING;
+        this.vnpayTxnRef = ourTxnRef;
+        this.vnpayResponse = null;
+        addTransaction(TransactionType.INIT, amount, null,
+                TransactionStatus.PENDING, null, null);
     }
 
     /** VNPAY success callback — giữ vnpayTxnRef (ref của ta), ghi providerTxnRef vào transaction (BR-PY06/BR-PY07). */
@@ -130,14 +157,16 @@ public class Payment extends BaseEntity {
         if (getCreatedAt() != null && now.isBefore(getCreatedAt()))
             throw new BusinessException("paidAt cannot be before createdAt (PYA-04/BR-G06)");
         this.paidAt = now;
-        addTransaction(TransactionType.PAY, amount, providerTxnRef, "SUCCESS");
+        addTransaction(TransactionType.PAY, amount, providerTxnRef,
+                TransactionStatus.SUCCESS, null, null);
     }
 
     /** VNPAY failed callback (BR-PY07). */
     public void settleVnpayFailed(String providerTxnRef, String errorMessage, String responseJson) {
         this.status = PaymentStatus.FAILED;
         this.vnpayResponse = responseJson;
-        addTransaction(TransactionType.CALLBACK, amount, providerTxnRef, "FAILED: " + errorMessage);
+        addTransaction(TransactionType.CALLBACK, amount, providerTxnRef,
+                TransactionStatus.FAILED, errorMessage, "VNPay callback failed: " + errorMessage);
     }
 
     /** COD: chuyển PAID khi order DELIVERED (BR-PY07); idempotent. */
@@ -149,13 +178,15 @@ public class Payment extends BaseEntity {
             throw new BusinessException("COD payment phải ở PENDING để chuyển PAID (hiện tại: " + status + ")");
         this.status = PaymentStatus.PAID;
         this.paidAt = Instant.now();
-        addTransaction(TransactionType.PAY, amount, null, "COD_DELIVERED");
+        addTransaction(TransactionType.PAY, amount, null,
+                TransactionStatus.SUCCESS, null, null);
     }
 
     /** PYA-06: append-only */
     public void addTransaction(TransactionType type, BigDecimal txnAmount,
-                                 String providerTxnRef, String rawStatus) {
+                               String providerTxnRef, TransactionStatus status,
+                               String errorCode, String errorMessage) {
         transactions.add(PaymentTransaction.create(this, orderId, type, method.name(),
-                providerTxnRef, txnAmount, rawStatus));
+                providerTxnRef, txnAmount, status, errorCode, errorMessage));
     }
 }

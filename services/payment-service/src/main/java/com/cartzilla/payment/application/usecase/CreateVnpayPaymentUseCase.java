@@ -61,7 +61,10 @@ public class CreateVnpayPaymentUseCase {
             if (payment.getMethod() != PaymentMethod.VNPAY)
                 throw new BusinessException("Đơn hàng này đã chọn thanh toán " + payment.getMethod()
                         + ". Muốn thanh toán bằng VNPay, vui lòng hủy đơn và đặt lại.");
-            if (payment.getVnpayTxnRef() == null) {
+            if (payment.getStatus() == PaymentStatus.FAILED) {
+                payment.prepareVnpayRetry(generateTxnRef());
+                payment = paymentRepository.save(payment);
+            } else if (payment.getVnpayTxnRef() == null) {
                 payment.attachVnpayRef(generateTxnRef());
                 payment = paymentRepository.save(payment);
             }

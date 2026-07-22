@@ -15,6 +15,7 @@ public final class RabbitTopics {
     public static final String RK_STOCK_RELEASE   = "stock.release";
     public static final String RK_PAYMENT_PROCESS = "payment.process";
     public static final String RK_PAYMENT_RESULT  = "payment.result";
+    public static final String RK_PAYMENT_REFUND  = "payment.refund";
     public static final String RK_ORDER_CONFIRMED = "order.confirmed";
     public static final String RK_ORDER_CANCELLED = "order.cancelled";
     public static final String RK_ORDER_SHIPPED   = "order.shipped";
@@ -26,6 +27,7 @@ public final class RabbitTopics {
     public static final String Q_STOCK_RELEASE   = "stock.release.queue";
     public static final String Q_PAYMENT_PROCESS = "payment.process.queue";
     public static final String Q_PAYMENT_RESULT  = "payment.result.queue";
+    public static final String Q_PAYMENT_REFUND  = "payment.refund.queue";
     public static final String Q_ORDER_CONFIRMED = "order.confirmed.queue";
     public static final String Q_ORDER_CANCELLED = "order.cancelled.queue";
     public static final String Q_ORDER_SHIPPED   = "order.shipped.queue";

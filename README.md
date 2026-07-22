@@ -54,6 +54,8 @@ Google OAuth local setup: [`docs/OAUTH_GOOGLE_SETUP.md`](docs/OAUTH_GOOGLE_SETUP
 
 SMTP email setup: [`docs/SMTP_EMAIL_SETUP.md`](docs/SMTP_EMAIL_SETUP.md).
 
+Luồng kiểm thử xuôi/ngược và checklist compensation: [`docs/TEST-FLOWS.md`](docs/TEST-FLOWS.md).
+
 | Thành phần | URL |
 |---|---|
 | API Gateway | http://localhost:8080 |

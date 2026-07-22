@@ -45,4 +45,9 @@ public class VoucherRepositoryAdapter implements VoucherRepository {
     public int incrementUsedCountIfAvailable(UUID id) {
         return jpa.incrementUsedCountConditional(id);
     }
+
+    @Override
+    public int decrementUsedCountIfPositive(UUID id) {
+        return jpa.decrementUsedCountIfPositive(id);
+    }
 }

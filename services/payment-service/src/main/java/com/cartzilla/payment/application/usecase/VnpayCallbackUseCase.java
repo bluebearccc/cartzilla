@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -43,18 +45,26 @@ public class VnpayCallbackUseCase {
 
         String txnRef = params.get("vnp_TxnRef");
         String responseCode = params.get("vnp_ResponseCode");
+        String transactionStatus = params.get("vnp_TransactionStatus");
         String providerTxnNo = params.get("vnp_TransactionNo");
+
+        // Lock the payment before checking idempotency so concurrent callbacks cannot both insert
+        // the same provider transaction reference and fail on the unique constraint at commit.
+        Payment payment = paymentRepository.findByVnpayTxnRef(txnRef)
+                .orElseThrow(() -> new NoSuchElementException("Payment not found for vnp_TxnRef: " + txnRef));
 
         // Idempotency (BR-PY06/TC-21): cùng providerTxnRef đã xử lý → trả kết quả idempotent.
         if (providerTxnNo != null
                 && paymentRepository.existsTransactionByProviderTxnRef(PROVIDER, providerTxnNo)) {
-            Payment existing = paymentRepository.findByVnpayTxnRef(txnRef).orElse(null);
-            boolean paid = existing != null && existing.getStatus() == PaymentStatus.PAID;
-            return new Result(paid, responseCode, "Callback đã được xử lý trước đó", existing, true);
+            boolean paid = payment.getStatus() == PaymentStatus.PAID;
+            return new Result(paid, responseCode, "Callback đã được xử lý trước đó", payment, true);
         }
-
-        Payment payment = paymentRepository.findByVnpayTxnRef(txnRef)
-                .orElseThrow(() -> new NoSuchElementException("Payment not found for vnp_TxnRef: " + txnRef));
+        // PAID/REFUNDED are terminal. A later callback with another transaction number must not
+        // downgrade a successful payment or resurrect a refunded one.
+        if (payment.getStatus() == PaymentStatus.PAID || payment.getStatus() == PaymentStatus.REFUNDED) {
+            return new Result(payment.getStatus() == PaymentStatus.PAID, responseCode,
+                    "Payment was already finalized", payment, true);
+        }
 
         String responseJson = toJson(params);
 
@@ -66,24 +76,28 @@ public class VnpayCallbackUseCase {
         } catch (Exception ex) {
             payment.settleVnpayFailed(providerTxnNo, "INVALID_AMOUNT", responseJson);
             paymentRepository.save(payment);
-            publishResult(payment.getOrderId(), false, providerTxnNo);
+            publishResultAfterCommit(payment.getOrderId(), false, providerTxnNo);
             return new Result(false, "04", "Số tiền không hợp lệ", payment, false);
         }
         if (callbackAmount.compareTo(payment.getAmount()) != 0) {
             payment.settleVnpayFailed(providerTxnNo, "AMOUNT_MISMATCH", responseJson);
             paymentRepository.save(payment);
-            publishResult(payment.getOrderId(), false, providerTxnNo);
+            publishResultAfterCommit(payment.getOrderId(), false, providerTxnNo);
             return new Result(false, "04", "Số tiền không khớp đơn hàng", payment, false);
         }
 
-        boolean success = "00".equals(responseCode);
+        // VNPay only considers the payment successful when both fields are "00".
+        boolean success = "00".equals(responseCode) && "00".equals(transactionStatus);
         if (success) {
             payment.settleVnpaySuccess(providerTxnNo, responseJson);
         } else {
-            payment.settleVnpayFailed(providerTxnNo, "VNPAY_CODE_" + responseCode, responseJson);
+            String errorCode = !"00".equals(responseCode)
+                    ? "VNPAY_CODE_" + responseCode
+                    : "VNPAY_STATUS_" + transactionStatus;
+            payment.settleVnpayFailed(providerTxnNo, errorCode, responseJson);
         }
         paymentRepository.save(payment);
-        publishResult(payment.getOrderId(), success, providerTxnNo);
+        publishResultAfterCommit(payment.getOrderId(), success, providerTxnNo);
 
         return new Result(success, responseCode,
                 success ? "Thanh toán VNPay thành công" : "Thanh toán VNPay thất bại",
@@ -93,6 +107,20 @@ public class VnpayCallbackUseCase {
     private void publishResult(UUID orderId, boolean success, String txnId) {
         rabbit.convertAndSend(RabbitTopics.PAYMENT_EXCHANGE, RabbitTopics.RK_PAYMENT_RESULT,
                 new PaymentEvents.PaymentResultEvent(orderId, success, txnId));
+    }
+
+    /** Never let order-service act on a payment result that has not committed to the database. */
+    private void publishResultAfterCommit(UUID orderId, boolean success, String txnId) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            publishResult(orderId, success, txnId);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                publishResult(orderId, success, txnId);
+            }
+        });
     }
 
     private String toJson(Map<String, String> params) {

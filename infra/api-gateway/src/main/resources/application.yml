@@ -53,6 +53,10 @@ spring:
               uri: lb://PAYMENT-SERVICE
               predicates:
                 - Path=/api/payments/vnpay/callback
+            - id: payment-service-ipn
+              uri: lb://PAYMENT-SERVICE
+              predicates:
+                - Path=/api/payments/vnpay/ipn
             # Mọi endpoint payment còn lại (create, tra cứu trạng thái, refund) đều cần JWT:
             # gateway inject X-User-Id/X-User-Role để service enforce ownership + role.
             - id: payment-service
@@ -77,7 +81,7 @@ eureka:
     prefer-ip-address: true
 
 jwt:
-  secret: ${JWT_SECRET:dev-secret-key-change-me-please-32bytes!!}
+  secret: ${JWT_SECRET:}
 
 management:
   endpoints:

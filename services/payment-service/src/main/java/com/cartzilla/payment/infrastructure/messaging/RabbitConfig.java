@@ -22,11 +22,15 @@ public class RabbitConfig {
     @Bean public Queue orderDeliveredPaymentQueue() {
         return QueueBuilder.durable(RabbitTopics.Q_ORDER_DELIVERED_PAYMENT).build();
     }
+    @Bean public Queue paymentRefundQueue() { return QueueBuilder.durable(RabbitTopics.Q_PAYMENT_REFUND).build(); }
     @Bean public Binding bindProcess() {
         return BindingBuilder.bind(paymentProcessQueue()).to(paymentExchange()).with(RabbitTopics.RK_PAYMENT_PROCESS);
     }
     @Bean public Binding bindOrderDelivered() {
         return BindingBuilder.bind(orderDeliveredPaymentQueue()).to(orderExchange()).with(RabbitTopics.RK_ORDER_DELIVERED);
+    }
+    @Bean public Binding bindRefund() {
+        return BindingBuilder.bind(paymentRefundQueue()).to(paymentExchange()).with(RabbitTopics.RK_PAYMENT_REFUND);
     }
 
     @Bean public MessageConverter jsonConverter() { return new Jackson2JsonMessageConverter(); }

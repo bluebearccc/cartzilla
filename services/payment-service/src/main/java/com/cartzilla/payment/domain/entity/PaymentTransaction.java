@@ -1,6 +1,7 @@
 package com.cartzilla.payment.domain.entity;
 
 import com.cartzilla.payment.domain.vo.TransactionType;
+import com.cartzilla.payment.domain.vo.TransactionStatus;
 import com.cartzilla.web.base.BaseEntity;
 import com.cartzilla.web.exception.BusinessException;
 import jakarta.persistence.*;
@@ -58,8 +59,9 @@ public class PaymentTransaction extends BaseEntity {
     private String currency = "VND";
 
     /** PT-05 */
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status;
+    private TransactionStatus status;
 
     @Column(name = "request_payload", columnDefinition = "jsonb")
     @ColumnTransformer(write = "?::jsonb")
@@ -82,7 +84,8 @@ public class PaymentTransaction extends BaseEntity {
     static PaymentTransaction create(Payment payment, UUID orderId,
                                       TransactionType type, String provider,
                                       String providerTxnRef, BigDecimal amount,
-                                      String rawStatus) {
+                                      TransactionStatus status, String errorCode,
+                                      String errorMessage) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0)
             throw new BusinessException("Transaction amount must be >= 0 (PT-03)");
         if (provider == null || provider.isBlank())
@@ -95,7 +98,9 @@ public class PaymentTransaction extends BaseEntity {
         tx.providerTxnRef = providerTxnRef;
         tx.amount = amount;
         tx.currency = "VND";
-        tx.status = rawStatus != null ? rawStatus : "PENDING";
+        tx.status = status == null ? TransactionStatus.PENDING : status;
+        tx.errorCode = errorCode;
+        tx.errorMessage = errorMessage;
         tx.processedAt = Instant.now();
         return tx;
     }

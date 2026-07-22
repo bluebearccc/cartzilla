@@ -43,6 +43,9 @@ public interface UserFeignClient {
     @PostMapping("/api/internal/vouchers/redeem")
     ApiResponse<VoucherRedeemDto> redeemVoucher(@RequestBody VoucherRedeemRequest request);
 
+    @PostMapping("/api/internal/vouchers/release")
+    ApiResponse<Boolean> releaseVoucher(@RequestBody VoucherReleaseRequest request);
+
     // ─── Inner DTOs (response payload từ user-service) ───────────────────────
 
     record UserDto(UUID id, String email, String fullName, boolean active, String role) {}
@@ -56,4 +59,6 @@ public interface UserFeignClient {
     record VoucherRedeemRequest(String code, UUID userId, UUID orderId, BigDecimal orderSubtotal) {}
 
     record VoucherRedeemDto(UUID usageId, String code, BigDecimal discountAmount, boolean idempotent) {}
+
+    record VoucherReleaseRequest(String code, UUID userId, UUID orderId) {}
 }

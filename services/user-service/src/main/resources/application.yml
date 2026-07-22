@@ -25,7 +25,7 @@ eureka:
     prefer-ip-address: true
 
 jwt:
-  secret: ${JWT_SECRET:dev-secret-key-change-me-please-32bytes!!}
+  secret: ${JWT_SECRET:}
   access-ttl-ms: 900000
   refresh-ttl-ms: 604800000
 

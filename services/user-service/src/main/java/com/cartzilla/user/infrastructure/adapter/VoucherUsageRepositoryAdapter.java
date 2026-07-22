@@ -27,6 +27,6 @@ public class VoucherUsageRepositoryAdapter implements VoucherUsageRepository {
 
     @Override
     public long countByVoucherIdAndUserId(UUID voucherId, UUID userId) {
-        return jpa.countByVoucherIdAndUserId(voucherId, userId);
+        return jpa.countByVoucherIdAndUserIdAndReleasedFalse(voucherId, userId);
     }
 }

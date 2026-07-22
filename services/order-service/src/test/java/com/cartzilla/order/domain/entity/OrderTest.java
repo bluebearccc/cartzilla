@@ -94,4 +94,13 @@ class OrderTest {
         o.deliver(staff); // DELIVERED = terminal
         assertThrows(BusinessException.class, () -> o.cancel("đổi ý", staff));
     }
+
+    @Test
+    void cancel_shippingOrder_isRejected() {
+        Order o = codOrder();
+        UUID staff = UUID.randomUUID();
+        o.confirm(staff);
+        o.ship(staff);
+        assertThrows(BusinessException.class, () -> o.cancel("too late", staff));
+    }
 }

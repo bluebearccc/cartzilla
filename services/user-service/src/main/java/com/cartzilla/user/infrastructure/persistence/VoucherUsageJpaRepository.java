@@ -14,5 +14,5 @@ public interface VoucherUsageJpaRepository extends JpaRepository<VoucherUsage, U
     Optional<VoucherUsage> findByVoucherIdAndOrderId(UUID voucherId, UUID orderId);
 
     /** V-11/BR-V09: đếm lượt redeem của user */
-    long countByVoucherIdAndUserId(UUID voucherId, UUID userId);
+    long countByVoucherIdAndUserIdAndReleasedFalse(UUID voucherId, UUID userId);
 }

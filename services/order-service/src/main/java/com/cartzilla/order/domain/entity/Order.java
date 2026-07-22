@@ -163,8 +163,8 @@ public class Order extends BaseEntity {
     public void cancel(String reason, UUID changedBy) {
         if (reason == null || reason.isBlank())
             throw new BusinessException("cancelledReason is required when cancelling (OA-07)");
-        if (status == OrderStatus.DELIVERED || status == OrderStatus.CANCELLED)
-            throw new BusinessException("Cannot cancel order in terminal state: " + status + " (OA-S5)");
+        if (status != OrderStatus.PENDING && status != OrderStatus.CONFIRMED)
+            throw new BusinessException("Cannot cancel order in status: " + status + " (OA-S5)");
         this.cancelledReason = reason;
         transitionTo(OrderStatus.CANCELLED, changedBy, reason);
     }

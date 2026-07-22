@@ -43,6 +43,9 @@ public class VoucherUsage extends BaseEntity {
     @Column(name = "discount_amount", precision = 12, scale = 2)
     private BigDecimal discountAmount;
 
+    @Column(nullable = false)
+    private boolean released = false;
+
     /** Factory — VU-03: immutable sau khi tạo */
     public static VoucherUsage redeem(UUID voucherId, UUID userId, UUID orderId, BigDecimal discountAmount) {
         if (voucherId == null) throw new BusinessException("voucherId must not be null");
@@ -54,5 +57,9 @@ public class VoucherUsage extends BaseEntity {
         vu.orderId = orderId;
         vu.discountAmount = discountAmount;
         return vu;
+    }
+
+    public void release() {
+        this.released = true;
     }
 }

@@ -26,12 +26,14 @@ public final class PaymentDtos {
 
     public record TransactionResponse(String transactionType, String provider,
                                       String providerTxnRef, BigDecimal amount,
-                                      String status, Instant processedAt) {
+                                      String status, String errorCode,
+                                      String errorMessage, Instant processedAt) {
         public static TransactionResponse from(PaymentTransaction t) {
             return new TransactionResponse(
                     t.getTransactionType() == null ? null : t.getTransactionType().name(),
                     t.getProvider(), t.getProviderTxnRef(), t.getAmount(),
-                    t.getStatus(), t.getProcessedAt());
+                    t.getStatus() == null ? null : t.getStatus().name(),
+                    t.getErrorCode(), t.getErrorMessage(), t.getProcessedAt());
         }
     }
 

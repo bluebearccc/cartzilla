@@ -21,7 +21,7 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - "${USER_DB_PORT:-5432}:5432"
+      - "127.0.0.1:${USER_DB_PORT:-15432}:5432"
     volumes:
       - pg-user-data:/var/lib/postgresql/data
     healthcheck:
@@ -38,7 +38,7 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - "${PRODUCT_DB_PORT:-5433}:5432"
+      - "127.0.0.1:${PRODUCT_DB_PORT:-5433}:5432"
     volumes:
       - pg-product-data:/var/lib/postgresql/data
     healthcheck:
@@ -55,7 +55,7 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - "${ORDER_DB_PORT:-5434}:5432"
+      - "127.0.0.1:${ORDER_DB_PORT:-5434}:5432"
     volumes:
       - pg-order-data:/var/lib/postgresql/data
     healthcheck:
@@ -72,7 +72,7 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - "${PAYMENT_DB_PORT:-5435}:5432"
+      - "127.0.0.1:${PAYMENT_DB_PORT:-5435}:5432"
     volumes:
       - pg-pay-data:/var/lib/postgresql/data
     healthcheck:
@@ -89,7 +89,7 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      - "${NOTIF_DB_PORT:-5436}:5432"
+      - "127.0.0.1:${NOTIF_DB_PORT:-5436}:5432"
     volumes:
       - pg-notif-data:/var/lib/postgresql/data
     healthcheck:
@@ -136,7 +136,7 @@ services:
       - "8080:8080"
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-me-please-32bytes!!}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
     depends_on: [ eureka-server, user-service, product-service, order-service, payment-service ]
     networks: [ cartzilla-net ]
 
@@ -144,19 +144,19 @@ services:
   user-service:
     build: ./services/user-service
     ports:
-      - "${USER_SERVICE_PORT:-8081}:8081"
+      - "127.0.0.1:${USER_SERVICE_PORT:-8081}:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-user:5432/cartzilla_user_db
       DB_USER: app
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-me-please-32bytes!!}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       NOTIFICATION_SERVICE_URL: http://notification-service:8085
       RESET_PASSWORD_BASE_URL: ${RESET_PASSWORD_BASE_URL:-http://localhost:5173/reset-password}
       VERIFY_EMAIL_BASE_URL: ${VERIFY_EMAIL_BASE_URL:-http://localhost:5173/verify-email}
       VERIFY_EMAIL_TTL_SECONDS: ${VERIFY_EMAIL_TTL_SECONDS:-86400}
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-689804866163-apbool4p0qfq9nqkb56opn4epafi0vbq.apps.googleusercontent.com}
-      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-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}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
       GOOGLE_OAUTH_REDIRECT_URI: ${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:8080/api/oauth/google/callback}
       OAUTH_STATE_TTL_SECONDS: ${OAUTH_STATE_TTL_SECONDS:-600}
     depends_on:
@@ -171,7 +171,7 @@ services:
   product-service:
     build: ./services/product-service
     ports:
-      - "${PRODUCT_SERVICE_PORT:-8082}:8082"
+      - "127.0.0.1:${PRODUCT_SERVICE_PORT:-8082}:8082"
     environment:
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/cartzilla_product_db
@@ -193,7 +193,7 @@ services:
   order-service:
     build: ./services/order-service
     ports:
-      - "${ORDER_SERVICE_PORT:-8083}:8083"
+      - "127.0.0.1:${ORDER_SERVICE_PORT:-8083}:8083"
     environment:
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-order:5432/cartzilla_order_db
@@ -215,7 +215,7 @@ services:
   payment-service:
     build: ./services/payment-service
     ports:
-      - "${PAYMENT_SERVICE_PORT:-8084}:8084"
+      - "127.0.0.1:${PAYMENT_SERVICE_PORT:-8084}:8084"
     environment:
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-pay:5432/cartzilla_pay_db
@@ -225,10 +225,13 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       RABBITMQ_HOST: rabbitmq
       ALWAYS_FAIL: ${ALWAYS_FAIL:-false}
-      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE:-37VHZ9M4}
-      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET:-PIZOFTDNPFSBDEU44PQCSUW8OFVLIMQL}
+      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE:-}
+      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET:-}
       VNPAY_RETURN_URL: ${VNPAY_RETURN_URL:-http://localhost:8080/api/payments/vnpay/callback}
       VNPAY_FRONTEND_RETURN_URL: ${VNPAY_FRONTEND_RETURN_URL:-http://localhost:5173/payment/result}
+      VNPAY_IPN_URL: ${VNPAY_IPN_URL:-http://localhost:8080/api/payments/vnpay/ipn}
+      VNPAY_REFUND_URL: ${VNPAY_REFUND_URL:-https://sandbox.vnpayment.vn/merchant_webapi/api/transaction}
+      VNPAY_REFUND_ENABLED: ${VNPAY_REFUND_ENABLED:-false}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
       postgres-pay:
@@ -242,7 +245,7 @@ services:
   notification-service:
     build: ./services/notification-service
     ports:
-      - "${NOTIFICATION_SERVICE_PORT:-8085}:8085"
+      - "127.0.0.1:${NOTIFICATION_SERVICE_PORT:-8085}:8085"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-notif:5432/cartzilla_notif_db
       DB_USER: app
@@ -255,8 +258,8 @@ services:
       MAIL_FROM: ${MAIL_FROM:-no-reply@cartzilla.local}
       MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
       MAIL_SMTP_STARTTLS_ENABLE: ${MAIL_SMTP_STARTTLS_ENABLE:-false}
-      APP_GMAIL_USERNAME: ${MAIL_USERNAME:-thesondayne@gmail.com}
-      APP_GMAIL_PASSWORD: ${MAIL_PASSWORD:-ecgeltooxxdhhvmt}
+      APP_GMAIL_USERNAME: ${MAIL_USERNAME:-}
+      APP_GMAIL_PASSWORD: ${MAIL_PASSWORD:-}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
       postgres-notif:

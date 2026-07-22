@@ -10,8 +10,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class VnpayServiceTest {
 
-    private final VnpayProperties props = new VnpayProperties();
+    private final VnpayProperties props = testProperties();
     private final VnpayService service = new VnpayService(props);
+
+    private static VnpayProperties testProperties() {
+        VnpayProperties properties = new VnpayProperties();
+        properties.setTmnCode("TEST_TMN");
+        properties.setHashSecret("test-only-hmac-secret");
+        return properties;
+    }
 
     @Test
     void buildPaymentUrl_containsPayUrlAmountAndSignature() {

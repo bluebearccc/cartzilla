@@ -23,4 +23,8 @@ public interface VoucherJpaRepository extends JpaRepository<Voucher, UUID> {
     @Query("UPDATE Voucher v SET v.usedCount = v.usedCount + 1 " +
            "WHERE v.id = :id AND v.usedCount < v.maxUses")
     int incrementUsedCountConditional(@Param("id") UUID id);
+
+    @Modifying
+    @Query("UPDATE Voucher v SET v.usedCount = v.usedCount - 1 WHERE v.id = :id AND v.usedCount > 0")
+    int decrementUsedCountIfPositive(@Param("id") UUID id);
 }

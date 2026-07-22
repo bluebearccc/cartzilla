@@ -7,6 +7,8 @@ import com.cartzilla.user.api.dto.VoucherDtos.VoucherValidationResponse;
 import com.cartzilla.user.application.command.VoucherCommand;
 import com.cartzilla.user.application.usecase.RedeemVoucherUseCase;
 import com.cartzilla.user.application.usecase.ValidateVoucherUseCase;
+import com.cartzilla.user.application.usecase.ReleaseVoucherUseCase;
+import com.cartzilla.user.api.dto.VoucherDtos.ReleaseVoucherRequest;
 import com.cartzilla.web.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class InternalVoucherController {
 
     private final ValidateVoucherUseCase validateVoucherUseCase;
     private final RedeemVoucherUseCase redeemVoucherUseCase;
+    private final ReleaseVoucherUseCase releaseVoucherUseCase;
 
     @GetMapping("/{code}/validate")
     public ApiResponse<VoucherValidationResponse> validate(
@@ -41,5 +44,10 @@ public class InternalVoucherController {
     @PostMapping("/redeem")
     public ApiResponse<VoucherRedeemResponse> redeem(@Valid @RequestBody RedeemVoucherRequest request) {
         return ApiResponse.ok(VoucherRedeemResponse.from(redeemVoucherUseCase.execute(request.toCommand())));
+    }
+
+    @PostMapping("/release")
+    public ApiResponse<Boolean> release(@Valid @RequestBody ReleaseVoucherRequest request) {
+        return ApiResponse.ok(releaseVoucherUseCase.execute(request.code(), request.userId(), request.orderId()));
     }
 }

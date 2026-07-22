@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
@@ -40,7 +42,7 @@ public class OrderSagaOrchestrator {
     @Transactional
     public void start(Order order) {
         sagaRepository.save(SagaState.start(order.getId()));
-        publishStockReserve(order);
+        afterCommit(() -> publishStockReserve(order));
         log.info("Saga started order={}", order.getId());
     }
 
@@ -51,12 +53,15 @@ public class OrderSagaOrchestrator {
         Order order = orderRepository.findById(event.orderId()).orElseThrow();
         // Idempotency: duplicate event hoặc saga đã đóng → bỏ qua, không xử lý lại.
         if (saga.getStatus() != SagaStatus.IN_PROGRESS) {
+            if (saga.getStatus() == SagaStatus.FAILED && order.getStatus() == OrderStatus.CANCELLED && event.success()) {
+                afterCommit(() -> publishStockRelease(order));
+            }
             log.warn("Ignore stock.reserved for closed saga order={}", event.orderId());
             return;
         }
         // Đơn đã bị hủy trong lúc chờ reserve (customer cancel) → trả kho ngay nếu đã trừ.
         if (order.getStatus() != OrderStatus.PENDING) {
-            if (event.success()) publishStockRelease(order);
+            if (event.success()) afterCommit(() -> publishStockRelease(order));
             saga.fail("Order no longer PENDING when stock reserved: " + order.getStatus());
             sagaRepository.save(saga);
             log.warn("Saga order={} closed — order already {} at stock.reserved",
@@ -76,9 +81,9 @@ public class OrderSagaOrchestrator {
             return;
         }
         // COD: xử lý thanh toán đồng bộ qua MQ.
-        rabbit.convertAndSend(RabbitTopics.PAYMENT_EXCHANGE, RabbitTopics.RK_PAYMENT_PROCESS,
+        afterCommit(() -> rabbit.convertAndSend(RabbitTopics.PAYMENT_EXCHANGE, RabbitTopics.RK_PAYMENT_PROCESS,
                 new PaymentEvents.PaymentProcessEvent(order.getId(), order.getUserId(),
-                        order.getTotalAmount(), order.getPaymentMethod().name()));
+                        order.getTotalAmount(), order.getPaymentMethod().name())));
     }
 
     /** Bước 3: kết quả thanh toán. */
@@ -88,12 +93,19 @@ public class OrderSagaOrchestrator {
         Order order = orderRepository.findById(event.orderId()).orElseThrow();
         // Idempotency: duplicate payment.result hoặc saga đã đóng → bỏ qua.
         if (saga.getStatus() != SagaStatus.IN_PROGRESS) {
+            if (event.success() && order.getStatus() == OrderStatus.CANCELLED
+                    && order.getPaymentMethod() == PaymentMethod.VNPAY) {
+                afterCommit(() -> publishPaymentRefund(order, "Order was cancelled before VNPay callback"));
+            }
             log.warn("Ignore payment.result for closed saga order={}", event.orderId());
             return;
         }
         // Đơn đã bị hủy trước khi có kết quả thanh toán → trả kho, không confirm.
         if (order.getStatus() != OrderStatus.PENDING) {
-            publishStockRelease(order);
+            afterCommit(() -> publishStockRelease(order));
+            if (event.success() && order.getPaymentMethod() == PaymentMethod.VNPAY) {
+                afterCommit(() -> publishPaymentRefund(order, "Order was cancelled before payment settled"));
+            }
             saga.fail("Order no longer PENDING when payment settled: " + order.getStatus());
             sagaRepository.save(saga);
             log.warn("Saga order={} closed — order already {} at payment.result",
@@ -102,12 +114,15 @@ public class OrderSagaOrchestrator {
         }
         if (!event.success()) {
             // compensate: trả kho
-            publishStockRelease(order);
+            afterCommit(() -> publishStockRelease(order));
             fail(saga, order, "Thanh toán thất bại");
             return;
         }
         if (!redeemVoucherIfNeeded(order)) {
-            publishStockRelease(order);
+            afterCommit(() -> publishStockRelease(order));
+            if (event.success() && order.getPaymentMethod() == PaymentMethod.VNPAY) {
+                afterCommit(() -> publishPaymentRefund(order, "Voucher compensation after payment"));
+            }
             fail(saga, order, "Cannot redeem voucher");
             return;
         }
@@ -128,12 +143,32 @@ public class OrderSagaOrchestrator {
     public void compensateCustomerCancel(Order order, String reason) {
         SagaState saga = sagaRepository.findByOrderId(order.getId()).orElse(null);
         if (saga == null || saga.getStatus() != SagaStatus.IN_PROGRESS) return;
-        if (saga.getCurrentStep() != SagaStep.RESERVE_STOCK) {
-            publishStockRelease(order);
+        afterCommit(() -> publishStockRelease(order));
+        afterCommit(() -> releaseVoucherIfNeeded(order));
+        if (order.getPaymentMethod() == PaymentMethod.VNPAY && order.getPaymentStatus() == com.cartzilla.order.domain.vo.PaymentStatus.PAID) {
+            afterCommit(() -> publishPaymentRefund(order, "Customer cancelled: " + reason));
         }
         saga.fail("Customer cancelled: " + reason);
         sagaRepository.save(saga);
         log.info("Saga order={} closed by customer cancel, stock compensated", order.getId());
+    }
+
+    /** Compensation hook for staff/admin cancellation. */
+    @Transactional
+    public void compensateStaffCancel(Order order, String reason) {
+        SagaState saga = sagaRepository.findByOrderId(order.getId()).orElse(null);
+        if (saga != null && saga.getStatus() == SagaStatus.IN_PROGRESS) {
+            saga.fail("Staff cancelled: " + reason);
+            sagaRepository.save(saga);
+        }
+        // A CONFIRMED order has a completed Saga but still owns reserved stock and may be paid.
+        afterCommit(() -> publishStockRelease(order));
+        afterCommit(() -> releaseVoucherIfNeeded(order));
+        if (order.getPaymentMethod() == PaymentMethod.VNPAY
+                && order.getPaymentStatus() == com.cartzilla.order.domain.vo.PaymentStatus.PAID) {
+            afterCommit(() -> publishPaymentRefund(order, "Staff cancelled: " + reason));
+        }
+        log.info("Order={} compensated after staff cancel", order.getId());
     }
 
     private void fail(SagaState saga, Order order, String reason) {
@@ -144,6 +179,7 @@ public class OrderSagaOrchestrator {
             order.cancel(reason, null); // changedBy null = system/saga (OSL-04)
             orderRepository.save(order);
             orderEventPort.orderCancelled(order, reason);
+            afterCommit(() -> releaseVoucherIfNeeded(order));
         }
         log.warn("Saga failed order={} reason={}", order.getId(), reason);
     }
@@ -156,6 +192,31 @@ public class OrderSagaOrchestrator {
     private void publishStockRelease(Order order) {
         rabbit.convertAndSend(RabbitTopics.STOCK_EXCHANGE, RabbitTopics.RK_STOCK_RELEASE,
                 new StockEvents.StockReleaseEvent(order.getId(), toItems(order)));
+    }
+
+    private void publishPaymentRefund(Order order, String reason) {
+        rabbit.convertAndSend(RabbitTopics.PAYMENT_EXCHANGE, RabbitTopics.RK_PAYMENT_REFUND,
+                new PaymentEvents.PaymentRefundRequestEvent(order.getId(), reason));
+    }
+
+    private void releaseVoucherIfNeeded(Order order) {
+        if (order.getVoucherCode() == null || order.getVoucherCode().isBlank()) return;
+        try {
+            userFeignClient.releaseVoucher(new UserFeignClient.VoucherReleaseRequest(
+                    order.getVoucherCode(), order.getUserId(), order.getId()));
+        } catch (Exception ex) {
+            log.error("Voucher release failed order={} code={}", order.getId(), order.getVoucherCode(), ex);
+        }
+    }
+
+    private void afterCommit(Runnable action) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            action.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() { action.run(); }
+        });
     }
 
     private static List<StockEvents.Item> toItems(Order order) {

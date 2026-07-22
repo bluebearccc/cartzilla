@@ -13,4 +13,5 @@ public interface VoucherRepository {
     List<Voucher> findAll();
     boolean existsByCode(String code);
     int incrementUsedCountIfAvailable(UUID id);
+    default int decrementUsedCountIfPositive(UUID id) { return 0; }
 }

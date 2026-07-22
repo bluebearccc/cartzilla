@@ -21,6 +21,11 @@ public class ProductVariantRepositoryAdapter implements ProductVariantRepository
     }
 
     @Override
+    public Optional<ProductVariant> findBySkuForUpdate(String sku) {
+        return jpa.findBySkuForUpdate(sku);
+    }
+
+    @Override
     public boolean existsBySku(String sku) {
         return jpa.existsBySkuIgnoreCase(sku);
     }

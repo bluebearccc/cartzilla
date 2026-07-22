@@ -6,6 +6,7 @@ import com.cartzilla.payment.domain.entity.Payment;
 import com.cartzilla.payment.domain.repository.PaymentRepository;
 import com.cartzilla.payment.domain.vo.PaymentMethod;
 import com.cartzilla.payment.domain.vo.PaymentStatus;
+import com.cartzilla.payment.domain.vo.TransactionStatus;
 import com.cartzilla.payment.infrastructure.vnpay.VnpayProperties;
 import com.cartzilla.payment.infrastructure.vnpay.VnpayService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,8 +28,15 @@ class VnpayCallbackUseCaseTest {
 
     private final PaymentRepository paymentRepository = mock(PaymentRepository.class);
     private final RabbitTemplate rabbit = mock(RabbitTemplate.class);
-    private final VnpayProperties props = new VnpayProperties();
+    private final VnpayProperties props = testProperties();
     private final VnpayService vnpayService = new VnpayService(props);
+
+    private static VnpayProperties testProperties() {
+        VnpayProperties properties = new VnpayProperties();
+        properties.setTmnCode("TEST_TMN");
+        properties.setHashSecret("test-only-hmac-secret");
+        return properties;
+    }
     private final VnpayCallbackUseCase useCase = new VnpayCallbackUseCase(
             paymentRepository, vnpayService, rabbit, new ObjectMapper());
 
@@ -37,6 +45,7 @@ class VnpayCallbackUseCaseTest {
         p.put("vnp_TxnRef", txnRef);
         p.put("vnp_Amount", amount);
         p.put("vnp_ResponseCode", code);
+        p.put("vnp_TransactionStatus", "00".equals(code) ? "00" : "02");
         p.put("vnp_TransactionNo", txnNo);
         p.put("vnp_TmnCode", props.getTmnCode());
         p.put("vnp_SecureHash", vnpayService.sign(p));
@@ -96,6 +105,43 @@ class VnpayCallbackUseCaseTest {
     }
 
     @Test
+    void cancelledAtVnpay_code24_recordsNormalizedFailureWithoutOversizedStatus() {
+        Payment payment = vnpayPayment(new BigDecimal("100000"), "VNP123");
+        when(paymentRepository.existsTransactionByProviderTxnRef("VNPAY", "TXN24")).thenReturn(false);
+        when(paymentRepository.findByVnpayTxnRef("VNP123")).thenReturn(Optional.of(payment));
+        when(paymentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        VnpayCallbackUseCase.Result result = useCase.execute(
+                signedParams("VNP123", "10000000", "24", "TXN24"));
+
+        assertFalse(result.success());
+        assertEquals(PaymentStatus.FAILED, payment.getStatus());
+        var transaction = payment.getTransactions().get(payment.getTransactions().size() - 1);
+        assertEquals(TransactionStatus.FAILED, transaction.getStatus());
+        assertEquals("VNPAY_CODE_24", transaction.getErrorCode());
+        assertEquals("VNPay callback failed: VNPAY_CODE_24", transaction.getErrorMessage());
+        assertTrue(transaction.getStatus().name().length() <= 20);
+    }
+
+    @Test
+    void responseCode00_butTransactionNotSuccessful_isRejected() {
+        Payment payment = vnpayPayment(new BigDecimal("100000"), "VNP123");
+        when(paymentRepository.existsTransactionByProviderTxnRef("VNPAY", "TXN2")).thenReturn(false);
+        when(paymentRepository.findByVnpayTxnRef("VNP123")).thenReturn(Optional.of(payment));
+        when(paymentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        Map<String, String> params = signedParams("VNP123", "10000000", "00", "TXN2");
+        params.put("vnp_TransactionStatus", "02");
+        params.put("vnp_SecureHash", vnpayService.sign(params));
+
+        VnpayCallbackUseCase.Result result = useCase.execute(params);
+
+        assertFalse(result.success());
+        assertEquals(PaymentStatus.FAILED, payment.getStatus());
+        var transaction = payment.getTransactions().get(payment.getTransactions().size() - 1);
+        assertEquals("VNPAY_STATUS_02", transaction.getErrorCode());
+    }
+
+    @Test
     void invalidSignature_isRejected() {
         Map<String, String> params = signedParams("VNP123", "10000000", "00", "TXN1");
         params.put("vnp_SecureHash", "deadbeef"); // hỏng chữ ký
@@ -105,5 +151,21 @@ class VnpayCallbackUseCaseTest {
         assertFalse(r.success());
         assertEquals("97", r.code());
         verifyNoInteractions(paymentRepository);
+    }
+
+    @Test
+    void laterFailureCannotDowngradePaidPayment() {
+        Payment payment = vnpayPayment(new BigDecimal("100000"), "VNP123");
+        payment.settleVnpaySuccess("TXN1", "{}");
+        when(paymentRepository.findByVnpayTxnRef("VNP123")).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsTransactionByProviderTxnRef("VNPAY", "TXN2")).thenReturn(false);
+
+        VnpayCallbackUseCase.Result result = useCase.execute(
+                signedParams("VNP123", "10000000", "24", "TXN2"));
+
+        assertTrue(result.idempotent());
+        assertEquals(PaymentStatus.PAID, payment.getStatus());
+        verify(paymentRepository, never()).save(any());
+        verifyNoInteractions(rabbit);
     }
 }

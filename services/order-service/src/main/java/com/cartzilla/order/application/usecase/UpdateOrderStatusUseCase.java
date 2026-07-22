@@ -7,6 +7,7 @@ import com.cartzilla.order.domain.repository.OrderRepository;
 import com.cartzilla.order.domain.vo.OrderStatus;
 import com.cartzilla.order.domain.vo.PaymentMethod;
 import com.cartzilla.order.domain.vo.PaymentStatus;
+import com.cartzilla.order.infrastructure.saga.OrderSagaOrchestrator;
 import com.cartzilla.web.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class UpdateOrderStatusUseCase {
 
     private final OrderRepository orderRepository;
     private final OrderEventPort orderEventPort;
+    private final OrderSagaOrchestrator sagaOrchestrator;
 
     @Transactional
     public Order execute(OrderCommand.UpdateStatus cmd) {
@@ -57,6 +59,9 @@ public class UpdateOrderStatusUseCase {
             case DELIVERED -> orderEventPort.orderDelivered(saved);
             case CANCELLED -> orderEventPort.orderCancelled(saved, cmd.reason());
             case PENDING   -> { /* unreachable: rejected above */ }
+        }
+        if (target == OrderStatus.CANCELLED) {
+            sagaOrchestrator.compensateStaffCancel(saved, cmd.reason());
         }
         return saved;
     }

@@ -13,6 +13,7 @@ public interface ProductVariantRepository {
 
     /** PV-01: SKU unique toàn hệ thống — bỏ qua bản ghi soft-deleted. */
     Optional<ProductVariant> findBySku(String sku);
+    default Optional<ProductVariant> findBySkuForUpdate(String sku) { return findBySku(sku); }
 
     boolean existsBySku(String sku);
 }

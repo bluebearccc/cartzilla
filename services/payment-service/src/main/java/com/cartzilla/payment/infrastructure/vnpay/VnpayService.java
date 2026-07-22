@@ -1,6 +1,7 @@
 package com.cartzilla.payment.infrastructure.vnpay;
 
 import lombok.RequiredArgsConstructor;
+import com.cartzilla.web.exception.BusinessException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -28,6 +29,7 @@ public class VnpayService {
 
     /** Xây redirect URL VNPay đã ký. amount là số tiền VND (chưa ×100). */
     public String buildPaymentUrl(String txnRef, BigDecimal amount, String orderInfo, String ipAddr) {
+        requireConfigured();
         Map<String, String> params = new HashMap<>();
         params.put("vnp_Version", props.getVersion());
         params.put("vnp_Command", props.getCommand());
@@ -69,6 +71,7 @@ public class VnpayService {
 
     /** Verify chữ ký callback (BR-PY06): rebuild hash từ params (trừ vnp_SecureHash*). */
     public boolean verifySignature(Map<String, String> allParams) {
+        if (props.getHashSecret() == null || props.getHashSecret().isBlank()) return false;
         Map<String, String> params = new HashMap<>(allParams);
         String received = params.remove("vnp_SecureHash");
         params.remove("vnp_SecureHashType");
@@ -90,6 +93,7 @@ public class VnpayService {
 
     /** Sinh chữ ký cho một bộ params (dùng cho mock provider / test tự ký). */
     public String sign(Map<String, String> params) {
+        requireConfigured();
         Map<String, String> copy = new HashMap<>(params);
         copy.remove("vnp_SecureHash");
         copy.remove("vnp_SecureHashType");
@@ -104,6 +108,19 @@ public class VnpayService {
             if (it.hasNext()) hashData.append('&');
         }
         return hmacSHA512(props.getHashSecret(), hashData.toString());
+    }
+
+    /** HMAC helper for VNPay Query/Refund's pipe-delimited checksum. */
+    public String signPipe(String data) {
+        requireConfigured();
+        return hmacSHA512(props.getHashSecret(), data);
+    }
+
+    private void requireConfigured() {
+        if (props.getTmnCode() == null || props.getTmnCode().isBlank()
+                || props.getHashSecret() == null || props.getHashSecret().isBlank()) {
+            throw new BusinessException("VNPay is not configured: set VNPAY_TMN_CODE and VNPAY_HASH_SECRET");
+        }
     }
 
     private static String hmacSHA512(String key, String data) {

@@ -91,6 +91,8 @@ public class VoucherDtos {
         }
     }
 
+    public record ReleaseVoucherRequest(@NotBlank String code, @NotNull UUID userId, @NotNull UUID orderId) {}
+
     public record AddAllowedUserRequest(@NotNull UUID userId) {}
 
     public record VoucherResponse(
