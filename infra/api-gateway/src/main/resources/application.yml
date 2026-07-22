@@ -22,29 +22,29 @@ spring:
             - id: user-service-protected
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/api/users/me,/api/users/me/**,/api/vouchers/**,/api/admin/users/**,/api/admin/vouchers/**
+                - Path=/api/users/me,/api/users/me/**,/api/vouchers,/api/vouchers/**,/api/admin/users,/api/admin/users/**,/api/admin/vouchers,/api/admin/vouchers/**
               filters:
                 - JwtAuth
             - id: product-service-admin
               uri: lb://PRODUCT-SERVICE
               predicates:
-                - Path=/api/admin/products/**,/api/admin/categories/**,/api/admin/vendors/**
+                - Path=/api/admin/products,/api/admin/products/**,/api/admin/categories,/api/admin/categories/**,/api/admin/vendors,/api/admin/vendors/**
               filters:
                 - JwtAuth
             - id: product-service
               uri: lb://PRODUCT-SERVICE
               predicates:
-                - Path=/api/products/**,/api/categories/**,/api/vendors/**
+                - Path=/api/products,/api/products/**,/api/categories,/api/categories/**,/api/vendors,/api/vendors/**
             - id: order-service
               uri: lb://ORDER-SERVICE
               predicates:
-                - Path=/api/orders/**,/api/staff/orders/**,/api/admin/reports/**
+                - Path=/api/orders,/api/orders/**,/api/staff/orders,/api/staff/orders/**,/api/admin/reports,/api/admin/reports/**
               filters:
                 - JwtAuth
             - id: notification-service
               uri: lb://NOTIFICATION-SERVICE
               predicates:
-                - Path=/api/notifications/**
+                - Path=/api/notifications,/api/notifications/**
               filters:
                 - JwtAuth
             # Callback VNPay redirect trình duyệt về (KHÔNG có JWT) — phải đứng trước

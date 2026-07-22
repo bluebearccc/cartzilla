@@ -42,7 +42,7 @@ Dependency: `api → application → domain ← infrastructure` (domain không p
 
 ```bash
 # 1. Build toàn bộ
-mvn clean install -DskipTests
+.\mvnw clean install -DskipTests
 
 # 2. Bật hạ tầng + services
 docker compose up --build
@@ -87,7 +87,7 @@ $env:PRODUCT_DB_PORT="5433"
 $env:DB_USER="app"
 $env:DB_PASSWORD="secret"
 $env:RABBITMQ_HOST="localhost"
-mvn -pl services/product-service -am spring-boot:run
+.\mvnw -pl services/product-service -am spring-boot:run
 
 # Terminal 2: payment-service
 $env:PAYMENT_DB_PORT="5435"
@@ -95,7 +95,7 @@ $env:DB_USER="app"
 $env:DB_PASSWORD="secret"
 $env:RABBITMQ_HOST="localhost"
 $env:ALWAYS_FAIL="false"
-mvn -pl services/payment-service -am spring-boot:run
+.\mvnw -pl services/payment-service -am spring-boot:run
 
 # Terminal 3: order-service
 $env:ORDER_DB_PORT="5434"
@@ -103,7 +103,7 @@ $env:DB_USER="app"
 $env:DB_PASSWORD="secret"
 $env:RABBITMQ_HOST="localhost"
 $env:PRODUCT_SERVICE_URL="http://localhost:8082"
-mvn -pl services/order-service -am spring-boot:run
+.\mvnw -pl services/order-service -am spring-boot:run
 ```
 
 Run the demo checkout:
@@ -119,7 +119,7 @@ For rollback demo, restart `payment-service` with:
 
 ```powershell
 $env:ALWAYS_FAIL="true"
-mvn -pl services/payment-service -am spring-boot:run
+.\mvnw -pl services/payment-service -am spring-boot:run
 ```
 
 ## Demo Saga rollback
@@ -144,8 +144,8 @@ cart + checkout + Saga, COD (PAID khi delivered) + **VNPay thật** (create/call
 verify chữ ký HMAC-SHA512, idempotent, amount-match), voucher validate/redeem,
 staff order workflow, **notification in-app API** (`GET /api/notifications`,
 `PUT /api/notifications/{id}/read`) + email log, và **admin reports** (`/api/admin/reports/*`).
-Build: `mvn clean install` xanh, 95 unit test pass.
+Build: `.\mvnw clean install` xanh, 95 unit test pass.
 
 > **Lưu ý chạy:** Toàn bộ các service Backend và cả Giao diện Frontend React hiện tại đã được đóng gói hoàn chỉnh bằng Dockerfile.
-> Bạn chỉ cần chạy `mvn clean package -DskipTests` để tạo file jar, sau đó chạy `docker compose up -d --build` để khởi động đồng bộ toàn bộ hệ thống (giao diện mở tại http://localhost:5173).
+> Bạn chỉ cần chạy `.\mvnw clean package -DskipTests` để tạo file jar, sau đó chạy `docker compose up -d --build` để khởi động đồng bộ toàn bộ hệ thống (giao diện mở tại http://localhost:5173).
 ```
