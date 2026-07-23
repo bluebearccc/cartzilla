@@ -10,7 +10,6 @@ import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/cn';
 import type { ProductQuery } from '@/types/catalog';
 
-const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 const SORTS = [
   { value: 'newest', label: 'Mới nhất' },
   { value: 'price_asc', label: 'Giá thấp → cao' },
@@ -115,20 +114,61 @@ export function ProductListPage() {
           </div>
 
           <div>
-            <h3 className="mb-3 text-sm font-semibold text-ink">Kích cỡ</h3>
-            <div className="flex flex-wrap gap-2">
-              {SIZES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => patch({ size: activeSize === s ? null : s })}
-                  className={cn(
-                    'flex h-9 min-w-9 items-center justify-center rounded border px-2 text-sm',
-                    activeSize === s ? 'border-brand bg-brand text-white' : 'border-border hover:border-brand',
-                  )}
-                >
-                  {s}
-                </button>
-              ))}
+            <h3 className="mb-2 text-sm font-semibold text-ink">Kích cỡ</h3>
+            <div className="space-y-2">
+              <div>
+                <p className="mb-1.5 text-xs text-ink-muted">Áo & Thời trang</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['S', 'M', 'L', 'XL'].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => patch({ size: activeSize === s ? null : s })}
+                      className={cn(
+                        'flex h-8 min-w-8 items-center justify-center rounded border px-2 text-xs transition-all',
+                        activeSize === s ? 'border-brand bg-brand font-semibold text-white' : 'border-border bg-white text-ink hover:border-brand',
+                      )}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-1.5 text-xs text-ink-muted">Quần</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['29', '30', '31', '32', '34'].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => patch({ size: activeSize === s ? null : s })}
+                      className={cn(
+                        'flex h-8 min-w-8 items-center justify-center rounded border px-2 text-xs transition-all',
+                        activeSize === s ? 'border-brand bg-brand font-semibold text-white' : 'border-border bg-white text-ink hover:border-brand',
+                      )}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-1.5 text-xs text-ink-muted">Giày & Phụ kiện</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['39', '40', '41', '42', 'F'].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => patch({ size: activeSize === s ? null : s })}
+                      className={cn(
+                        'flex h-8 min-w-8 items-center justify-center rounded border px-2 text-xs transition-all',
+                        activeSize === s ? 'border-brand bg-brand font-semibold text-white' : 'border-border bg-white text-ink hover:border-brand',
+                      )}
+                    >
+                      {s === 'F' ? 'Free Size' : s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

@@ -38,7 +38,7 @@ public final class ProductImageSeeder {
                     "Áo hoodie unisex nỉ bông",
                     "Hoodie nỉ bông dày dặn, giữ ấm tốt, unisex form rộng.",
                     349_000, "ao,hoodie,unisex,ni", true,
-                    "ao-thun", "local-supplier",
+                    "ao-thun", "cartzilla-essentials",
                     List.of(
                             "https://picsum.photos/seed/cartzilla-hoodie-1/800/1000",
                             "https://picsum.photos/seed/cartzilla-hoodie-2/800/1000"
@@ -55,7 +55,7 @@ public final class ProductImageSeeder {
                     "Quần tây nam công sở",
                     "Quần tây form slim, vải co giãn nhẹ, phù hợp môi trường công sở.",
                     459_000, "quan,tay,nam,cong-so", false,
-                    "quan", "fashion-brand",
+                    "quan", "urban-style",
                     List.of("https://picsum.photos/seed/cartzilla-tay-1/800/1000"),
                     List.of(
                             new Variant("PNT-102-29-BLK", "29", "Đen", "#000000", 459_000, 15),
@@ -68,7 +68,7 @@ public final class ProductImageSeeder {
                     "Kính mát thời trang unisex",
                     "Kính mát gọng nhựa, chống UV, phong cách trẻ trung.",
                     189_000, "phu-kien,kinh,mat,unisex", false,
-                    "phu-kien", "local-supplier",
+                    "phu-kien", "basic-collection",
                     List.of("https://picsum.photos/seed/cartzilla-kinhmat-1/800/800"),
                     List.of(
                             new Variant("SGL-103-F-BLK", "F", "Đen", "#000000", 189_000, 40),
@@ -80,7 +80,7 @@ public final class ProductImageSeeder {
                     "Giày sneaker trắng unisex",
                     "Sneaker da tổng hợp, đế cao su êm ái, dễ phối đồ.",
                     599_000, "phu-kien,giay,sneaker,unisex", true,
-                    "phu-kien", "fashion-brand",
+                    "phu-kien", "urban-style",
                     List.of(
                             "https://picsum.photos/seed/cartzilla-sneaker-1/800/1000",
                             "https://picsum.photos/seed/cartzilla-sneaker-2/800/1000"
