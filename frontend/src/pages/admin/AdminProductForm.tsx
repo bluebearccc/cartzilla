@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminProductApi, type CreateProductPayload, type ImagePayload, type VariantPayload } from '@/services/admin';
@@ -38,6 +38,21 @@ export function AdminProductForm() {
     queryFn: () => adminProductApi.get(id!),
     enabled: isEdit,
   });
+
+  const flattenedCategories = useMemo(() => {
+    if (!categories) return [];
+    const list: { id: string; label: string }[] = [];
+    const walk = (items: typeof categories, prefix = '') => {
+      for (const c of items) {
+        list.push({ id: c.id, label: prefix ? `${prefix} ${c.name}` : c.name });
+        if (c.children?.length) {
+          walk(c.children, prefix ? `${prefix}──` : '└──');
+        }
+      }
+    };
+    walk(categories);
+    return list;
+  }, [categories]);
 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -201,8 +216,12 @@ export function AdminProductForm() {
               <Input label="Slug" value={slug} onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }} helper="Tự sinh từ tên, có thể sửa" />
               <div className="grid grid-cols-2 gap-3">
                 <Select label="Danh mục" required value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-                  <option value="">— Chọn —</option>
-                  {(categories ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  <option value="">— Chọn danh mục —</option>
+                  {flattenedCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label}
+                    </option>
+                  ))}
                 </Select>
                 <Select label="Thương hiệu (tùy chọn)" value={vendorId} onChange={(e) => setVendorId(e.target.value)}>
                   <option value="">— Không —</option>
@@ -222,7 +241,47 @@ export function AdminProductForm() {
               {variants.map((v, i) => (
                 <div key={i} className="grid grid-cols-2 gap-2 md:grid-cols-[1.5fr_0.8fr_1fr_0.6fr_1fr_0.8fr_36px]">
                   <input className="h-10 rounded border border-border px-2 text-sm uppercase" placeholder="SKU" value={v.sku} onChange={(e) => updateVariant(i, { sku: e.target.value.toUpperCase() })} />
-                  <input className="h-10 rounded border border-border px-2 text-sm" placeholder="M" value={v.size} onChange={(e) => updateVariant(i, { size: e.target.value })} />
+                  <select
+                    className="h-10 rounded border border-border px-2 text-sm bg-white"
+                    value={v.size}
+                    onChange={(e) => updateVariant(i, { size: e.target.value })}
+                  >
+                    <option value="">-- Size --</option>
+                    <optgroup label="Áo quần">
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                      <option value="2XL">2XL</option>
+                      <option value="3XL">3XL</option>
+                      <option value="F">Free Size (F)</option>
+                    </optgroup>
+                    <optgroup label="Quần Jean / Short (Size số)">
+                      <option value="28">28</option>
+                      <option value="29">29</option>
+                      <option value="30">30</option>
+                      <option value="31">31</option>
+                      <option value="32">32</option>
+                      <option value="33">33</option>
+                      <option value="34">34</option>
+                      <option value="35">35</option>
+                      <option value="36">36</option>
+                    </optgroup>
+                    <optgroup label="Giày dép">
+                      <option value="36">36</option>
+                      <option value="37">37</option>
+                      <option value="38">38</option>
+                      <option value="39">39</option>
+                      <option value="40">40</option>
+                      <option value="41">41</option>
+                      <option value="42">42</option>
+                      <option value="43">43</option>
+                      <option value="44">44</option>
+                    </optgroup>
+                    {v.size && !['S','M','L','XL','2XL','3XL','F','28','29','30','31','32','33','34','35','36','37','38','39','40','41','42','43','44'].includes(v.size) && (
+                      <option value={v.size}>{v.size}</option>
+                    )}
+                  </select>
                   <input className="h-10 rounded border border-border px-2 text-sm" placeholder="Trắng" value={v.color} onChange={(e) => updateVariant(i, { color: e.target.value })} />
                   <input type="color" className="h-10 w-full rounded border border-border" value={v.colorHex} onChange={(e) => updateVariant(i, { colorHex: e.target.value })} />
                   <input type="number" className="h-10 rounded border border-border px-2 text-sm" placeholder="Giá" value={v.price} onChange={(e) => updateVariant(i, { price: Number(e.target.value) })} />

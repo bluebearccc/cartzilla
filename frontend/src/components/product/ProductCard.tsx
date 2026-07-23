@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Icon } from '@/components/ui/Icon';
 import { formatVnd } from '@/lib/format';
 import { useAuth } from '@/store/auth';
@@ -7,10 +8,22 @@ import { useCart } from '@/store/cart';
 import { useToast } from '@/components/ui/Toast';
 import { catalogApi } from '@/services/catalog';
 import { ApiError } from '@/types/api';
-import type { ProductSummary } from '@/types/catalog';
+import type { ProductSummary, Category } from '@/types/catalog';
 
 const PLACEHOLDER =
   'https://placehold.co/600x600/EEF2FF/4F46E5?text=Cartzilla';
+
+const findCategoryName = (id: string | null, list?: Category[]): string | null => {
+  if (!id || !list) return null;
+  for (const c of list) {
+    if (c.id === id) return c.name;
+    if (c.children?.length) {
+      const found = findCategoryName(id, c.children);
+      if (found) return found;
+    }
+  }
+  return null;
+};
 
 export function ProductCard({ product }: { product: ProductSummary }) {
   const { isAuthenticated, hasRole } = useAuth();
@@ -18,6 +31,13 @@ export function ProductCard({ product }: { product: ProductSummary }) {
   const toast = useToast();
   const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: catalogApi.getCategories,
+  });
+
+  const categoryName = findCategoryName(product.categoryId, categories) ?? 'Sản phẩm';
 
   const onQuickAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -87,7 +107,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
         )}
       </div>
       <div className="flex flex-1 flex-col p-3">
-        <p className="text-xs text-ink-muted">{product.tags?.split(',')[0] || 'Cartzilla'}</p>
+        <p className="text-xs font-medium text-brand">{categoryName}</p>
         <h3 className="mt-0.5 line-clamp-2 text-sm font-medium text-ink">{product.name}</h3>
         <p className="mt-auto pt-2 font-headline text-base font-bold tabular-nums text-ink">
           {formatVnd(product.basePrice)}

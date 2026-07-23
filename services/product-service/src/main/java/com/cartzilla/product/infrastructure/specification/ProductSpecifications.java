@@ -50,15 +50,33 @@ public final class ProductSpecifications {
             }
 
             if (c.categoryId() != null) {
-                predicates.add(cb.equal(root.get("categoryId"), c.categoryId()));
+                Subquery<UUID> catSub = query.subquery(UUID.class);
+                Root<Category> cat = catSub.from(Category.class);
+                catSub.select(cat.get("id")).where(
+                        cb.equal(cat.get("id"), root.get("categoryId")),
+                        cb.or(
+                                cb.equal(cat.get("id"), c.categoryId()),
+                                cb.equal(cat.get("parentId"), c.categoryId())
+                        )
+                );
+                predicates.add(cb.exists(catSub));
             }
 
             if (notBlank(c.categorySlug())) {
                 Subquery<UUID> bySlug = query.subquery(UUID.class);
                 Root<Category> cat = bySlug.from(Category.class);
+                Subquery<UUID> targetCat = query.subquery(UUID.class);
+                Root<Category> target = targetCat.from(Category.class);
+                targetCat.select(target.get("id")).where(
+                        cb.equal(target.get("slug"), c.categorySlug().trim().toLowerCase())
+                );
                 bySlug.select(cat.get("id")).where(
-                        cb.equal(cat.get("slug"), c.categorySlug().trim().toLowerCase()),
-                        cb.equal(cat.get("id"), root.get("categoryId")));
+                        cb.equal(cat.get("id"), root.get("categoryId")),
+                        cb.or(
+                                cb.equal(cat.get("slug"), c.categorySlug().trim().toLowerCase()),
+                                cb.in(cat.get("parentId")).value(targetCat)
+                        )
+                );
                 predicates.add(cb.exists(bySlug));
             }
 

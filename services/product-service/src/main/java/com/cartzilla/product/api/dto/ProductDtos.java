@@ -112,11 +112,11 @@ public class ProductDtos {
     public record ProductSummaryResponse(
             UUID id, String name, String slug, BigDecimal basePrice, String primaryImage,
             UUID categoryId, UUID vendorId, String tags,
-            boolean active, boolean featured, boolean inStock) {
+            boolean active, boolean featured, boolean inStock, int totalStock) {
         public static ProductSummaryResponse from(Product p) {
             return new ProductSummaryResponse(p.getId(), p.getName(), p.getSlug(),
                     p.getBasePrice(), primaryImageOf(p), p.getCategoryId(), p.getVendorId(),
-                    p.getTags(), p.isActive(), p.isFeatured(), hasStock(p));
+                    p.getTags(), p.isActive(), p.isFeatured(), hasStock(p), totalStockOf(p));
         }
     }
 
@@ -157,5 +157,12 @@ public class ProductDtos {
 
     private static boolean hasStock(Product p) {
         return p.getVariants().stream().anyMatch(v -> !v.isDeleted() && v.getStock() > 0);
+    }
+
+    private static int totalStockOf(Product p) {
+        return p.getVariants().stream()
+                .filter(v -> !v.isDeleted())
+                .mapToInt(ProductVariant::getStock)
+                .sum();
     }
 }

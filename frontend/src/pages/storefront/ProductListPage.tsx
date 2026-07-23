@@ -85,12 +85,29 @@ export function ProductListPage() {
                   <button
                     onClick={() => patch({ category: c.slug })}
                     className={cn(
-                      'text-sm hover:text-brand',
-                      params.get('category') === c.slug ? 'font-semibold text-brand' : 'text-ink-secondary',
+                      'text-sm hover:text-brand font-medium',
+                      params.get('category') === c.slug ? 'font-bold text-brand' : 'text-ink-secondary',
                     )}
                   >
                     {c.name}
                   </button>
+                  {c.children && c.children.length > 0 && (
+                    <ul className="ml-3 mt-1 space-y-1 border-l border-border/60 pl-2.5">
+                      {c.children.map((child) => (
+                        <li key={child.id}>
+                          <button
+                            onClick={() => patch({ category: child.slug })}
+                            className={cn(
+                              'text-xs hover:text-brand',
+                              params.get('category') === child.slug ? 'font-semibold text-brand' : 'text-ink-muted',
+                            )}
+                          >
+                            {child.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
               {!categories?.length && <li className="text-sm text-ink-muted">Đang tải...</li>}

@@ -21,6 +21,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    repair-on-migrate: true
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: 5672

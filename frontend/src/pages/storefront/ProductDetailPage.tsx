@@ -43,11 +43,49 @@ export function ProductDetailPage() {
         new Map(
           (product?.variants ?? [])
             .filter((v) => v.color)
-            .map((v) => [v.color, { color: v.color!, hex: v.colorHex }]),
+            .map((v) => [v.color!, { color: v.color!, hex: v.colorHex }]),
         ).values(),
       ),
     [product],
   );
+
+  const isSizeAvailable = (s: string) => {
+    if (!color) return true;
+    return (product?.variants ?? []).some((v) => v.size === s && v.color === color);
+  };
+
+  const isColorAvailable = (cName: string) => {
+    if (!size) return true;
+    return (product?.variants ?? []).some((v) => v.color === cName && v.size === size);
+  };
+
+  const handleSelectSize = (s: string) => {
+    const nextSize = size === s ? null : s;
+    setSize(nextSize);
+    if (nextSize && color) {
+      const isValidCombo = (product?.variants ?? []).some(
+        (v) => v.size === nextSize && v.color === color,
+      );
+      if (!isValidCombo) {
+        const validVariant = (product?.variants ?? []).find((v) => v.size === nextSize);
+        setColor(validVariant?.color ?? null);
+      }
+    }
+  };
+
+  const handleSelectColor = (cName: string) => {
+    const nextColor = color === cName ? null : cName;
+    setColor(nextColor);
+    if (nextColor && size) {
+      const isValidCombo = (product?.variants ?? []).some(
+        (v) => v.color === nextColor && v.size === size,
+      );
+      if (!isValidCombo) {
+        const validVariant = (product?.variants ?? []).find((v) => v.color === nextColor);
+        setSize(validVariant?.size ?? null);
+      }
+    }
+  };
 
   // Resolve the variant matching the current selection (size/color may be optional).
   const selectedVariant = useMemo(() => {
@@ -185,49 +223,85 @@ export function ProductDetailPage() {
 
           {sizes.length > 0 && (
             <div className="mt-6">
-              <p className="mb-2 text-sm font-medium text-ink">Kích cỡ</p>
+              <p className="mb-2 text-sm font-medium text-ink">
+                Kích cỡ{size ? `: ${size}` : ''}
+              </p>
               <div className="flex flex-wrap gap-2">
-                {sizes.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSize(s)}
-                    className={cn(
-                      'flex h-10 min-w-10 items-center justify-center rounded border px-3 text-sm',
-                      size === s ? 'border-brand bg-brand text-white' : 'border-border hover:border-brand',
-                    )}
-                  >
-                    {s}
-                  </button>
-                ))}
+                {sizes.map((s) => {
+                  const available = isSizeAvailable(s);
+                  const selected = size === s;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => handleSelectSize(s)}
+                      className={cn(
+                        'relative flex h-10 min-w-10 items-center justify-center rounded border px-3 text-sm transition-all',
+                        selected
+                          ? 'border-brand bg-brand font-semibold text-white shadow-sm'
+                          : available
+                          ? 'border-border bg-white text-ink hover:border-brand'
+                          : 'border-border/60 bg-page text-ink-muted opacity-40 hover:opacity-70',
+                      )}
+                      title={!available && color ? `Size ${s} không có màu ${color}` : undefined}
+                    >
+                      {s}
+                      {!available && (
+                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <span className="h-[1px] w-4/5 rotate-[-25deg] bg-ink-muted/60" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {colors.length > 0 && (
             <div className="mt-5">
-              <p className="mb-2 text-sm font-medium text-ink">Màu sắc{color ? `: ${color}` : ''}</p>
+              <p className="mb-2 text-sm font-medium text-ink">
+                Màu sắc{color ? `: ${color}` : ''}
+              </p>
               <div className="flex flex-wrap gap-2">
-                {colors.map((c) => (
-                  <button
-                    key={c.color}
-                    onClick={() => setColor(c.color)}
-                    title={c.color}
-                    className={cn(
-                      'h-9 w-9 rounded-full border-2',
-                      color === c.color ? 'border-brand ring-2 ring-brand/30' : 'border-border',
-                    )}
-                    style={{ backgroundColor: c.hex || '#e2e8f0' }}
-                  />
-                ))}
+                {colors.map((c) => {
+                  const available = isColorAvailable(c.color);
+                  const selected = color === c.color;
+                  return (
+                    <button
+                      key={c.color}
+                      onClick={() => handleSelectColor(c.color)}
+                      title={!available && size ? `Màu ${c.color} không có size ${size}` : c.color}
+                      className={cn(
+                        'relative h-9 w-9 rounded-full border-2 transition-all',
+                        selected
+                          ? 'border-brand ring-2 ring-brand/30 scale-105'
+                          : available
+                          ? 'border-border hover:scale-105'
+                          : 'border-border/50 opacity-30',
+                      )}
+                      style={{ backgroundColor: c.hex || '#e2e8f0' }}
+                    >
+                      {!available && (
+                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <span className="h-[1px] w-3/4 rotate-45 bg-ink-muted/80" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {selectedVariant && (
+          {selectedVariant ? (
             <p className="mt-5 text-sm text-ink-secondary">
               SKU: <span className="font-medium text-ink">{selectedVariant.sku}</span>
               <span className="mx-2 text-ink-muted">·</span>
-              {stock > 0 ? `Còn ${stock} sản phẩm` : 'Hết hàng'}
+              {stock > 0 ? <span className="font-semibold text-success">Còn {stock} sản phẩm</span> : <span className="font-semibold text-danger">Hết hàng</span>}
+            </p>
+          ) : (
+            <p className="mt-5 text-sm text-ink-secondary">
+              Tổng tồn kho: <span className="font-medium text-ink">{product.variants.reduce((acc, v) => acc + v.stock, 0)} sản phẩm</span>
             </p>
           )}
 

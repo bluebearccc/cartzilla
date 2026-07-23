@@ -21,6 +21,7 @@ export interface ProductSummary {
   active: boolean;
   featured: boolean;
   inStock: boolean;
+  totalStock?: number;
 }
 
 export interface ProductVariant {

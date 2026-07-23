@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Icon } from '@/components/ui/Icon';
 import { useToast } from '@/components/ui/Toast';
 import { formatVnd } from '@/lib/format';
+import { cn } from '@/lib/cn';
 import { ApiError } from '@/types/api';
 import type { ProductSummary } from '@/types/catalog';
 
@@ -28,7 +29,21 @@ export function AdminProductPage() {
   });
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: catalogApi.getCategories });
 
-  const catName = (id: string | null) => categories?.find((c) => c.id === id)?.name ?? '—';
+  const catName = (id: string | null): string => {
+    if (!id || !categories) return '—';
+    const search = (list: typeof categories, parentName?: string): string | null => {
+      for (const c of list) {
+        const full = parentName ? `${parentName} › ${c.name}` : c.name;
+        if (c.id === id) return full;
+        if (c.children?.length) {
+          const found = search(c.children, c.name);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return search(categories) ?? '—';
+  };
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => adminProductApi.remove(id),
@@ -71,6 +86,7 @@ export function AdminProductPage() {
                 <th className="px-4 py-3 font-semibold">Tên sản phẩm</th>
                 <th className="px-4 py-3 font-semibold">Danh mục</th>
                 <th className="px-4 py-3 text-right font-semibold">Giá</th>
+                <th className="px-4 py-3 text-center font-semibold">Tồn kho</th>
                 <th className="px-4 py-3 font-semibold">Trạng thái</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -78,10 +94,10 @@ export function AdminProductPage() {
             <tbody>
               {isLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} className="border-b border-divider"><td colSpan={6} className="px-4 py-3"><Skeleton className="h-8 w-full" /></td></tr>
+                  <tr key={i} className="border-b border-divider"><td colSpan={7} className="px-4 py-3"><Skeleton className="h-8 w-full" /></td></tr>
                 ))
               ) : products.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-10"><EmptyState icon="inventory_2" title="Chưa có sản phẩm" action={{ label: 'Thêm sản phẩm', onClick: () => (window.location.href = '/admin/products/new') }} /></td></tr>
+                <tr><td colSpan={7} className="px-4 py-10"><EmptyState icon="inventory_2" title="Chưa có sản phẩm" action={{ label: 'Thêm sản phẩm', onClick: () => (window.location.href = '/admin/products/new') }} /></td></tr>
               ) : (
                 products.map((p) => (
                   <tr key={p.id} className="border-b border-divider last:border-0 hover:bg-page">
@@ -94,6 +110,15 @@ export function AdminProductPage() {
                     </td>
                     <td className="px-4 py-2 text-ink-secondary">{catName(p.categoryId)}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{formatVnd(p.basePrice)}</td>
+                    <td className="px-4 py-2 text-center font-medium tabular-nums">
+                      {p.totalStock !== undefined ? (
+                        <span className={cn(p.totalStock > 0 ? 'text-ink' : 'text-danger font-bold')}>
+                          {p.totalStock} sp
+                        </span>
+                      ) : (
+                        p.inStock ? 'Còn hàng' : 'Hết hàng'
+                      )}
+                    </td>
                     <td className="px-4 py-2">
                       {p.active ? <Badge tone="success">Đang bán</Badge> : <Badge tone="muted">Ẩn</Badge>}
                       {!p.inStock && <span className="ml-1" title="Hết hàng / thiếu biến thể"><Icon name="warning" className="text-[16px] text-warning" /></span>}

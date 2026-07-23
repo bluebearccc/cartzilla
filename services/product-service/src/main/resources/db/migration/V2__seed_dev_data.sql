@@ -11,31 +11,33 @@ INSERT INTO categories (id, parent_id, name, slug, sort_order) VALUES
 
 -- ─── Vendors ─────────────────────────────────────────────────────────────
 INSERT INTO vendors (id, name, slug, vendor_type, contact_email) VALUES
-    ('b0000000-0000-0000-0000-000000000001', 'Basic Collection', 'basic-collection', 'BRAND',        'contact@basiccollection.vn'),
-    ('b0000000-0000-0000-0000-000000000002', 'Local Supplier',   'local-supplier',   'SUPPLIER',     'sales@localsupplier.vn'),
-    ('b0000000-0000-0000-0000-000000000003', 'Fashion Brand',    'fashion-brand',    'MANUFACTURER', 'hello@fashionbrand.vn');
+    ('b0000000-0000-0000-0000-000000000001', 'Basic Collection',   'basic-collection',     'BRAND',        'contact@basiccollection.vn'),
+    ('b0000000-0000-0000-0000-000000000002', 'Cartzilla Essentials', 'cartzilla-essentials', 'BRAND',        'support@cartzilla.vn'),
+    ('b0000000-0000-0000-0000-000000000003', 'Urban Style',        'urban-style',          'MANUFACTURER', 'hello@urbanstyle.vn'),
+    ('b0000000-0000-0000-0000-000000000004', 'Linen Studio',      'linen-studio',         'BRAND',        'contact@linenstudio.vn'),
+    ('b0000000-0000-0000-0000-000000000005', 'Denim Crafts',      'denim-crafts',         'BRAND',        'sales@denimcrafts.vn');
 
 -- ─── Products ────────────────────────────────────────────────────────────
 INSERT INTO products (id, category_id, vendor_id, name, slug, description, base_price, tags, featured) VALUES
     ('a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000001',
      'Áo thun nam Basic Cotton', 'ao-thun-nam-basic-cotton', 'Áo thun cotton 100%, form regular, thoáng mát.', 199000, 'ao,thun,nam,basic', TRUE),
-    ('a0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000001',
+    ('a0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000004', 'b0000000-0000-0000-0000-000000000002',
      'Áo thun nữ Oversize', 'ao-thun-nu-oversize', 'Áo thun nữ form oversize trẻ trung, chất cotton co giãn.', 229000, 'ao,thun,nu,oversize', FALSE),
     ('a0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000003',
      'Áo sơ mi nam Oxford', 'ao-so-mi-nam-oxford', 'Sơ mi Oxford dài tay, đứng form, dễ phối đồ công sở.', 399000, 'ao,so-mi,nam,oxford', TRUE),
-    ('a0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000003',
+    ('a0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000005', 'b0000000-0000-0000-0000-000000000004',
      'Áo sơ mi nữ Linen', 'ao-so-mi-nu-linen', 'Sơ mi linen nhẹ mát, phong cách tối giản.', 459000, 'ao,so-mi,nu,linen', FALSE),
-    ('a0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000003',
+    ('a0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000005',
      'Quần jean nam Slim Fit', 'quan-jean-nam-slim-fit', 'Jean co giãn nhẹ, form slim fit tôn dáng.', 549000, 'quan,jean,nam,slim', TRUE),
-    ('a0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002',
+    ('a0000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000003',
      'Quần short kaki nam', 'quan-short-kaki-nam', 'Short kaki trên gối, phù hợp mùa hè.', 299000, 'quan,short,kaki,nam', FALSE),
-    ('a0000000-0000-0000-0000-000000000007', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001',
+    ('a0000000-0000-0000-0000-000000000007', 'c0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000002',
      'Quần jogger nữ', 'quan-jogger-nu', 'Jogger nỉ bo gấu, thoải mái vận động.', 329000, 'quan,jogger,nu', FALSE),
-    ('a0000000-0000-0000-0000-000000000008', 'c0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000002',
+    ('a0000000-0000-0000-0000-000000000008', 'c0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001',
      'Mũ bucket unisex', 'mu-bucket-unisex', 'Mũ bucket vải kaki, unisex, nhiều màu.', 129000, 'phu-kien,mu,bucket', FALSE),
     ('a0000000-0000-0000-0000-000000000009', 'c0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000002',
      'Túi tote canvas', 'tui-tote-canvas', 'Túi tote canvas dày dặn, in hình tối giản.', 159000, 'phu-kien,tui,tote', FALSE),
-    ('a0000000-0000-0000-0000-00000000000a', 'c0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000003',
+    ('a0000000-0000-0000-0000-00000000000a', 'c0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000005',
      'Thắt lưng da nam', 'that-lung-da-nam', 'Thắt lưng da bò thật, khóa kim loại.', 349000, 'phu-kien,that-lung,da,nam', FALSE);
 
 -- ─── Variants ────────────────────────────────────────────────────────────
@@ -77,15 +79,15 @@ INSERT INTO product_variants (id, product_id, sku, size, color, color_hex, price
 
 -- ─── Images ──────────────────────────────────────────────────────────────
 INSERT INTO product_images (id, product_id, image_url, alt_text, is_primary, sort_order) VALUES
-    ('e0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'https://picsum.photos/seed/ao-thun-nam-1/600/800', 'Áo thun nam Basic Cotton', TRUE,  0),
-    ('e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'https://picsum.photos/seed/ao-thun-nam-2/600/800', 'Áo thun nam Basic Cotton — mặt sau', FALSE, 1),
-    ('e0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002', 'https://picsum.photos/seed/ao-thun-nu-1/600/800',  'Áo thun nữ Oversize', TRUE,  0),
-    ('e0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000003', 'https://picsum.photos/seed/so-mi-nam-1/600/800',   'Áo sơ mi nam Oxford', TRUE,  0),
-    ('e0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000003', 'https://picsum.photos/seed/so-mi-nam-2/600/800',   'Áo sơ mi nam Oxford — chi tiết', FALSE, 1),
-    ('e0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000004', 'https://picsum.photos/seed/so-mi-nu-1/600/800',    'Áo sơ mi nữ Linen', TRUE,  0),
-    ('e0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000005', 'https://picsum.photos/seed/jean-nam-1/600/800',    'Quần jean nam Slim Fit', TRUE,  0),
-    ('e0000000-0000-0000-0000-000000000008', 'a0000000-0000-0000-0000-000000000006', 'https://picsum.photos/seed/short-kaki-1/600/800',  'Quần short kaki nam', TRUE,  0),
-    ('e0000000-0000-0000-0000-000000000009', 'a0000000-0000-0000-0000-000000000007', 'https://picsum.photos/seed/jogger-nu-1/600/800',   'Quần jogger nữ', TRUE,  0),
-    ('e0000000-0000-0000-0000-00000000000a', 'a0000000-0000-0000-0000-000000000008', 'https://picsum.photos/seed/mu-bucket-1/600/800',   'Mũ bucket unisex', TRUE,  0),
-    ('e0000000-0000-0000-0000-00000000000b', 'a0000000-0000-0000-0000-000000000009', 'https://picsum.photos/seed/tui-tote-1/600/800',    'Túi tote canvas', TRUE,  0),
-    ('e0000000-0000-0000-0000-00000000000c', 'a0000000-0000-0000-0000-00000000000a', 'https://picsum.photos/seed/that-lung-1/600/800',   'Thắt lưng da nam', TRUE,  0);
+    ('e0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767398/cartzilla/seed/ao_thun_nam_1.jpg', 'Áo thun nam Basic Cotton', TRUE,  0),
+    ('e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767399/cartzilla/seed/ao_thun_nam_2.jpg', 'Áo thun nam Basic Cotton — mặt sau', FALSE, 1),
+    ('e0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000002', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767401/cartzilla/seed/ao_thun_nu_1.jpg',  'Áo thun nữ Oversize', TRUE,  0),
+    ('e0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000003', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767403/cartzilla/seed/ao_so_mi_nam_1.jpg',   'Áo sơ mi nam Oxford', TRUE,  0),
+    ('e0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000003', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767405/cartzilla/seed/ao_so_mi_nam_2.jpg',   'Áo sơ mi nam Oxford — chi tiết', FALSE, 1),
+    ('e0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000004', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767408/cartzilla/seed/ao_so_mi_nu_1.jpg',    'Áo sơ mi nữ Linen', TRUE,  0),
+    ('e0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000005', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767410/cartzilla/seed/quan_jean_nam_1.jpg',    'Quần jean nam Slim Fit', TRUE,  0),
+    ('e0000000-0000-0000-0000-000000000008', 'a0000000-0000-0000-0000-000000000006', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767413/cartzilla/seed/quan_short_kaki_1.jpg',  'Quần short kaki nam', TRUE,  0),
+    ('e0000000-0000-0000-0000-000000000009', 'a0000000-0000-0000-0000-000000000007', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767416/cartzilla/seed/quan_jogger_nu_1.jpg',   'Quần jogger nữ', TRUE,  0),
+    ('e0000000-0000-0000-0000-00000000000a', 'a0000000-0000-0000-0000-000000000008', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767419/cartzilla/seed/mu_bucket_1.jpg',   'Mũ bucket unisex', TRUE,  0),
+    ('e0000000-0000-0000-0000-00000000000b', 'a0000000-0000-0000-0000-000000000009', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767423/cartzilla/seed/tui_tote_1.jpg',    'Túi tote canvas', TRUE,  0),
+    ('e0000000-0000-0000-0000-00000000000c', 'a0000000-0000-0000-0000-00000000000a', 'https://res.cloudinary.com/dvgnsfcy3/image/upload/v1784767426/cartzilla/seed/that_lung_1.jpg',   'Thắt lưng da nam', TRUE,  0);
