@@ -11,14 +11,9 @@ import java.util.UUID;
 
 public interface VoucherJpaRepository extends JpaRepository<Voucher, UUID> {
 
-    /** VA-01: lookup không phân biệt hoa thường */
     @Query("SELECT v FROM Voucher v WHERE UPPER(v.code) = UPPER(:code)")
     Optional<Voucher> findByCodeIgnoreCase(@Param("code") String code);
 
-    /**
-     * VA-02: tăng usedCount atomically — conditional UPDATE chống race condition.
-     * Trả về 1 nếu thành công, 0 nếu đã đạt maxUses.
-     */
     @Modifying
     @Query("UPDATE Voucher v SET v.usedCount = v.usedCount + 1 " +
            "WHERE v.id = :id AND v.usedCount < v.maxUses")

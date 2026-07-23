@@ -14,19 +14,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** Email trùng → 409 (SRS TC-02). */
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ApiResponse<Void>> handleDuplicateEmail(DuplicateEmailException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(ex.getMessage()));
     }
 
-    /** Tài khoản inactive / thiếu quyền → 403 (SRS TC-04, permission matrix §2.3). */
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ApiResponse<Void>> handleForbidden(ForbiddenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error(ex.getMessage()));
     }
 
-    /** Lỗi validate nghiệp vụ (voucher...) → 422 (SRS BR-V07, TC-14/16/17). */
     @ExceptionHandler(UnprocessableEntityException.class)
     public ResponseEntity<ApiResponse<Void>> handleUnprocessable(UnprocessableEntityException ex) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ApiResponse.error(ex.getMessage()));

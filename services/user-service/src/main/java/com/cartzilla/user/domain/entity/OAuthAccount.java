@@ -12,12 +12,6 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Child entity của UserAggregate.
- * Rules: OA-01..OA-05.
- * UNIQUE (provider, providerUserId) — OA-02
- * UNIQUE (userId, provider)         — OA-03
- */
 @Entity
 @Table(name = "oauth_accounts",
         uniqueConstraints = {
@@ -36,7 +30,6 @@ public class OAuthAccount extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    /** OA-01: MVP chỉ hỗ trợ GOOGLE */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private OAuthProvider provider;
@@ -53,15 +46,12 @@ public class OAuthAccount extends BaseEntity {
     @Column(name = "avatar_url", columnDefinition = "TEXT")
     private String avatarUrl;
 
-    /** OA-04: NOT NULL, default NOW */
     @Column(name = "linked_at", nullable = false)
     private Instant linkedAt;
 
-    /** OA-05: lastLoginAt ≥ linkedAt khi update */
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
-    /** Factory — OA-04 */
     public static OAuthAccount link(UUID userId, OAuthProvider provider,
                                      String providerUserId, String providerEmail,
                                      String displayName, String avatarUrl) {
@@ -80,7 +70,6 @@ public class OAuthAccount extends BaseEntity {
         return oa;
     }
 
-    /** OA-05: lastLoginAt ≥ linkedAt */
     public void recordLogin() {
         Instant now = Instant.now();
         if (now.isBefore(linkedAt))

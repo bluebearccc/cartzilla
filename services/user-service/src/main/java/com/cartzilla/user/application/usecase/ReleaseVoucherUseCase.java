@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-/** Idempotent compensation for a voucher redeemed by a payment Saga. */
 @Service
 @RequiredArgsConstructor
 public class ReleaseVoucherUseCase {
@@ -20,7 +19,7 @@ public class ReleaseVoucherUseCase {
     @Transactional
     public boolean execute(String code, UUID userId, UUID orderId) {
         Voucher voucher = voucherRepository.findByCode(code).orElse(null);
-        if (voucher == null) return true; // already removed/expired: nothing to compensate
+        if (voucher == null) return true; 
         VoucherUsage usage = usageRepository.findByVoucherIdAndOrderId(voucher.getId(), orderId).orElse(null);
         if (usage == null || usage.isReleased()) return true;
         if (!usage.getUserId().equals(userId)) return false;

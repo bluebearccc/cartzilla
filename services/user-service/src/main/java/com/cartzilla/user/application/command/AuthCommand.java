@@ -1,6 +1,5 @@
 package com.cartzilla.user.application.command;
 
-/** Input command cho các usecase auth. */
 public class AuthCommand {
     private AuthCommand() {}
 

@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 
-/** Request/Response DTO cho auth (kèm map sang command). */
 public class AuthDtos {
     private AuthDtos() {}
 

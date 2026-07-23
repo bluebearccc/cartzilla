@@ -10,6 +10,5 @@ public interface AddressJpaRepository extends JpaRepository<Address, UUID> {
 
     List<Address> findByUserId(UUID userId);
 
-    /** UA-05: dùng khi cần unset existing default trước khi set default mới */
     List<Address> findByUserIdAndIsDefaultTrue(UUID userId);
 }

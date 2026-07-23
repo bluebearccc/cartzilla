@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
-/** ADAPTER — implement domain port bằng Spring Data JPA. */
 @Component
 @RequiredArgsConstructor
 public class UserRepositoryAdapter implements UserRepository {

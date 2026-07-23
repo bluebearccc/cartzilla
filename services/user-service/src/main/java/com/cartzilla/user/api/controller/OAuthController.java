@@ -52,8 +52,7 @@ public class OAuthController {
             var result = completeOAuthLoginUseCase.execute(parseProvider(provider), code, state);
 
             if (isBrowser) {
-                // SECURITY: đưa token vào URL fragment (#) thay vì query (?). Fragment KHÔNG
-                // được gửi lên server → không lọt vào access log / header Referer của bên thứ ba.
+
                 String fragment = "accessToken=" + enc(result.accessToken())
                         + "&refreshToken=" + enc(result.refreshToken())
                         + "&email=" + enc(result.email())
@@ -68,7 +67,7 @@ public class OAuthController {
 
         } catch (Exception ex) {
             if (isBrowser) {
-                // Redirect về /login?error=... thay vì trả raw JSON
+
                 String errorMsg = ex.getMessage() != null ? ex.getMessage() : "Đăng nhập Google thất bại";
                 String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login")
                         .queryParam("error", errorMsg)
@@ -77,7 +76,7 @@ public class OAuthController {
                         .header("Location", redirectUrl)
                         .build();
             }
-            // AJAX caller vẫn nhận JSON lỗi bình thường
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(ex.getMessage()));
         }

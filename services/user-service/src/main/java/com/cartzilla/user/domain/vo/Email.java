@@ -5,7 +5,6 @@ import com.cartzilla.web.exception.BusinessException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** VO: Email — RFC 5322 simplified; normalize lowercase; max 255. */
 public final class Email {
 
     private static final Pattern PATTERN =

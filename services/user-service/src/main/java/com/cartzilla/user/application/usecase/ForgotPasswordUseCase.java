@@ -32,7 +32,7 @@ public class ForgotPasswordUseCase {
             String token = tokenGenerator.generateUrlSafeToken();
             resetTokenRepository.save(PasswordResetToken.create(
                     user.getId(), token, Instant.now().plusSeconds(30 * 60L)));
-            // Email best-effort: notification-service lỗi không được rollback token đã tạo.
+
             try {
                 notificationFeignClient.sendResetPasswordEmail(new NotificationFeignClient.ResetPasswordEmailRequest(
                         user.getEmail(), user.getFullName(), resetPasswordBaseUrl + "?token=" + token, 30));

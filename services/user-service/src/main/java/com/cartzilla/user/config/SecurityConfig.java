@@ -18,13 +18,11 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /** AuditorAware lấy user hiện tại cho BaseEntity.createdBy/updatedBy. */
     @Bean
     public AuditorAware<String> auditorAware() {
-        return () -> Optional.of("system"); // TODO: lấy từ header X-User-Id (gateway inject)
+        return () -> Optional.of("system"); 
     }
 
-    /** Service nằm sau gateway → tắt security nội bộ, gateway đã validate JWT. */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(c -> c.disable())

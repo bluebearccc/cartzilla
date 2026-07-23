@@ -5,7 +5,6 @@ import com.cartzilla.web.exception.BusinessException;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** VO: Phone — VN format 0[0-9]{9,10} hoặc +84…; max 20. */
 public final class Phone {
 
     private static final Pattern PATTERN =

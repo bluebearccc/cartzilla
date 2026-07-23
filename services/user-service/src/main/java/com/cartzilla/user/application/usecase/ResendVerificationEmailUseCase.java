@@ -12,14 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
-/**
- * Gửi lại email xác minh cho user chưa verify.
- * Vì đăng ký nay là best-effort gửi email (user vẫn được tạo dù notification lỗi),
- * endpoint này cho phép yêu cầu lại link xác minh.
- *
- * Bảo mật: luôn trả kết quả generic, không tiết lộ email có tồn tại / đã verify / inactive hay không
- * (chống account enumeration — giống forgot-password).
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -42,7 +34,7 @@ public class ResendVerificationEmailUseCase {
             return;
         }
         userRepository.findByEmail(email.trim().toLowerCase()).ifPresent(user -> {
-            // Không gửi lại nếu tài khoản inactive hoặc email đã verify.
+
             if (!user.isActive() || user.isEmailVerified()) {
                 return;
             }
@@ -50,7 +42,7 @@ public class ResendVerificationEmailUseCase {
             String token = tokenGenerator.generateUrlSafeToken();
             verificationTokenRepository.save(EmailVerificationToken.create(
                     user.getId(), token, Instant.now().plusSeconds(verificationTtlSeconds)));
-            // Email best-effort: notification-service lỗi không được làm fail request.
+
             try {
                 notificationFeignClient.sendVerificationEmail(new NotificationFeignClient.VerificationEmailRequest(
                         user.getEmail(), user.getFullName(), verificationBaseUrl + "?token=" + token,

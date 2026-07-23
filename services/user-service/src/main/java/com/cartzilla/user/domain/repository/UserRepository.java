@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 import java.util.UUID;
 
-/** PORT — domain định nghĩa, infrastructure implement. */
 public interface UserRepository {
     User save(User user);
     Optional<User> findById(UUID id);

@@ -138,7 +138,7 @@ public class ValidateVoucherUseCase {
         if (voucher.isFirstOrderOnly()
                 || voucher.getMinCompletedOrders() > 0
                 || voucher.getMinTotalSpent().compareTo(BigDecimal.ZERO) > 0) {
-            
+
             if (orderFeignClient == null) {
                 throw new UnprocessableEntityException(
                         "Voucher order-history eligibility requires order-service user stats integration");
@@ -174,7 +174,7 @@ public class ValidateVoucherUseCase {
 
     private void validateAudience(Voucher voucher, User user, UUID excludeOrderId) {
         switch (voucher.getAudienceType()) {
-            case ALL_USERS -> { /* hợp lệ với mọi user */ }
+            case ALL_USERS -> {  }
             case SPECIFIC_USERS -> {
                 if (!allowedUserRepository.existsByVoucherIdAndUserId(voucher.getId(), user.getId())) {
                     throw new UnprocessableEntityException("Voucher audience mismatch: SPECIFIC_USERS");

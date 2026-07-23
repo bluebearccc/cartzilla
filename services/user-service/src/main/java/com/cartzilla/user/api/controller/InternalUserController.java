@@ -13,10 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Internal endpoints — chỉ gọi từ các microservice nội bộ qua Feign.
- * Không expose qua API Gateway public (cần config gateway exclude /api/internal/**).
- */
 @RestController
 @RequestMapping(ApiPaths.INTERNAL_USERS)
 @RequiredArgsConstructor

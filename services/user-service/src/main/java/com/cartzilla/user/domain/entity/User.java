@@ -12,10 +12,6 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.util.UUID;
 
-/**
- * Aggregate root — UserAggregate.
- * Rules: UA-01..UA-08, U-01..U-04.
- */
 @Entity
 @Table(name = "users")
 @Getter
@@ -30,7 +26,6 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
-    /** Nullable nếu user chỉ đăng nhập OAuth — UA-01 */
     @Column(name = "password_hash")
     private String passwordHash;
 
@@ -44,15 +39,12 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 20)
     private Role role;
 
-    /** U-02: chỉ set true sau xác thực email hoặc OAuth verified */
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
 
-    /** UA-04: chỉ isActive=true mới được checkout/voucher/refresh token */
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
-    /** Factory: tạo Customer mới — UA-03, U-01 */
     public static User createCustomer(String email, String passwordHash, String fullName) {
         if (email == null || email.isBlank())
             throw new BusinessException("Email must not be blank");
@@ -68,7 +60,6 @@ public class User extends BaseEntity {
         return u;
     }
 
-    /** Tạo user OAuth-only (không có password) — UA-01 */
     public static User createOAuthUser(String email, String fullName, Role role) {
         if (email == null || email.isBlank())
             throw new BusinessException("Email must not be blank");
@@ -77,12 +68,11 @@ public class User extends BaseEntity {
         u.fullName = fullName;
         u.role = role != null ? role : Role.CUSTOMER;
         u.active = true;
-        // OAuth provider đã xác minh email
+
         u.emailVerified = true;
         return u;
     }
 
-    /** U-03: Đổi email → reset emailVerified */
     public void changeEmail(String newEmail) {
         if (newEmail == null || newEmail.isBlank())
             throw new BusinessException("Email must not be blank");
@@ -115,7 +105,6 @@ public class User extends BaseEntity {
 
     public void activate() { this.active = true; }
 
-    /** UA-04: guard — ném exception nếu user không active (HTTP 403, SRS TC-04) */
     public void requireActive() {
         if (!active)
             throw new ForbiddenException("User account is not active");

@@ -77,9 +77,6 @@ public class RedeemVoucherUseCase {
         validator.validateEligibility(voucher, user, command.orderSubtotal(), command.orderId());
         BigDecimal discount = validator.calculateDiscount(voucher, command.orderSubtotal());
 
-        // BR-V05: ghi VoucherUsage trước (unique (voucherId, orderId) đảm bảo idempotent),
-        // chỉ tăng usedCount khi tạo được usage mới. Nếu tăng count không thành công (hết lượt)
-        // thì throw → toàn bộ transaction rollback, không over-count, không để usage mồ côi.
         VoucherUsage usage = usageRepository.save(VoucherUsage.redeem(
                 voucher.getId(), user.getId(), command.orderId(), discount));
         if (voucherRepository.incrementUsedCountIfAvailable(voucher.getId()) != 1) {

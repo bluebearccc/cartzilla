@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
 
-/** VO: Money — BR-G05: amount ≥ 0, scale 2, currency VND. */
 public final class Money {
 
     public static final Money ZERO = new Money(BigDecimal.ZERO);

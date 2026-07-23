@@ -35,7 +35,7 @@ public class LoginUseCase {
     public Result execute(AuthCommand.Login cmd) {
         User user = userRepository.findByEmail(cmd.email())
                 .orElseThrow(() -> new BusinessException("Invalid email or password"));
-        // Xác thực credential TRƯỚC khi tiết lộ trạng thái tài khoản (chống account enumeration).
+
         if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
             throw new BusinessException("Invalid email or password");
         }

@@ -48,8 +48,7 @@ public class RegisterUserUseCase {
         String token = tokenGenerator.generateUrlSafeToken();
         verificationTokenRepository.save(EmailVerificationToken.create(
                 saved.getId(), token, Instant.now().plusSeconds(verificationTtlSeconds)));
-        // Email là best-effort: notification-service lỗi/timeout KHÔNG được rollback việc tạo user.
-        // User vẫn được tạo (emailVerified=false) và có thể yêu cầu gửi lại email xác minh sau.
+
         try {
             notificationFeignClient.sendVerificationEmail(new NotificationFeignClient.VerificationEmailRequest(
                     saved.getEmail(), saved.getFullName(), verificationBaseUrl + "?token=" + token,

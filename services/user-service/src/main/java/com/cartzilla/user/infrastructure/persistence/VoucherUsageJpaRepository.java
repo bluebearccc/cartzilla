@@ -8,11 +8,9 @@ import java.util.UUID;
 
 public interface VoucherUsageJpaRepository extends JpaRepository<VoucherUsage, UUID> {
 
-    /** VA-04/VU-04: idempotent check */
     boolean existsByVoucherIdAndOrderId(UUID voucherId, UUID orderId);
 
     Optional<VoucherUsage> findByVoucherIdAndOrderId(UUID voucherId, UUID orderId);
 
-    /** V-11/BR-V09: đếm lượt redeem của user */
     long countByVoucherIdAndUserIdAndReleasedFalse(UUID voucherId, UUID userId);
 }

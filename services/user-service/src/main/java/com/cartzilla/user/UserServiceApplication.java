@@ -6,10 +6,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-/**
- * scanBasePackages gồm cả com.cartzilla.security để pick-up JwtTokenProvider
- * (module shared/common-security) cho LoginUseCase / RefreshToken inject được.
- */
 @EnableJpaAuditing
 @EnableDiscoveryClient
 @EnableFeignClients
